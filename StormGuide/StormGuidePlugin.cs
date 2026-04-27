@@ -10,7 +10,10 @@ using UnityEngine;
 namespace StormGuide;
 
 [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
-[BepInDependency("ATS_API")]
+// ATS_API_Devs-API registers its BepInPlugin with GUID "API" (the friendly
+// name is also "API"). Using the wrong GUID here will cause BepInEx to skip
+// our plugin with "missing dependencies: <guid>".
+[BepInDependency("API", BepInDependency.DependencyFlags.SoftDependency)]
 public sealed class StormGuidePlugin : BaseUnityPlugin
 {
     public const string PluginGuid    = "stormguide";
