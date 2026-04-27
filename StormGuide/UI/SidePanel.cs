@@ -2800,14 +2800,14 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndHorizontal();
         if (!string.IsNullOrEmpty(_docView))
         {
-            var text = LiveGameState.ReadEmbeddedDoc(_docView);
-            if (string.IsNullOrEmpty(text))
+            var docText = LiveGameState.ReadEmbeddedDoc(_docView);
+            if (string.IsNullOrEmpty(docText))
                 GUILayout.Label($"   {_docView}: not found in plugin resources.", _mutedStyle);
             else
             {
                 _docScroll = GUILayout.BeginScrollView(_docScroll,
                     GUILayout.Height(180), GUILayout.ExpandWidth(true));
-                GUILayout.TextArea(text);
+                GUILayout.TextArea(docText);
                 GUILayout.EndScrollView();
             }
         }
