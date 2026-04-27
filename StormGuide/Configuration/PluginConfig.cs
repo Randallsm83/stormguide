@@ -46,6 +46,9 @@ public sealed class PluginConfig
     public ConfigEntry<string>           RaceRatioTargets { get; }
     public ConfigEntry<string>           CornerstonePickHistory { get; }
     public ConfigEntry<string>           PinPresets { get; }
+    public ConfigEntry<string>           MarkedStoppedRecipes { get; }
+    public ConfigEntry<string>           MarkedPriorityRecipes { get; }
+    public ConfigEntry<string>           PinnedChaseModel { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -146,5 +149,11 @@ public sealed class PluginConfig
             "Semicolon-separated cornerstone ids the player has picked across runs (rolling 50). Used as a tie-breaker by the synergy ranker.");
         PinPresets = cfg.Bind(SectionUI, "Pin Presets", "",
             "Named pin presets in the form 'name=building|recipe,building|recipe;name2=...'. Managed via the Settings tab.");
+        MarkedStoppedRecipes = cfg.Bind(SectionUI, "Marked Stopped Recipes", "",
+            "Comma-separated recipe model names the player has flagged as stopped (UI-only marker).");
+        MarkedPriorityRecipes = cfg.Bind(SectionUI, "Marked Priority Recipes", "",
+            "Comma-separated recipe model names the player has flagged as haul-priority (UI-only marker).");
+        PinnedChaseModel = cfg.Bind(SectionUI, "Pinned Chase Model", "",
+            "Model name of a glade reward chase pinned to Home. Empty = none.");
     }
 }

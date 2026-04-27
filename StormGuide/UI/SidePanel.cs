@@ -173,6 +173,18 @@ internal sealed class SidePanel : MonoBehaviour
     // Pin preset name input (Settings tab).
     private string _newPresetName = "";
 
+    // UI-only marker sets for recipes flagged as stopped or haul-priority.
+    // Persisted to PluginConfig.MarkedStoppedRecipes / MarkedPriorityRecipes
+    // as comma-separated lists of recipe model names.
+    private readonly HashSet<string> _markedStopped =
+        new(StringComparer.Ordinal);
+    private readonly HashSet<string> _markedPriority =
+        new(StringComparer.Ordinal);
+
+    // Order tier filter chips. Empty set = no filter (show everything).
+    private readonly HashSet<string> _orderTierFilter =
+        new(StringComparer.OrdinalIgnoreCase);
+
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
 
@@ -262,6 +274,14 @@ internal sealed class SidePanel : MonoBehaviour
         // expansion visible until the user toggles back.
         if (Config.WhyAllRecipes.Value)   _expandedRecipes.Add("__all");
         if (Config.WhyAllProducers.Value) _expandedProducers.Add("__all");
+
+        // Restore recipe markers from config (UI-only flags).
+        if (!string.IsNullOrEmpty(Config.MarkedStoppedRecipes.Value))
+            foreach (var s in Config.MarkedStoppedRecipes.Value.Split(','))
+                if (!string.IsNullOrEmpty(s)) _markedStopped.Add(s);
+        if (!string.IsNullOrEmpty(Config.MarkedPriorityRecipes.Value))
+            foreach (var s in Config.MarkedPriorityRecipes.Value.Split(','))
+                if (!string.IsNullOrEmpty(s)) _markedPriority.Add(s);
 
         // Cache the slow aggregates: 0.5s is well below player perception
         // for these kinds of metrics, but it cuts redundant scans by ~30x at
@@ -381,6 +401,36 @@ internal sealed class SidePanel : MonoBehaviour
         if (LiveGameState.IsReady) TickResolveSamples();
         if (LiveGameState.IsReady) TickCyclesSamples();
         if (LiveGameState.IsReady) TickTraderTravel();
+        if (LiveGameState.IsReady) TickPinnedFlows();
+    }
+
+    /// <summary>
+    /// Ensures the per-good net-flow ring (<see cref="_flowSamples"/>) has
+    /// fresh samples for every pinned recipe's produced good, even when those
+    /// goods aren't currently flagged as at-risk. Sampled at 1Hz, capped at
+    /// 30 samples per good. Used by <see cref="DrawHomePinned"/> to render a
+    /// small inline sparkline per pin row.
+    /// </summary>
+    private void TickPinnedFlows()
+    {
+        if (_pinned.Count == 0) return;
+        var now = LiveGameState.GameTimeNow() ?? Time.unscaledTime;
+        if (now - _lastSampleTime < 1f) return;
+        var goods = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var (_, recipe) in _pinned)
+        {
+            if (Catalog.Recipes.TryGetValue(recipe, out var r) &&
+                !string.IsNullOrEmpty(r.ProducedGood))
+                goods.Add(r.ProducedGood);
+        }
+        foreach (var g in goods)
+        {
+            if (!_flowSamples.TryGetValue(g, out var q))
+                _flowSamples[g] = q = new Queue<double>(32);
+            q.Enqueue(LiveGameState.FlowFor(g, Catalog).Net);
+            while (q.Count > 30) q.Dequeue();
+        }
+        _lastSampleTime = now;
     }
 
     /// <summary>
@@ -972,6 +1022,11 @@ internal sealed class SidePanel : MonoBehaviour
                         stockTag += $" \u00b7 {cycles} cycle(s) before phase";
                 }
             }
+            // Marker chips: surface UI-only flags inline so the row reads as
+            // "this pin is paused / prioritised" without scrolling the recipe
+            // back open. Toggled from the Building tab recipe card.
+            if (_markedStopped.Contains(recipe))  stockTag += " \u00b7 \u26d4 stopped";
+            if (_markedPriority.Contains(recipe)) stockTag += " \u00b7 \u2605 priority";
             // Inputs draining tag: any input good with net flow < 0 across
             // the settlement gets a ⚠ prefix so the row reads as at-risk.
             var draining = false;
@@ -1010,6 +1065,10 @@ internal sealed class SidePanel : MonoBehaviour
                 _selectedBuilding = bldg;
                 _activeTab = Tab.Building;
             }
+            // Inline 60s flow sparkline for the produced good (sampled by
+            // TickPinnedFlows even when the good isn't currently at-risk).
+            if (LiveGameState.IsReady && !string.IsNullOrEmpty(r.ProducedGood))
+                DrawFlowSparkline(r.ProducedGood);
             // Up/down reorder buttons (no-op at the edges).
             var idx = _pinned.IndexOf((bldg, recipe));
             if (GUILayout.Button(new GUIContent("▴", "Move up"),
@@ -1652,6 +1711,40 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(
                 $"   ⚠ {summary.RewardChasesActive} reward-chase{(summary.RewardChasesActive == 1 ? "" : "s")} active",
                 _mutedStyle);
+
+        // Pinned chase: surface above the auto-priority pick if the user has
+        // explicitly stuck one to Home. Includes a dismiss button. Persists
+        // via Config.PinnedChaseModel until cleared or the chase resolves.
+        if (!string.IsNullOrEmpty(Config.PinnedChaseModel.Value))
+        {
+            var pinnedChase = summary.Chases.FirstOrDefault(c =>
+                string.Equals(c.Model, Config.PinnedChaseModel.Value,
+                              StringComparison.Ordinal));
+            GUILayout.BeginHorizontal();
+            if (pinnedChase is null)
+            {
+                GUILayout.Label(
+                    $"   ★ pinned chase: {Config.PinnedChaseModel.Value} (not active)",
+                    _mutedStyle);
+            }
+            else
+            {
+                var nowP = LiveGameState.GameTimeNow();
+                var rem = (nowP is float tt && pinnedChase.End > tt)
+                    ? pinnedChase.End - tt : pinnedChase.Duration;
+                var pm = Mathf.Max(0, Mathf.FloorToInt(rem / 60f));
+                var ps = Mathf.Max(0, Mathf.FloorToInt(rem % 60f));
+                GUILayout.Label(
+                    $"   ★ pinned chase: {pinnedChase.Model} — {pm}:{ps:00} left",
+                    _warnStyle ?? _bodyStyle);
+            }
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(new GUIContent("dismiss", "Unpin this chase"),
+                                 _tabStyle, GUILayout.Width(70)))
+                Config.PinnedChaseModel.Value = "";
+            GUILayout.EndHorizontal();
+        }
+
         // Best-next-chase pin: rank by (reward score / remaining time) so the
         // player chases the most valuable + soonest-to-expire one first.
         if (summary.Chases.Count > 0)
@@ -1676,9 +1769,16 @@ internal sealed class SidePanel : MonoBehaviour
                 var remaining = (now is float t2 && chase.End > t2) ? chase.End - t2 : chase.Duration;
                 var mins = Mathf.Max(0, Mathf.FloorToInt(remaining / 60f));
                 var secs = Mathf.Max(0, Mathf.FloorToInt(remaining % 60f));
+                GUILayout.BeginHorizontal();
                 GUILayout.Label(
                     $"   ★ next chase: {chase.Model} — {mins}:{secs:00} left",
                     _warnStyle ?? _mutedStyle);
+                GUILayout.FlexibleSpace();
+                if (Config.PinnedChaseModel.Value != chase.Model &&
+                    GUILayout.Button(new GUIContent("pin", "Pin this chase to Home"),
+                                     _tabStyle, GUILayout.Width(60)))
+                    Config.PinnedChaseModel.Value = chase.Model;
+                GUILayout.EndHorizontal();
             }
         }
     }
@@ -2136,7 +2236,11 @@ internal sealed class SidePanel : MonoBehaviour
 
         GUILayout.BeginVertical();
         GUILayout.BeginHorizontal();
-        GUILayout.Label(rk.Recipe.DisplayName, _bodyStyle);
+        // Highlight the building search query inside the recipe display name
+        // when set; _bodyStyle has richText enabled so the <b> wrap renders.
+        GUILayout.Label(
+            HighlightMatch(rk.Recipe.DisplayName, _buildingSearch?.Trim() ?? ""),
+            _bodyStyle);
         GUILayout.FlexibleSpace();
         GUILayout.Label(rk.Throughput.Format("0.##"), _bodyStyle);
         GUILayout.EndHorizontal();
@@ -2185,6 +2289,15 @@ internal sealed class SidePanel : MonoBehaviour
             if (pinnedRecipe) _pinned.Remove(pinKey); else _pinned.Add(pinKey);
             SavePins();
         }
+        // UI-only "stopped" / "priority" markers, persisted in config and
+        // surfaced on the Home pin row so the player can use them as a
+        // personal queue regardless of in-game recipe state.
+        DrawMarkerToggle(rk.Recipe.Name, _markedStopped,
+            "\u26d4 stop", "Mark this recipe as stopped (UI marker)",
+            Config.MarkedStoppedRecipes);
+        DrawMarkerToggle(rk.Recipe.Name, _markedPriority,
+            "\u2605 pri", "Mark this recipe as haul priority (UI marker)",
+            Config.MarkedPriorityRecipes);
         GUILayout.EndHorizontal();
         if (expanded)
         {
@@ -2203,6 +2316,25 @@ internal sealed class SidePanel : MonoBehaviour
 
         GUILayout.EndHorizontal();
         GUILayout.Space(4);
+    }
+
+    /// <summary>
+    /// One-tap toggle for a UI-only recipe marker (stopped or priority).
+    /// Mutates <paramref name="set"/> in memory and writes the comma-separated
+    /// list back to <paramref name="persisted"/>. Style: ✓ prefix when active.
+    /// </summary>
+    private void DrawMarkerToggle(string recipeName, HashSet<string> set,
+        string label, string tooltip,
+        BepInEx.Configuration.ConfigEntry<string> persisted)
+    {
+        var on = set.Contains(recipeName);
+        var displayLabel = on ? "\u2713 " + label : label;
+        if (GUILayout.Button(new GUIContent(displayLabel, tooltip),
+                             _tabStyle, GUILayout.Width(70)))
+        {
+            if (on) set.Remove(recipeName); else set.Add(recipeName);
+            persisted.Value = string.Join(",", set);
+        }
     }
 
     /// <summary>
@@ -2509,6 +2641,16 @@ internal sealed class SidePanel : MonoBehaviour
                         GUILayout.Label(
                             $"   affordability: ~{pot:0.##} currency → {affordable} × {_selectedGood} @ {buy:0.##}/u",
                             _mutedStyle);
+                    // Per-desire breakdown: show how many units of the
+                    // selected good each top-3 sell could afford on its own.
+                    foreach (var d in topDesires.Take(3))
+                    {
+                        var units = (int)Math.Floor(d.TotalValue / buy);
+                        if (units <= 0) continue;
+                        GUILayout.Label(
+                            $"      {d.DisplayName} ({d.TotalValue:0.##}c) → {units} × {_selectedGood}",
+                            _mutedStyle);
+                    }
                 }
             }
         }
@@ -2912,7 +3054,10 @@ internal sealed class SidePanel : MonoBehaviour
         if (!_resolveSamples.TryGetValue(raceName, out var q) || q.Count < 2) return;
         var samples = q.ToArray();
         var rect = GUILayoutUtility.GetRect(80, 14, GUILayout.Width(80));
-        GUI.Box(rect, GUIContent.none);
+        // Tooltip: hovering the sparkline shows the rolling min/max/last so
+        // the player can read exact numbers without expanding the panel.
+        GUI.Box(rect, new GUIContent("",
+            $"resolve samples: min {samples.Min():0.#} \u00b7 max {samples.Max():0.#} \u00b7 last {samples[samples.Length - 1]:0.#} \u00b7 {samples.Length} pts"));
         var min = samples.Min(); var max = samples.Max();
         var span = Math.Max(0.001f, max - min);
         var rising = samples[samples.Length - 1] >= samples[0];
@@ -3015,6 +3160,45 @@ internal sealed class SidePanel : MonoBehaviour
         var picked  = sorted.Count(o => o.Picked);
         var tracked = sorted.Count(o => o.Tracked);
         GUILayout.Label($"{sorted.Count} orders — {picked} picked, {tracked} tracked", _mutedStyle);
+
+        // Tier filter chips: empty filter = no scoping. Re-clicking the last
+        // de-selected chip collapses back to "all" so the user always has a
+        // path back to the unfiltered view.
+        var tiers = orders
+            .Select(o => o.Tier ?? "")
+            .Where(t => t.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(t => t, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (tiers.Count > 1)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("   tier:", _mutedStyle, GUILayout.Width(48));
+            foreach (var tier in tiers)
+            {
+                var active = _orderTierFilter.Count == 0 ||
+                             _orderTierFilter.Contains(tier);
+                var lbl = active ? "\u2713 " + tier : tier;
+                if (GUILayout.Button(lbl, _chipStyle ?? _tabStyle))
+                {
+                    if (_orderTierFilter.Count == 0)
+                    {
+                        // Switching from "all" to "specific": exclude clicked.
+                        foreach (var t in tiers) _orderTierFilter.Add(t);
+                        _orderTierFilter.Remove(tier);
+                    }
+                    else if (active) _orderTierFilter.Remove(tier);
+                    else _orderTierFilter.Add(tier);
+                    if (_orderTierFilter.SetEquals(tiers)) _orderTierFilter.Clear();
+                }
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            if (_orderTierFilter.Count > 0)
+                sorted = sorted
+                    .Where(o => _orderTierFilter.Contains(o.Tier ?? ""))
+                    .ToList();
+        }
 
         _ordersScroll = GUILayout.BeginScrollView(_ordersScroll, GUILayout.ExpandHeight(true));
         foreach (var o in sorted) DrawOrderCard(o);
@@ -3223,6 +3407,21 @@ internal sealed class SidePanel : MonoBehaviour
             var human = prop.Name.Substring(4, prop.Name.Length - 7) + " tab";
             DrawBoolSetting(entry, human);
         }
+        // Reset-to-defaults button for the Tabs section. Iterates the same
+        // Show*Tab properties and restores each entry's compiled-in default.
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button(new GUIContent("reset tabs",
+                "Reset all tab visibility toggles to defaults"),
+                _tabStyle, GUILayout.Width(110)))
+        {
+            foreach (var prop in tabToggles)
+            {
+                var entry = (BepInEx.Configuration.ConfigEntry<bool>?)prop.GetValue(Config);
+                if (entry?.DefaultValue is bool b) entry.Value = b;
+            }
+        }
+        GUILayout.EndHorizontal();
 
         GUILayout.Space(8);
         DrawSettingHeader("Hotkey");
@@ -3806,6 +4005,32 @@ internal sealed class SidePanel : MonoBehaviour
                 _mutedStyle);
         }
 
+        // Cornerstone-tag advisory: rank building tags by (race-perk hits ×
+        // catalog-building hits) so the player knows which tags carry the
+        // highest leverage if they see a matching cornerstone offered later.
+        GUILayout.Space(6);
+        GUILayout.Label("Cornerstone tags — most leverage for this race set", _bodyStyle);
+        var tagScore = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var race in Catalog.Races.Values)
+        {
+            foreach (var c in race.Characteristics)
+            {
+                var tag = c.BuildingTag;
+                if (string.IsNullOrEmpty(tag)) continue;
+                var hits = Catalog.Buildings.Values.Count(b =>
+                    b.Tags.Contains(tag, StringComparer.OrdinalIgnoreCase));
+                if (hits == 0) continue;
+                tagScore.TryGetValue(tag, out var s);
+                tagScore[tag] = s + hits;
+            }
+        }
+        if (tagScore.Count == 0)
+            GUILayout.Label("   (no race-tag overlap found)", _mutedStyle);
+        foreach (var kv in tagScore.OrderByDescending(kv => kv.Value).Take(5))
+            GUILayout.Label(
+                $"   \u2605 {kv.Key} \u00b7 {kv.Value} building-hit(s) across {Catalog.Races.Count} race(s)",
+                _mutedStyle);
+
         GUILayout.Space(6);
         GUILayout.Label(
             "Tip: races with overlapping needs (e.g. fuel + porridge) are easier to keep above target resolve early; combine with cornerstones that target their preferred building tags.",
@@ -3836,6 +4061,7 @@ internal sealed class SidePanel : MonoBehaviour
         // Session stats: settlement age + counters tracked across the session.
         DrawSessionStats();
         DrawPerfHistory();
+        DrawCrashDumpsList();
 
         var snapshot = tail.Snapshot();
         GUILayout.BeginHorizontal();
@@ -3912,6 +4138,44 @@ internal sealed class SidePanel : MonoBehaviour
         var idx = Math.Min(arr.Length - 1,
             (int)Math.Floor((arr.Length - 1) * p));
         return arr[idx];
+    }
+
+    /// <summary>
+    /// Lists any <c>stormguide-crash-*.txt</c> dumps in the BepInEx config
+    /// directory with copy-paths and open-folder buttons. Skipped when none
+    /// are present so the section stays out of the way most of the time.
+    /// </summary>
+    private void DrawCrashDumpsList()
+    {
+        string? dir = null;
+        try { dir = BepInEx.Paths.ConfigPath; } catch { }
+        if (string.IsNullOrEmpty(dir)) return;
+        string[] files;
+        try { files = System.IO.Directory.GetFiles(dir!, "stormguide-crash-*.txt"); }
+        catch { return; }
+        if (files.Length == 0) return;
+        GUILayout.Space(4);
+        GUILayout.Label($"Crash dumps — {files.Length} on disk", _bodyStyle);
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button(new GUIContent("copy paths",
+                "Copy all crash dump paths to clipboard"),
+                _tabStyle, GUILayout.Width(110)))
+        {
+            try { GUIUtility.systemCopyBuffer = string.Join("\n", files); }
+            catch { }
+        }
+        if (GUILayout.Button(new GUIContent("open dir",
+                "Open BepInEx config dir in the system file browser"),
+                _tabStyle, GUILayout.Width(110)))
+        {
+            try { Application.OpenURL("file://" + dir!.Replace("\\", "/")); }
+            catch { }
+        }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        foreach (var f in files.OrderByDescending(x => x).Take(5))
+            GUILayout.Label("   \u00b7 " + System.IO.Path.GetFileName(f),
+                _mutedStyle);
     }
 
     private void DrawSessionStats()
@@ -4104,6 +4368,7 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(o.Description, _mutedStyle);
         DrawCornerstoneDiff(o);
         DrawCornerstoneBlocksOwned(o);
+        DrawCornerstoneAffected(o);
         foreach (var c in o.Synergy.Components)
         {
             var line = $"   {c.Label}: {c.Value:0.##}";
@@ -4114,6 +4379,28 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndVertical();
         GUILayout.EndHorizontal();
         GUILayout.Space(4);
+    }
+
+    /// <summary>
+    /// Inline "would affect:" preview shown under each draft option without
+    /// requiring the compare toggle. Lists up to 4 buildings for each of the
+    /// option's first two newly-targeted tags so the player sees concrete
+    /// names rather than just a count.
+    /// </summary>
+    private void DrawCornerstoneAffected(CornerstoneOption o)
+    {
+        var tags = o.NewlyTargetedTags ?? Array.Empty<string>();
+        if (tags.Count == 0) return;
+        foreach (var tag in tags.Take(2))
+        {
+            var bs = LiveGameState.BuildingsCarryingTag(tag);
+            if (bs.Count == 0) continue;
+            var sample = string.Join(", ", bs.Take(4));
+            var more = bs.Count > 4 ? $" (+{bs.Count - 4} more)" : "";
+            GUILayout.Label(
+                $"   would affect ({tag}): {sample}{more}",
+                _mutedStyle);
+        }
     }
 
     /// <summary>
@@ -4226,6 +4513,10 @@ internal sealed class SidePanel : MonoBehaviour
             wordWrap = true,
             alignment = TextAnchor.UpperLeft,
             fontSize = body,
+            // Rich text on the body label lets HighlightMatch's <b>...</b>
+            // wrap render bold inside Building/Good list rows and recipe
+            // cards. Tab/button styles get richText set independently.
+            richText = true,
         };
         _h1Style = new GUIStyle(_bodyStyle) { fontSize = h1, fontStyle = FontStyle.Bold };
         _mutedStyle = new GUIStyle(_bodyStyle) { fontSize = muted };
