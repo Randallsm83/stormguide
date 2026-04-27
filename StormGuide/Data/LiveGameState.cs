@@ -988,6 +988,192 @@ internal static class LiveGameState
     }
 
     /// <summary>
+    /// Best-effort "focus this order" via reflection — newer game versions
+    /// expose <c>OrdersService.HighlightOrder</c> or similar. Returns true if
+    /// any matching method/field was invoked.
+    /// </summary>
+    public static bool FocusOrderInGame(int orderId)
+    {
+        try
+        {
+            var os = Services?.OrdersService;
+            if (os == null) return false;
+            var t = os.GetType();
+            foreach (var name in new[] { "FocusOrder", "HighlightOrder", "SelectOrder" })
+            {
+                var m = t.GetMethod(name);
+                if (m == null) continue;
+                var prm = m.GetParameters();
+                if (prm.Length == 1 && prm[0].ParameterType == typeof(int))
+                {
+                    m.Invoke(os, new object[] { orderId });
+                    return true;
+                }
+            }
+        }
+        catch { }
+        return false;
+    }
+
+    /// <summary>
+    /// Like <see cref="IdleBuildings"/> but extends to any settled building
+    /// with worker slots (woodcutters, haulers, services) that report idle.
+    /// Falls back to reflection for non-ProductionBuilding worker buildings.
+    /// </summary>
+    public static IReadOnlyList<(string ModelName, string DisplayName)> IdleAnyBuildings()
+    {
+        var list = new List<(string, string)>();
+        try
+        {
+            var bs = Services?.BuildingsService;
+            if (bs == null) return list;
+            foreach (var kv in bs.Buildings)
+            {
+                var b = kv.Value;
+                if (b == null) continue;
+                bool idle = false;
+                if (b is Eremite.Buildings.ProductionBuilding pb)
+                {
+                    idle = pb.IsIdle;
+                }
+                else
+                {
+                    // Reflect on common idle/worker shapes for non-production buildings.
+                    try
+                    {
+                        var p = b.GetType().GetProperty("IsIdle");
+                        if (p?.GetValue(b) is bool i && i) idle = true;
+                    }
+                    catch { }
+                }
+                if (idle) list.Add((b.ModelName, b.DisplayName ?? b.ModelName));
+            }
+        }
+        catch { }
+        return list;
+    }
+
+    /// <summary>
+    /// Cornerstone IDs the player has previously drafted this run (best-effort
+    /// via reflection). Returns empty when no history field is exposed.
+    /// </summary>
+    public static IReadOnlyList<string> CornerstoneHistory()
+    {
+        var list = new List<string>();
+        try
+        {
+            var state = Services?.StateService?.Cornerstones;
+            if (state == null) return list;
+            foreach (var name in new[] { "cornerstonesHistory", "history", "pickedCornerstones" })
+            {
+                var f = state.GetType().GetField(name);
+                if (f?.GetValue(state) is System.Collections.IEnumerable raw)
+                {
+                    foreach (var x in raw)
+                        if (x is string s && !string.IsNullOrEmpty(s)) list.Add(s);
+                    if (list.Count > 0) return list;
+                }
+            }
+        }
+        catch { }
+        return list;
+    }
+
+    public sealed record WorkerRebalanceHint(
+        string FromBuilding,    // display name; over-staffed / running idle
+        string ToBuilding,       // display name; could absorb workers
+        string Reason);
+
+    /// <summary>
+    /// Heuristic worker-rebalance suggestions: pair an idle production
+    /// building (no point staffing it) with a building that produces a
+    /// currently-draining good and has empty worker slots. We can't move
+    /// workers from here — the game doesn't expose that API — so we surface
+    /// the recommendation as a text hint.
+    /// </summary>
+    public static IReadOnlyList<WorkerRebalanceHint> WorkerRebalanceHints(
+        StormGuide.Domain.Catalog catalog)
+    {
+        var hints = new List<WorkerRebalanceHint>();
+        try
+        {
+            var bs = Services?.BuildingsService;
+            if (bs == null) return hints;
+            // Pre-compute draining goods (Net < 0) once.
+            var draining = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var gi in catalog.Goods.Values)
+            {
+                if (FlowFor(gi.Name, catalog).Net < -1e-6) draining.Add(gi.Name);
+            }
+            if (draining.Count == 0) return hints;
+
+            var idleSources = new List<Eremite.Buildings.ProductionBuilding>();
+            var hungryTargets = new List<(Eremite.Buildings.ProductionBuilding pb, string Good)>();
+            foreach (var kv in bs.Buildings)
+            {
+                if (kv.Value is not Eremite.Buildings.ProductionBuilding pb) continue;
+                if (pb.Workers == null) continue;
+                if (pb.IsIdle) { idleSources.Add(pb); continue; }
+                // Free worker slot + produces a draining good = a rebalance target.
+                var hasFreeSlot = false;
+                for (var i = 0; i < pb.Workers.Length; i++)
+                    if (pb.Workers[i] <= 0) { hasFreeSlot = true; break; }
+                if (!hasFreeSlot) continue;
+                Eremite.Buildings.RecipeModel? recipe = null;
+                try { recipe = pb.GetCurrentRecipeFor(0); } catch { }
+                if (recipe == null) continue;
+                if (!catalog.Recipes.TryGetValue(recipe.Name, out var info)) continue;
+                if (string.IsNullOrEmpty(info.ProducedGood)) continue;
+                if (draining.Contains(info.ProducedGood))
+                    hungryTargets.Add((pb, info.ProducedGood));
+            }
+            // Pair them up greedily.
+            for (var i = 0; i < idleSources.Count && i < hungryTargets.Count; i++)
+            {
+                var src = idleSources[i];
+                var (tgt, good) = hungryTargets[i];
+                var goodName = catalog.Goods.TryGetValue(good, out var gi) ? gi.DisplayName : good;
+                hints.Add(new WorkerRebalanceHint(
+                    FromBuilding: src.DisplayName ?? src.ModelName,
+                    ToBuilding:   tgt.DisplayName ?? tgt.ModelName,
+                    Reason:       $"{goodName} is draining; move workers off the idle workshop."));
+            }
+        }
+        catch { }
+        return hints;
+    }
+
+    /// <summary>
+    /// SHA-1 of the embedded catalog resources, computed on demand. Used by
+    /// the catalog-diff banner so the user notices when a new build ships an
+    /// updated trim. Returns an empty string on failure.
+    /// </summary>
+    public static string CatalogContentHash()
+    {
+        try
+        {
+            using var sha = System.Security.Cryptography.SHA1.Create();
+            var asm = typeof(LiveGameState).Assembly;
+            foreach (var name in asm.GetManifestResourceNames()
+                         .Where(n => n.Contains(".Resources.catalog.") &&
+                                     n.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                         .OrderBy(n => n, StringComparer.Ordinal))
+            {
+                using var stream = asm.GetManifestResourceStream(name);
+                if (stream == null) continue;
+                var buf = new byte[8192];
+                int read;
+                while ((read = stream.Read(buf, 0, buf.Length)) > 0)
+                    sha.TransformBlock(buf, 0, read, buf, 0);
+            }
+            sha.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+            var hash = sha.Hash;
+            return hash == null ? "" : BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        }
+        catch { return ""; }
+    }
+
+    /// <summary>
     /// Toggle <c>OrderState.tracked</c> for an order id, defensively. Returns
     /// true on success. Used by the in-panel order pin so the player doesn't
     /// have to open the orders popup just to focus an order.

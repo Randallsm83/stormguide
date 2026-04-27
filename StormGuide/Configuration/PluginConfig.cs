@@ -41,6 +41,7 @@ public sealed class PluginConfig
     public ConfigEntry<string>           LastGoodSearch { get; }
     public ConfigEntry<string>           PinnedRecipes { get; }
     public ConfigEntry<bool>             CompactLists { get; }
+    public ConfigEntry<string>           LastCatalogHash { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -131,5 +132,7 @@ public sealed class PluginConfig
             "Semicolon-separated list of \"buildingModel|recipeModel\" pinned to the Home tab.");
         CompactLists         = cfg.Bind(SectionUI, "Compact Lists",          false,
             "Use a tighter row height for the Building/Good list scrollers. Independent of Compact Mode.");
+        LastCatalogHash      = cfg.Bind(SectionGeneral, "Last Catalog Hash", "",
+            "SHA-1 of the embedded catalog last seen by this install. Used to detect catalog updates.");
     }
 }

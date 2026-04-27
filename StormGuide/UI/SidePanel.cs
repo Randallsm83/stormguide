@@ -102,6 +102,25 @@ internal sealed class SidePanel : MonoBehaviour
     // stockpile to this many units at current net rate.
     private const int PinForecastTarget = 50;
 
+    // Per-good price history for the current trader visit. Cleared on visit
+    // change. Used by the Good tab's price chart.
+    private readonly Dictionary<string, List<float>> _priceSamples = new(StringComparer.Ordinal);
+    private string? _priceVisitKey;
+    private float _lastPriceSampleTime;
+
+    // Order completion lookback: id → first-seen game-time so we can compute
+    // a duration when the order disappears from the active list.
+    private readonly Dictionary<int, float> _orderFirstSeen = new();
+    private readonly List<float> _completedDurations = new();
+    private HashSet<int>? _lastSeenOrderIds;
+    private float _lastOrderTime;
+
+    // Last-known main-trader village state (for auto-jump on arrival).
+    private bool? _lastTraderInVillage;
+
+    // Catalog-diff banner state. "" = no banner, otherwise a short message.
+    private string _catalogDiffNotice = "";
+
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
 
@@ -211,6 +230,23 @@ internal sealed class SidePanel : MonoBehaviour
             () => LiveGameState.RankTraderDesires(
                 LiveGameState.NextTrader(), Catalog, isCurrent: false),
             ttlSeconds: 0.5f);
+
+        // Catalog-diff banner: compare the embedded resource hash against the
+        // last value seen by this install and post a one-shot Diagnostics
+        // notice if it changed (or first run).
+        try
+        {
+            var hash = LiveGameState.CatalogContentHash();
+            if (!string.IsNullOrEmpty(hash) && Config.LastCatalogHash.Value != hash)
+            {
+                _catalogDiffNotice = string.IsNullOrEmpty(Config.LastCatalogHash.Value)
+                    ? $"first-run catalog hash {hash.Substring(0, 8)}."
+                    : $"catalog updated (was {Config.LastCatalogHash.Value.Substring(0, 8)}, now {hash.Substring(0, 8)}).";
+                Config.LastCatalogHash.Value = hash;
+                StormGuidePlugin.Log.LogInfo("StormGuide: " + _catalogDiffNotice);
+            }
+        }
+        catch { }
     }
 
     private void Update()
@@ -255,6 +291,70 @@ internal sealed class SidePanel : MonoBehaviour
             _draftSub = LiveGameState.SubscribeToCornerstonePopup(OnCornerstonePopup);
             _draftSubscribed = true;
         }
+
+        // Trader auto-jump: detect transition from "not in village" to "in
+        // village" and switch to the Good tab + select the top desire.
+        if (LiveGameState.IsReady && Config.ShowGoodTab.Value)
+        {
+            try
+            {
+                var cur = LiveGameState.CurrentTrader();
+                if (cur is not null)
+                {
+                    if (_lastTraderInVillage == false && cur.IsInVillage)
+                    {
+                        _activeTab = Tab.Good;
+                        var desires = _currentDesiresCache?.Get();
+                        if (desires is { Count: > 0 }) _selectedGood = desires[0].Good;
+                        if (!_visible) _visible = true;
+                        StormGuidePlugin.Log.LogInfo("StormGuide: auto-jump on trader arrival.");
+                    }
+                    _lastTraderInVillage = cur.IsInVillage;
+                }
+            }
+            catch { }
+        }
+
+        // Order completion lookback: detect orders that disappeared from
+        // the active list since last tick and record their durations.
+        TickOrderLookback();
+    }
+
+    /// <summary>
+    /// Diffs current active orders against the last seen set; any id that
+    /// disappears is treated as "completed or failed" and we record the
+    /// duration since first-seen so the Home tab can show an average.
+    /// </summary>
+    private void TickOrderLookback()
+    {
+        if (!LiveGameState.IsReady) return;
+        var now = LiveGameState.GameTimeNow() ?? Time.unscaledTime;
+        // Sample at most every 2 seconds; this is purely informational.
+        if (now - _lastOrderTime < 2f) return;
+        _lastOrderTime = now;
+        try
+        {
+            var orders = LiveGameState.ActiveOrders();
+            var current = new HashSet<int>(orders.Select(o => o.Id));
+            foreach (var o in orders)
+            {
+                if (!_orderFirstSeen.ContainsKey(o.Id)) _orderFirstSeen[o.Id] = now;
+            }
+            if (_lastSeenOrderIds != null)
+            {
+                foreach (var prev in _lastSeenOrderIds)
+                {
+                    if (current.Contains(prev)) continue;
+                    if (!_orderFirstSeen.TryGetValue(prev, out var start)) continue;
+                    var duration = now - start;
+                    if (duration > 0 && duration < 7200) _completedDurations.Add(duration);
+                    _orderFirstSeen.Remove(prev);
+                    while (_completedDurations.Count > 30) _completedDurations.RemoveAt(0);
+                }
+            }
+            _lastSeenOrderIds = current;
+        }
+        catch { }
     }
 
     private void OnCornerstonePopup()
@@ -529,6 +629,7 @@ internal sealed class SidePanel : MonoBehaviour
         DrawHomeVillage();
         DrawHomeTrader();
         DrawHomeIdle();
+        DrawHomeRebalance();
         DrawHomeRisks();
         DrawHomeNeeds();
         DrawHomeOrders();
@@ -593,6 +694,30 @@ internal sealed class SidePanel : MonoBehaviour
                 _selectedBuilding = bldg;
                 _activeTab = Tab.Building;
             }
+            // Up/down reorder buttons (no-op at the edges).
+            var idx = _pinned.IndexOf((bldg, recipe));
+            if (GUILayout.Button(new GUIContent("▴", "Move up"),
+                                 _tabStyle, GUILayout.Width(24)))
+            {
+                if (idx > 0)
+                {
+                    var tmp = _pinned[idx - 1];
+                    _pinned[idx - 1] = _pinned[idx];
+                    _pinned[idx] = tmp;
+                    SavePins();
+                }
+            }
+            if (GUILayout.Button(new GUIContent("▾", "Move down"),
+                                 _tabStyle, GUILayout.Width(24)))
+            {
+                if (idx >= 0 && idx < _pinned.Count - 1)
+                {
+                    var tmp = _pinned[idx + 1];
+                    _pinned[idx + 1] = _pinned[idx];
+                    _pinned[idx] = tmp;
+                    SavePins();
+                }
+            }
             if (GUILayout.Button(new GUIContent("unpin", "Remove from Home"),
                                  _tabStyle, GUILayout.Width(60)))
             {
@@ -605,6 +730,27 @@ internal sealed class SidePanel : MonoBehaviour
             foreach (var s in stale) _pinned.RemoveAll(x => x == s);
             SavePins();
         }
+    }
+
+    /// <summary>
+    /// Surfaces worker-rebalance suggestions (idle workshop → underfilled
+    /// building producing a draining good) so the player has a one-glance
+    /// list of "reassign these" actions.
+    /// </summary>
+    private void DrawHomeRebalance()
+    {
+        var hints = LiveGameState.WorkerRebalanceHints(Catalog);
+        if (hints.Count == 0) return;
+        GUILayout.Space(6);
+        GUILayout.Label($"⚠ Worker rebalance — {hints.Count} suggestion(s)", _bodyStyle);
+        foreach (var h in hints.Take(4))
+        {
+            GUILayout.Label(
+                $"   move from {h.FromBuilding} → {h.ToBuilding}: {h.Reason}",
+                _warnStyle ?? _mutedStyle);
+        }
+        if (hints.Count > 4)
+            GUILayout.Label($"   … and {hints.Count - 4} more", _mutedStyle);
     }
 
     /// <summary>
@@ -955,6 +1101,14 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(
                 $"   ⚠ {late} order{(late == 1 ? "" : "s")} won't finish in time at current burn",
                 _warnStyle ?? _mutedStyle);
+        // Average completion time across this session’s lookback ring.
+        if (_completedDurations.Count > 0)
+        {
+            var avg = _completedDurations.Average() / 60.0;
+            GUILayout.Label(
+                $"   session avg completion: ~{avg:0.#}m across {_completedDurations.Count} order(s)",
+                _mutedStyle);
+        }
     }
 
     private void DrawHomeGlades()
@@ -1026,7 +1180,8 @@ internal sealed class SidePanel : MonoBehaviour
     private void DrawIdleBuildingsBanner()
     {
         if (!LiveGameState.IsReady) return;
-        var idle = LiveGameState.IdleBuildings();
+        // Use IdleAnyBuildings so haulers/woodcutters/services are surfaced too.
+        var idle = LiveGameState.IdleAnyBuildings();
         if (idle.Count == 0) return;
 
         // Group by model name so duplicates collapse: "3× Bakery, 1× Brewery".
@@ -1034,7 +1189,7 @@ internal sealed class SidePanel : MonoBehaviour
             .GroupBy(t => t.ModelName)
             .Select(g => $"{g.Count()}× {g.First().DisplayName}")
             .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
-        GUILayout.Label("⚠ Idle workshops: " + string.Join(", ", grouped), _bodyStyle);
+        GUILayout.Label("⚠ Idle workplaces: " + string.Join(", ", grouped), _bodyStyle);
         GUILayout.Space(2);
     }
 
@@ -1063,6 +1218,19 @@ internal sealed class SidePanel : MonoBehaviour
                 .OrderBy(b => b.Kind.ToString(), StringComparer.OrdinalIgnoreCase)
                 .ThenBy(b => b.DisplayName, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+            // Fuzzy fallback: when the literal substring filter yields zero
+            // matches, retry with a subsequence match so e.g. "blkpr" hits
+            // "Bakery Press". Only kicks in when there's a real query.
+            if (_cachedBuildingMatches.Count == 0 && query.Length > 1)
+            {
+                _cachedBuildingMatches = Catalog.Buildings.Values
+                    .Where(b => !Config.HideEmptyRecipeBuildings.Value || b.Recipes.Count > 0)
+                    .Where(b => SubsequenceMatch(b.DisplayName, query) ||
+                                SubsequenceMatch(b.Name, query))
+                    .OrderBy(b => b.Kind.ToString(), StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(b => b.DisplayName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
             _cachedBuildingQuery = cacheKey;
         }
 
@@ -1444,9 +1612,38 @@ internal sealed class SidePanel : MonoBehaviour
             var style = (_selectedGood == g.Name)
                 ? _tabActiveStyle
                 : (_listButtonStyle ?? _tabStyle);
+            // Right-click on a row copies its model name to the clipboard
+            // (mod-authoring aid). Layout is handled by the button; we sniff
+            // mouse events against its rect after the fact.
             if (GUILayout.Button(g.DisplayName, style)) _selectedGood = g.Name;
+            var btnRect = GUILayoutUtility.GetLastRect();
+            var ev = Event.current;
+            if (ev != null &&
+                ev.type == EventType.MouseDown && ev.button == 1 &&
+                btnRect.Contains(ev.mousePosition))
+            {
+                try { GUIUtility.systemCopyBuffer = g.Name; } catch { }
+                ev.Use();
+            }
         }
         GUILayout.EndScrollView();
+    }
+
+    /// <summary>
+    /// Subsequence (not substring) match: returns true when every char in
+    /// <paramref name="needle"/> appears in <paramref name="haystack"/> in
+    /// order, case-insensitively. Used by the Building search fuzzy fallback.
+    /// </summary>
+    private static bool SubsequenceMatch(string haystack, string needle)
+    {
+        if (string.IsNullOrEmpty(haystack) || string.IsNullOrEmpty(needle)) return false;
+        var i = 0;
+        foreach (var ch in haystack)
+        {
+            if (i >= needle.Length) return true;
+            if (char.ToLowerInvariant(ch) == char.ToLowerInvariant(needle[i])) i++;
+        }
+        return i >= needle.Length;
     }
 
     private void DrawGoodDetail()
@@ -1482,6 +1679,9 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label(meta, _mutedStyle);
         GUILayout.Label($"Trade value: sells for {vm.Good.TradingBuyValue:0.##} · buys at {vm.Good.TradingSellValue:0.##}", _mutedStyle);
         if (!string.IsNullOrEmpty(vm.Note)) GUILayout.Label(vm.Note!, _mutedStyle);
+
+        // Price history sparkline for the selected good (current trader visit).
+        DrawPriceHistory(_selectedGood!);
 
         if (vm.Flow is { } f)
         {
@@ -1752,6 +1952,64 @@ internal sealed class SidePanel : MonoBehaviour
             new Color(0.55f, 0.75f, 0.95f, 0.7f), 0, 0);   // sky blue
     }
 
+    /// <summary>
+    /// Tracks per-good sell-price samples for the duration of the current
+    /// trader's visit and renders a small line chart in the Good detail.
+    /// </summary>
+    private void DrawPriceHistory(string good)
+    {
+        if (!LiveGameState.IsReady) return;
+        var cur = LiveGameState.CurrentTrader();
+        if (cur is null || !cur.IsInVillage) return;
+        var visitKey = cur.DisplayName ?? "";
+        if (_priceVisitKey != visitKey) { _priceVisitKey = visitKey; _priceSamples.Clear(); }
+
+        // Sample once a second.
+        var now = LiveGameState.GameTimeNow() ?? Time.unscaledTime;
+        if (now - _lastPriceSampleTime >= 1f)
+        {
+            _lastPriceSampleTime = now;
+            if (!_priceSamples.TryGetValue(good, out var list))
+                _priceSamples[good] = list = new List<float>(120);
+            var p = LiveGameState.SellValueAtCurrentTrader(good);
+            list.Add(p);
+            if (list.Count > 120) list.RemoveRange(0, list.Count - 120);
+        }
+
+        if (!_priceSamples.TryGetValue(good, out var samples) || samples.Count < 2) return;
+        GUILayout.Label("   price history (this visit):", _mutedStyle);
+        var rect = GUILayoutUtility.GetRect(0, 24, GUILayout.ExpandWidth(true));
+        rect.xMin += 16;
+        GUI.Box(rect, GUIContent.none);
+        var min = samples.Min();
+        var max = Math.Max(min + 0.001f, samples.Max());
+        for (var i = 1; i < samples.Count; i++)
+        {
+            var x0 = rect.x + rect.width * (i - 1) / (float)(samples.Count - 1);
+            var x1 = rect.x + rect.width *  i      / (float)(samples.Count - 1);
+            var y0 = rect.y + rect.height * (1f - (samples[i - 1] - min) / (max - min));
+            var y1 = rect.y + rect.height * (1f - (samples[i]     - min) / (max - min));
+            // Draw a 1-pixel "line" by rasterising a tiny colored quad along
+            // the segment — OnGUI lacks a primitive line draw without GL setup.
+            DrawSegment(x0, y0, x1, y1, new Color(0.55f, 0.85f, 1f, 0.85f));
+        }
+    }
+
+    private static void DrawSegment(float x0, float y0, float x1, float y1, Color c)
+    {
+        var dx = x1 - x0; var dy = y1 - y0;
+        var len = Mathf.Max(1f, Mathf.Sqrt(dx * dx + dy * dy));
+        var steps = (int)len;
+        for (var s = 0; s <= steps; s++)
+        {
+            var px = x0 + dx * s / len;
+            var py = y0 + dy * s / len;
+            GUI.DrawTexture(new Rect(px, py, 1f, 1f),
+                Texture2D.whiteTexture, ScaleMode.StretchToFill,
+                false, 0, c, 0, 0);
+        }
+    }
+
     /// <summary>Coloured pill style by order tier name.</summary>
     private GUIStyle TierBadgeStyle(string tier)
     {
@@ -1911,6 +2169,17 @@ internal sealed class SidePanel : MonoBehaviour
                     GUILayout.Label($"      {row.Display}: {row.Stock} in stock", style);
                 }
             }
+        }
+
+        // Resolve forecast: rough "minutes until target" if current < target.
+        // We don't know the game's exact climb rate so we use a coarse 1.0
+        // resolve/min estimate, marked as approximate.
+        if (vm.Resolve is { } rsv && rsv.Current < rsv.Target)
+        {
+            var gap = rsv.Target - rsv.Current;
+            GUILayout.Label(
+                $"   forecast: ~{gap / 1.0:0.#}m to target (climb ≈ 1/min, approximate)",
+                _mutedStyle);
         }
 
         DrawResolveSnapshot(vm.Resolve);
@@ -2079,7 +2348,10 @@ internal sealed class SidePanel : MonoBehaviour
                 _mutedStyle);
         GUILayout.EndHorizontal();
 
-        // Tracker pin: lets the player toggle OrderState.tracked from here.
+        // Tracker pin + open-in-game: track/untrack via SetOrderTracked,
+        // and a best-effort "focus" button that calls FocusOrderInGame so
+        // the in-game order panel scrolls to this entry (no-op when the
+        // game version doesn't expose the right method).
         GUILayout.BeginHorizontal();
         GUILayout.Space(24);
         if (GUILayout.Button(
@@ -2088,6 +2360,12 @@ internal sealed class SidePanel : MonoBehaviour
                 _tabStyle, GUILayout.Width(90)))
         {
             LiveGameState.SetOrderTracked(o.Id, !o.Tracked);
+        }
+        if (GUILayout.Button(
+                new GUIContent("↗ in-game", "Try to focus this order in the in-game UI"),
+                _tabStyle, GUILayout.Width(90)))
+        {
+            LiveGameState.FocusOrderInGame(o.Id);
         }
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
@@ -2575,6 +2853,16 @@ internal sealed class SidePanel : MonoBehaviour
             return;
         }
 
+        // One-shot catalog-diff banner. Stays until the user dismisses it.
+        if (!string.IsNullOrEmpty(_catalogDiffNotice))
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("ℹ " + _catalogDiffNotice, _warnStyle ?? _mutedStyle);
+            if (GUILayout.Button("dismiss", _tabStyle, GUILayout.Width(80)))
+                _catalogDiffNotice = "";
+            GUILayout.EndHorizontal();
+        }
+
         var snapshot = tail.Snapshot();
         GUILayout.BeginHorizontal();
         GUILayout.Label($"   {snapshot.Count} captured plugin log line(s).", _mutedStyle);
@@ -2633,6 +2921,30 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label($"Cornerstone Draft — {vm.Options.Count} options", _h1Style);
         foreach (var o in vm.Options) DrawCornerstoneOption(o);
         DrawOwnedCornerstones(vm.Owned);
+        DrawCornerstoneHistory();
+    }
+
+    /// <summary>Lists previously-drafted cornerstones for the current run.</summary>
+    private void DrawCornerstoneHistory()
+    {
+        var history = LiveGameState.CornerstoneHistory();
+        if (history.Count == 0) return;
+        GUILayout.Space(8);
+        GUILayout.Label($"Previously drafted — {history.Count}", _bodyStyle);
+        var ms = LiveGameState.Services?.GameModelService;
+        foreach (var id in history.Take(20))
+        {
+            string display = id;
+            try
+            {
+                var eff = ms?.GetEffect(id);
+                if (eff != null) display = eff.DisplayName ?? id;
+            }
+            catch { }
+            GUILayout.Label($"   · {display}", _mutedStyle);
+        }
+        if (history.Count > 20)
+            GUILayout.Label($"   … and {history.Count - 20} more", _mutedStyle);
     }
 
     /// <summary>
