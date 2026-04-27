@@ -1173,6 +1173,76 @@ internal static class LiveGameState
     }
 
     /// <summary>
+    /// Built-building display names whose model carries the given tag. Used
+    /// by the cornerstone deep-dive to spell out exactly which buildings a
+    /// uniquely-targeted tag would touch. Capped by caller.
+    /// </summary>
+    public static IReadOnlyList<string> BuildingsCarryingTag(string tagName)
+    {
+        var list = new List<string>();
+        if (string.IsNullOrEmpty(tagName)) return list;
+        try
+        {
+            var bs = Services?.BuildingsService;
+            if (bs?.Buildings == null) return list;
+            foreach (var kv in bs.Buildings)
+            {
+                var b = kv.Value;
+                if (b?.BuildingModel?.tags == null) continue;
+                foreach (var t in b.BuildingModel.tags)
+                {
+                    if (t == null || string.IsNullOrEmpty(t.Name)) continue;
+                    if (string.Equals(t.Name, tagName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        list.Add(b.DisplayName ?? b.ModelName);
+                        break;
+                    }
+                }
+            }
+        }
+        catch { }
+        return list;
+    }
+
+    /// <summary>
+    /// Best-effort cumulative "cycles completed" counter for a building model,
+    /// summed across all instances. Reflects a small set of likely field
+    /// names; returns null when no shape matches so callers can render a
+    /// dash instead of a misleading zero.
+    /// </summary>
+    public static long? CyclesCompletedFor(string modelName)
+    {
+        try
+        {
+            var bs = Services?.BuildingsService;
+            if (bs?.Buildings == null) return null;
+            long sum = 0;
+            var found = false;
+            foreach (var kv in bs.Buildings)
+            {
+                var b = kv.Value;
+                if (b == null || b.ModelName != modelName) continue;
+                var t = b.GetType();
+                foreach (var name in new[] {
+                    "completedCycles", "cyclesCompleted", "completedCount",
+                    "finishedCycles", "producedCount" })
+                {
+                    var f = t.GetField(name);
+                    if (f != null && f.GetValue(b) is { } v &&
+                        long.TryParse(v.ToString(), out var n))
+                    { sum += n; found = true; break; }
+                    var p = t.GetProperty(name);
+                    if (p != null && p.GetValue(b) is { } pv &&
+                        long.TryParse(pv.ToString(), out var pn))
+                    { sum += pn; found = true; break; }
+                }
+            }
+            return found ? sum : (long?)null;
+        }
+        catch { return null; }
+    }
+
+    /// <summary>
     /// Cornerstone IDs the player has previously drafted this run (best-effort
     /// via reflection). Returns empty when no history field is exposed.
     /// </summary>

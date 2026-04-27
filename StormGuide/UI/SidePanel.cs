@@ -156,6 +156,23 @@ internal sealed class SidePanel : MonoBehaviour
         new(StringComparer.OrdinalIgnoreCase);
     private string? _buyListVisitKey;
 
+    // Per-building cumulative cycles ring; (gameTime, count) pairs sampled at
+    // ~5s intervals so we can compute "cycles in last 5 min" deltas.
+    private readonly Dictionary<string, Queue<(float Time, long Count)>> _cyclesSamples =
+        new(StringComparer.Ordinal);
+    private float _lastCyclesSampleTime;
+
+    // Trader travel-progress ring used to estimate seconds until arrival.
+    private readonly Queue<(float Time, float Progress)> _traderTravelSamples = new();
+    private string? _traderTravelKey;
+
+    // Per-section perf ring (last 120 frames) for Diagnostics p50/p95.
+    private readonly Dictionary<string, Queue<double>> _perfHistory =
+        new(StringComparer.Ordinal);
+
+    // Pin preset name input (Settings tab).
+    private string _newPresetName = "";
+
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
 
@@ -362,6 +379,67 @@ internal sealed class SidePanel : MonoBehaviour
             _sessionStartTime = LiveGameState.GameTimeNow();
         if (LiveGameState.IsReady) TickCornerstoneHistory();
         if (LiveGameState.IsReady) TickResolveSamples();
+        if (LiveGameState.IsReady) TickCyclesSamples();
+        if (LiveGameState.IsReady) TickTraderTravel();
+    }
+
+    /// <summary>
+    /// Sample cumulative cycle counters for every pinned recipe's building
+    /// once every ~5s, so the Building tab can compute a "cycles in last 5
+    /// min" delta. Counter source is best-effort reflective; missing data is
+    /// silent.
+    /// </summary>
+    private void TickCyclesSamples()
+    {
+        var now = LiveGameState.GameTimeNow() ?? Time.unscaledTime;
+        if (now - _lastCyclesSampleTime < 5f) return;
+        _lastCyclesSampleTime = now;
+        try
+        {
+            // Sample for the currently-selected building plus any pinned ones,
+            // since these are the only models whose counter we ever surface.
+            var models = new HashSet<string>(StringComparer.Ordinal);
+            if (!string.IsNullOrEmpty(_selectedBuilding)) models.Add(_selectedBuilding!);
+            foreach (var (b, _) in _pinned) models.Add(b);
+            foreach (var m in models)
+            {
+                var c = LiveGameState.CyclesCompletedFor(m);
+                if (c is null) continue;
+                if (!_cyclesSamples.TryGetValue(m, out var q))
+                    _cyclesSamples[m] = q = new Queue<(float, long)>(64);
+                q.Enqueue((now, c.Value));
+                while (q.Count > 60) q.Dequeue();
+            }
+        }
+        catch { }
+    }
+
+    /// <summary>
+    /// Sample trader travel progress every second so the Home Trade block can
+    /// estimate seconds-until-arrival from the recent rate. Resets on trader
+    /// change so old samples don't bias the estimate.
+    /// </summary>
+    private void TickTraderTravel()
+    {
+        try
+        {
+            var cur = LiveGameState.CurrentTrader();
+            if (cur is null || cur.IsInVillage) return;
+            var prog = LiveGameState.CurrentTraderTravelProgress();
+            if (prog is null) return;
+            var key = cur.DisplayName ?? "";
+            if (_traderTravelKey != key)
+            {
+                _traderTravelKey = key;
+                _traderTravelSamples.Clear();
+            }
+            var now = LiveGameState.GameTimeNow() ?? Time.unscaledTime;
+            if (_traderTravelSamples.Count > 0 &&
+                now - _traderTravelSamples.Last().Time < 1f) return;
+            _traderTravelSamples.Enqueue((now, prog.Value));
+            while (_traderTravelSamples.Count > 30) _traderTravelSamples.Dequeue();
+        }
+        catch { }
     }
 
     /// <summary>
@@ -752,7 +830,14 @@ internal sealed class SidePanel : MonoBehaviour
         finally
         {
             _sectionWatch.Stop();
-            _sectionMs[name] = _sectionWatch.Elapsed.TotalMilliseconds;
+            var ms = _sectionWatch.Elapsed.TotalMilliseconds;
+            _sectionMs[name] = ms;
+            // Also push into the long-running perf ring so Diagnostics can
+            // surface p50/p95 across the last 120 frames per section.
+            if (!_perfHistory.TryGetValue(name, out var q))
+                _perfHistory[name] = q = new Queue<double>(128);
+            q.Enqueue(ms);
+            while (q.Count > 120) q.Dequeue();
         }
     }
 
@@ -1157,6 +1242,29 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(
                 $"   current: {disp} ({here}{extra}) · wants {cur.Buys.Count} · sells {cur.Sells.Count}",
                 _mutedStyle);
+            // Visit countdown: estimate seconds-until-arrival from the recent
+            // travel-progress samples (Δprogress / Δtime), only when we have
+            // at least two samples and a positive rate.
+            if (!cur.IsInVillage && _traderTravelSamples.Count >= 2)
+            {
+                var first = _traderTravelSamples.First();
+                var last  = _traderTravelSamples.Last();
+                var dProg = last.Progress - first.Progress;
+                var dTime = last.Time - first.Time;
+                if (dProg > 1e-4 && dTime > 0)
+                {
+                    var rate = dProg / dTime; // progress per second
+                    var remaining = (1f - last.Progress) / rate;
+                    if (remaining > 0 && remaining < 7200)
+                    {
+                        var mins = Mathf.FloorToInt(remaining / 60f);
+                        var secs = Mathf.FloorToInt(remaining % 60f);
+                        GUILayout.Label(
+                            $"   ~{mins}:{secs:00} to arrival (extrapolated)",
+                            _mutedStyle);
+                    }
+                }
+            }
 
             // Top trader desire (best total-value good to sell right now).
             var desires = _currentDesiresCache?.Get()
@@ -1334,7 +1442,45 @@ internal sealed class SidePanel : MonoBehaviour
             }
             DrawFlowSparkline(g.Good);
             DrawFlowForecastChip(g.Good, g.RunwayMinutes);
+            // Auto-pin: find the top producer recipe for this draining good
+            // and add it to the pinned list with one click. Skipped when no
+            // catalog recipe produces it or when it's already pinned.
+            DrawAutoPinButton(g.Good);
             GUILayout.EndHorizontal();
+        }
+    }
+
+    /// <summary>
+    /// Renders a small "pin" button on an at-risk row that pins the highest-
+    /// throughput catalog producer of <paramref name="good"/> to Home. Hides
+    /// the button when there's no catalog producer or the pair is already
+    /// pinned, so the row stays clean for non-actionable cases.
+    /// </summary>
+    private void DrawAutoPinButton(string good)
+    {
+        var top = Catalog.Recipes.Values
+            .Where(rr => string.Equals(rr.ProducedGood, good, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(rr => rr.ProductionTime > 0
+                ? (60.0 * rr.ProducedAmount) / rr.ProductionTime : 0)
+            .FirstOrDefault();
+        if (top is null) return;
+        // Locate the building that hosts this recipe (catalog Recipes carry no
+        // back-pointer, so scan Buildings for a recipe-name match).
+        var building = Catalog.Buildings.Values
+            .FirstOrDefault(b => b.Recipes.Contains(top.Name));
+        if (building is null) return;
+        var key = (building.Name, top.Name);
+        if (_pinned.Contains(key))
+        {
+            GUILayout.Label("✓ pinned", _okStyle ?? _mutedStyle, GUILayout.Width(70));
+            return;
+        }
+        if (GUILayout.Button(new GUIContent("☆ auto-pin",
+                $"Pin {building.DisplayName} → {top.DisplayName} to Home"),
+                _tabStyle, GUILayout.Width(80)))
+        {
+            _pinned.Add(key);
+            SavePins();
         }
     }
 
@@ -1562,6 +1708,7 @@ internal sealed class SidePanel : MonoBehaviour
     private void DrawBuildingTab()
     {
         DrawIdleBuildingsBanner();
+        DrawBuildingRebalancePanel();
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("Search:", GUILayout.Width(56));
@@ -1576,6 +1723,74 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Space(8);
         DrawBuildingDetail();
         GUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// Renders the live cycles counter for the currently-selected building
+    /// model: cumulative total + a 5-minute delta if we have at least two
+    /// samples that span enough time. Falls back to a muted dash when the
+    /// game doesn't expose a counter we can read.
+    /// </summary>
+    private void DrawBuildingCyclesHeader(string modelName)
+    {
+        if (!LiveGameState.IsReady) return;
+        if (!_cyclesSamples.TryGetValue(modelName, out var q) || q.Count == 0)
+        {
+            var live = LiveGameState.CyclesCompletedFor(modelName);
+            if (live is null) return;
+            GUILayout.Label($"   cycles: {live.Value} (sampling …)", _mutedStyle);
+            return;
+        }
+        var samples = q.ToArray();
+        var latest = samples[samples.Length - 1];
+        // Find the first sample at least 5 minutes (300s) before the latest;
+        // if none, fall back to the oldest available.
+        (float Time, long Count) baseline = samples[0];
+        for (var i = samples.Length - 1; i >= 0; i--)
+        {
+            if (latest.Time - samples[i].Time >= 300f) { baseline = samples[i]; break; }
+        }
+        var deltaCycles = latest.Count - baseline.Count;
+        var deltaTime   = Math.Max(1f, latest.Time - baseline.Time);
+        var perMin = deltaCycles * 60.0 / deltaTime;
+        GUILayout.Label(
+            $"   cycles: {latest.Count} total · {deltaCycles} in last {deltaTime:0}s (~{perMin:0.##}/min)",
+            _mutedStyle);
+    }
+
+    /// <summary>
+    /// Worker-rebalance panel under the Building tab: surfaces the same
+    /// hint list as the Home block, but with one-click "open" buttons that
+    /// jump straight to the source or target building.
+    /// </summary>
+    private void DrawBuildingRebalancePanel()
+    {
+        if (!LiveGameState.IsReady) return;
+        var hints = LiveGameState.WorkerRebalanceHints(Catalog);
+        if (hints.Count == 0) return;
+        GUILayout.Space(2);
+        GUILayout.Label($"⚠ Worker rebalance — {hints.Count}", _bodyStyle);
+        // Map display name back to model name once for the open-buttons.
+        var nameToModel = Catalog.Buildings.Values
+            .GroupBy(b => b.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First().Name, StringComparer.OrdinalIgnoreCase);
+        foreach (var h in hints.Take(3))
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"   {h.FromBuilding} → {h.ToBuilding}",
+                _warnStyle ?? _mutedStyle);
+            GUILayout.FlexibleSpace();
+            if (nameToModel.TryGetValue(h.FromBuilding, out var fromModel) &&
+                GUILayout.Button(new GUIContent("src", "Open source building"),
+                    _tabStyle, GUILayout.Width(40)))
+                _selectedBuilding = fromModel;
+            if (nameToModel.TryGetValue(h.ToBuilding, out var toModel) &&
+                GUILayout.Button(new GUIContent("dst", "Open target building"),
+                    _tabStyle, GUILayout.Width(40)))
+                _selectedBuilding = toModel;
+            GUILayout.EndHorizontal();
+        }
+        GUILayout.Space(2);
     }
 
     private void DrawIdleBuildingsBanner()
@@ -1654,13 +1869,31 @@ internal sealed class SidePanel : MonoBehaviour
                 GUILayout.Label($"{kind} · {count}", _mutedStyle);
                 lastKind = kind;
             }
-            var label = b.DisplayName;
+            var label = HighlightMatch(b.DisplayName, query);
             var style = (_selectedBuilding == b.Name)
                 ? _tabActiveStyle
                 : (_listButtonStyle ?? _tabStyle);
             if (GUILayout.Button(label, style)) _selectedBuilding = b.Name;
         }
         GUILayout.EndScrollView();
+    }
+
+    /// <summary>
+    /// Wraps the first case-insensitive occurrence of <paramref name="query"/>
+    /// in <paramref name="text"/> with rich-text bold tags. Used by the
+    /// Building/Good list rows so search matches stand out at a glance.
+    /// Requires the consuming style to have <c>richText = true</c>; we set
+    /// that on the list button styles in <see cref="EnsureStyles"/>.
+    /// </summary>
+    private static string HighlightMatch(string text, string? query)
+    {
+        if (string.IsNullOrEmpty(query) || string.IsNullOrEmpty(text)) return text ?? "";
+        var q = query!;
+        var idx = text.IndexOf(q, StringComparison.OrdinalIgnoreCase);
+        if (idx < 0) return text;
+        return text.Substring(0, idx) +
+               "<b>" + text.Substring(idx, q.Length) + "</b>" +
+               text.Substring(idx + q.Length);
     }
 
     private void DrawBuildingDetail()
@@ -1692,6 +1925,7 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label(vm.Building.DisplayName, _h1Style);
         var meta = $"{vm.Building.Kind} · {vm.Building.Profession}";
         GUILayout.Label(meta, _mutedStyle);
+        DrawBuildingCyclesHeader(_selectedBuilding!);
 
         // Recipe input chip filter — union of all input-good display names
         // for this building's recipes; click to scope the recipe list.
@@ -2055,7 +2289,8 @@ internal sealed class SidePanel : MonoBehaviour
             // Right-click on a row copies its model name to the clipboard
             // (mod-authoring aid). Layout is handled by the button; we sniff
             // mouse events against its rect after the fact.
-            if (GUILayout.Button(g.DisplayName, style)) _selectedGood = g.Name;
+            if (GUILayout.Button(HighlightMatch(g.DisplayName, query), style))
+                _selectedGood = g.Name;
             var btnRect = GUILayoutUtility.GetLastRect();
             var ev = Event.current;
             if (ev != null &&
@@ -2188,11 +2423,25 @@ internal sealed class SidePanel : MonoBehaviour
         });
         foreach (var p in filtered) DrawProductionPath(p);
 
-        // Consumers
+        // Consumers — annotate each catalog row with the live consumption
+        // share if we can compute it from the live flow's contributions.
         GUILayout.Space(6);
         GUILayout.Label($"Consumed by {vm.Consumers.Count} recipes", _bodyStyle);
+        var liveConsumers = (vm.Flow?.Contributions ?? Array.Empty<FlowRow>())
+            .Where(c => !c.IsProducer).ToList();
+        var totalConsumed = liveConsumers.Sum(c => c.PerMin);
         foreach (var r in vm.Consumers.Take(20))
-            GUILayout.Label($"   {r.DisplayName}  ({r.ProducedGood} ×{r.ProducedAmount})", _mutedStyle);
+        {
+            // Live row matches by recipe display name.
+            var live = liveConsumers.FirstOrDefault(c =>
+                string.Equals(c.RecipeName, r.DisplayName, StringComparison.OrdinalIgnoreCase));
+            var pct = (totalConsumed > 1e-6 && live is not null)
+                ? $"  · {(live.PerMin * 100.0 / totalConsumed):0.#}% of consumption"
+                : "";
+            GUILayout.Label(
+                $"   {r.DisplayName}  ({r.ProducedGood} ×{r.ProducedAmount}){pct}",
+                _mutedStyle);
+        }
 
         // Race needs
         if (vm.NeededBy.Count > 0)
@@ -3054,6 +3303,10 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndHorizontal();
 
         GUILayout.Space(8);
+        DrawSettingHeader("Pin presets");
+        DrawPinPresets();
+
+        GUILayout.Space(8);
         DrawSettingHeader("Docs");
         GUILayout.BeginHorizontal();
         if (GUILayout.Button(_docView == "README.md" ? "▾ README" : "▸ README",
@@ -3128,6 +3381,81 @@ internal sealed class SidePanel : MonoBehaviour
     }
 
     /// <summary>
+    /// Settings sub-panel for managing named pin presets. Stored as
+    /// 'name=building|recipe,building|recipe;name2=...' in
+    /// <see cref="PluginConfig.PinPresets"/>; load replaces the active pins,
+    /// save snapshots them, delete removes the named entry.
+    /// </summary>
+    private void DrawPinPresets()
+    {
+        var presets = ParsePinPresets(Config.PinPresets.Value ?? "");
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("   name:", _mutedStyle, GUILayout.Width(50));
+        _newPresetName = GUILayout.TextField(_newPresetName ?? "", GUILayout.Width(140));
+        if (GUILayout.Button("save current pins", _tabStyle, GUILayout.Width(140)) &&
+            !string.IsNullOrWhiteSpace(_newPresetName))
+        {
+            presets[_newPresetName.Trim()] = string.Join(",",
+                _pinned.Select(p => p.Building + "|" + p.Recipe));
+            Config.PinPresets.Value = SerializePinPresets(presets);
+            _newPresetName = "";
+        }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        if (presets.Count == 0)
+        {
+            GUILayout.Label("   (no presets saved)", _mutedStyle);
+            return;
+        }
+        foreach (var kv in presets.OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            GUILayout.BeginHorizontal();
+            var count = kv.Value.Split(',').Count(s => !string.IsNullOrEmpty(s));
+            GUILayout.Label($"   {kv.Key} · {count} pin(s)", _mutedStyle);
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("load", _tabStyle, GUILayout.Width(60)))
+            {
+                _pinned.Clear();
+                foreach (var item in kv.Value.Split(','))
+                {
+                    var parts = item.Split('|');
+                    if (parts.Length == 2 &&
+                        !string.IsNullOrEmpty(parts[0]) && !string.IsNullOrEmpty(parts[1]))
+                        _pinned.Add((parts[0], parts[1]));
+                }
+                SavePins();
+            }
+            if (GUILayout.Button("delete", _tabStyle, GUILayout.Width(70)))
+            {
+                presets.Remove(kv.Key);
+                Config.PinPresets.Value = SerializePinPresets(presets);
+                GUILayout.EndHorizontal();
+                return;  // dictionary mutated; redraw next frame
+            }
+            GUILayout.EndHorizontal();
+        }
+    }
+
+    private static Dictionary<string, string> ParsePinPresets(string raw)
+    {
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrEmpty(raw)) return result;
+        foreach (var entry in raw.Split(';'))
+        {
+            if (string.IsNullOrEmpty(entry)) continue;
+            var eq = entry.IndexOf('=');
+            if (eq <= 0) continue;
+            result[entry.Substring(0, eq)] = entry.Substring(eq + 1);
+        }
+        return result;
+    }
+
+    private static string SerializePinPresets(Dictionary<string, string> presets) =>
+        string.Join(";", presets
+            .OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(p => p.Key + "=" + p.Value));
+
+    /// <summary>
     /// Suggests catalog recipes that satisfy the goal of an order objective.
     /// Resolves the matched good via <see cref="LiveGameState.MatchedGoodFor"/>
     /// and ranks producers by (RecipeProfit + base throughput). Indented under
@@ -3158,6 +3486,57 @@ internal sealed class SidePanel : MonoBehaviour
                 $"        → {rr.DisplayName}  · {perMin:0.##}/min  · profit {(profit >= 0 ? "+" : "")}{profit:0.##}/cycle",
                 _mutedStyle);
         }
+        // Chain visualisation: 2-level walk back from the matched good
+        // showing input → produced good with current stockpiles. Useful
+        // when an order chain is long and the player needs to know which
+        // upstream pile is the bottleneck.
+        DrawObjectiveChain(matched);
+    }
+
+    /// <summary>
+    /// Two-step "X(stock) → Y(stock) → Z(stock)" chain rooted at
+    /// <paramref name="target"/>. Walks each step's first input from the
+    /// catalog's primary producer; bails out when the chain has no meaningful
+    /// upstream (e.g. raw resources).
+    /// </summary>
+    private void DrawObjectiveChain(StormGuide.Domain.GoodInfo target)
+    {
+        // Find the primary recipe producing the target.
+        var step1 = Catalog.Recipes.Values
+            .Where(rr => string.Equals(rr.ProducedGood, target.Name,
+                            StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(rr => rr.ProductionTime > 0
+                ? (60.0 * rr.ProducedAmount) / rr.ProductionTime : 0)
+            .FirstOrDefault();
+        if (step1 is null || step1.RequiredGoods.Count == 0) return;
+        var input1 = step1.RequiredGoods[0].Options.FirstOrDefault();
+        if (input1 is null) return;
+        var input1Disp = Catalog.Goods.TryGetValue(input1.Good, out var i1Info)
+            ? i1Info.DisplayName : input1.Good;
+        var input1Stock = LiveGameState.IsReady ? LiveGameState.StockpileOf(input1.Good) : 0;
+        var targetStock = LiveGameState.IsReady ? LiveGameState.StockpileOf(target.Name) : 0;
+        // Try step 2: producer of input1.
+        var step2 = Catalog.Recipes.Values
+            .Where(rr => string.Equals(rr.ProducedGood, input1.Good,
+                            StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(rr => rr.ProductionTime > 0
+                ? (60.0 * rr.ProducedAmount) / rr.ProductionTime : 0)
+            .FirstOrDefault();
+        string chain;
+        if (step2 is null || step2.RequiredGoods.Count == 0)
+        {
+            chain = $"{input1Disp}({input1Stock}) → {target.DisplayName}({targetStock})";
+        }
+        else
+        {
+            var input2 = step2.RequiredGoods[0].Options.FirstOrDefault();
+            if (input2 is null) return;
+            var input2Disp = Catalog.Goods.TryGetValue(input2.Good, out var i2Info)
+                ? i2Info.DisplayName : input2.Good;
+            var input2Stock = LiveGameState.IsReady ? LiveGameState.StockpileOf(input2.Good) : 0;
+            chain = $"{input2Disp}({input2Stock}) → {input1Disp}({input1Stock}) → {target.DisplayName}({targetStock})";
+        }
+        GUILayout.Label("      chain: " + chain, _mutedStyle);
     }
 
     private static void DrawBoolSetting(
@@ -3456,6 +3835,7 @@ internal sealed class SidePanel : MonoBehaviour
 
         // Session stats: settlement age + counters tracked across the session.
         DrawSessionStats();
+        DrawPerfHistory();
 
         var snapshot = tail.Snapshot();
         GUILayout.BeginHorizontal();
@@ -3504,6 +3884,36 @@ internal sealed class SidePanel : MonoBehaviour
     /// drafted) surfaced under Diagnostics. Useful at-a-glance snapshot for
     /// performance reviews and bug reports.
     /// </summary>
+    /// <summary>
+    /// Diagnostics sub-panel: per-section p50/p95 frame cost across the
+    /// rolling 120-frame ring. Sorted by p95 descending so the slowest
+    /// section bubbles to the top.
+    /// </summary>
+    private void DrawPerfHistory()
+    {
+        if (_perfHistory.Count == 0) return;
+        GUILayout.Space(4);
+        GUILayout.Label("Per-section p50 / p95 (last 120 frames)", _bodyStyle);
+        foreach (var kv in _perfHistory
+                     .Select(kv => (Name: kv.Key, P50: Percentile(kv.Value, 0.5),
+                                                  P95: Percentile(kv.Value, 0.95)))
+                     .OrderByDescending(t => t.P95))
+        {
+            GUILayout.Label(
+                $"   {kv.Name}: p50 {kv.P50:0.0}ms · p95 {kv.P95:0.0}ms",
+                _mutedStyle);
+        }
+    }
+
+    private static double Percentile(IEnumerable<double> values, double p)
+    {
+        var arr = values.OrderBy(v => v).ToArray();
+        if (arr.Length == 0) return 0;
+        var idx = Math.Min(arr.Length - 1,
+            (int)Math.Floor((arr.Length - 1) * p));
+        return arr[idx];
+    }
+
     private void DrawSessionStats()
     {
         if (!LiveGameState.IsReady) return;
@@ -3544,6 +3954,21 @@ internal sealed class SidePanel : MonoBehaviour
         }
 
         GUILayout.Label($"Cornerstone Draft — {vm.Options.Count} options", _h1Style);
+        // Auto-pick recommendation: when one option scores >=1.5x runner-up
+        // and recommendations are on, surface a green headline so the
+        // player can act quickly during the time-limited popup.
+        if (Config.ShowRecommendations.Value && vm.Options.Count >= 2)
+        {
+            var sorted = vm.Options.OrderByDescending(o => o.Synergy.Value).ToList();
+            var top = sorted[0]; var second = sorted[1];
+            if (second.Synergy.Value > 0 &&
+                top.Synergy.Value >= second.Synergy.Value * 1.5)
+            {
+                GUILayout.Label(
+                    $"★ recommended pick: {top.DisplayName} ({top.Synergy.Value:0.##} vs {second.Synergy.Value:0.##})",
+                    _okStyle ?? _bodyStyle);
+            }
+        }
         foreach (var o in vm.Options) DrawCornerstoneOption(o, vm.Options);
         DrawOwnedCornerstones(vm.Owned);
         DrawCornerstoneHistory();
@@ -3720,6 +4145,23 @@ internal sealed class SidePanel : MonoBehaviour
                 $"      vs {other.DisplayName}: \u0394score {dScore:+0.##;-0.##;0} \u00b7 \u0394buildings {dAffect:+0;-0;0}{loseHint}",
                 style);
         }
+        // Per-unique-tag deep dive: enumerate the actual buildings each tag
+        // would touch so the player sees "this hits Bakery, Brewery" rather
+        // than just a count. Capped at 5 buildings per tag.
+        var focusOnly = (focus.NewlyTargetedTags ?? Array.Empty<string>()).ToList();
+        if (focusOnly.Count > 0)
+        {
+            foreach (var tag in focusOnly.Take(3))
+            {
+                var bs = LiveGameState.BuildingsCarryingTag(tag);
+                if (bs.Count == 0) continue;
+                var sample = string.Join(", ", bs.Take(5));
+                var more = bs.Count > 5 ? $" (+{bs.Count - 5} more)" : "";
+                GUILayout.Label(
+                    $"      tag {tag} → {sample}{more}",
+                    _mutedStyle);
+            }
+        }
     }
 
     /// <summary>
@@ -3819,7 +4261,8 @@ internal sealed class SidePanel : MonoBehaviour
                   padding     = new RectOffset(6, 6, 1, 1),
                   margin      = new RectOffset(2, 2, 0, 0),
                   fontSize    = compact ? 10 : 11,
+                  richText    = true,
               }
-            : _tabStyle;
+            : new GUIStyle(_tabStyle) { richText = true };
     }
 }

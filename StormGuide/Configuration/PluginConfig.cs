@@ -45,6 +45,7 @@ public sealed class PluginConfig
     public ConfigEntry<float>            GoodsAtRiskThresholdMinutes { get; }
     public ConfigEntry<string>           RaceRatioTargets { get; }
     public ConfigEntry<string>           CornerstonePickHistory { get; }
+    public ConfigEntry<string>           PinPresets { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -143,5 +144,7 @@ public sealed class PluginConfig
             "Comma-separated 'race=pct' pairs (e.g. 'beaver=30,human=40'). Drift > 10% flags on Home.");
         CornerstonePickHistory = cfg.Bind(SectionAdvice, "Cornerstone Pick History", "",
             "Semicolon-separated cornerstone ids the player has picked across runs (rolling 50). Used as a tie-breaker by the synergy ranker.");
+        PinPresets = cfg.Bind(SectionUI, "Pin Presets", "",
+            "Named pin presets in the form 'name=building|recipe,building|recipe;name2=...'. Managed via the Settings tab.");
     }
 }
