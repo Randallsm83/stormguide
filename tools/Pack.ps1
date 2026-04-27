@@ -14,7 +14,8 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Version = ""
+    [string]$Version = "",
+    [switch]$Publish
 )
 
 $ErrorActionPreference = 'Stop'
@@ -85,3 +86,25 @@ Remove-Item $staging -Recurse -Force
 Write-Host ""
 Write-Host "==> Wrote $out" -ForegroundColor Cyan
 Write-Host "    Upload to thunderstore.io/c/against-the-storm/" -ForegroundColor Cyan
+
+if ($Publish) {
+    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+        Write-Warning "gh CLI not found on PATH — skipping release upload."
+        return
+    }
+    $tag = "v$Version"
+    Write-Host ""
+    Write-Host "==> Creating GitHub release $tag" -ForegroundColor Cyan
+    gh release view $tag 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "    release $tag exists — uploading asset." -ForegroundColor Yellow
+        gh release upload $tag $out --clobber
+    } else {
+        gh release create $tag $out --title $tag --notes "StormGuide $Version"
+    }
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "gh release command exited with $LASTEXITCODE."
+    } else {
+        Write-Host "==> Released $tag" -ForegroundColor Green
+    }
+}

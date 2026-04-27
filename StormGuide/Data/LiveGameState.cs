@@ -1054,6 +1054,124 @@ internal static class LiveGameState
         return list;
     }
 
+    public sealed record IdleBuildingReason(
+        string ModelName,
+        string DisplayName,
+        string Reason);
+
+    /// <summary>
+    /// Idle buildings with a best-effort root cause. Distinguishes:
+    ///   • "unstaffed"     — worker slots are empty
+    ///   • "no inputs"     — current recipe's required goods all at 0 stock
+    ///   • "output full"   — produced good's stockpile is high (storage-full guess)
+    ///   • "paused"        — game-side pause flag
+    ///   • ""              — unknown / no signal
+    /// </summary>
+    public static IReadOnlyList<IdleBuildingReason> IdleAnyBuildingsWithReasons(
+        StormGuide.Domain.Catalog catalog)
+    {
+        var list = new List<IdleBuildingReason>();
+        try
+        {
+            var bs = Services?.BuildingsService;
+            if (bs == null) return list;
+            foreach (var kv in bs.Buildings)
+            {
+                var b = kv.Value;
+                if (b == null) continue;
+                bool idle = false;
+                if (b is Eremite.Buildings.ProductionBuilding pb) idle = pb.IsIdle;
+                else
+                {
+                    try
+                    {
+                        var p = b.GetType().GetProperty("IsIdle");
+                        if (p?.GetValue(b) is bool i && i) idle = true;
+                    }
+                    catch { }
+                }
+                if (!idle) continue;
+                var reason = DiagnoseIdle(b, catalog);
+                list.Add(new IdleBuildingReason(
+                    b.ModelName,
+                    b.DisplayName ?? b.ModelName,
+                    reason));
+            }
+        }
+        catch { }
+        return list;
+    }
+
+    private static string DiagnoseIdle(
+        Eremite.Buildings.Building b, StormGuide.Domain.Catalog catalog)
+    {
+        // Paused flag (reflection — not all building types expose it).
+        try
+        {
+            var pp = b.GetType().GetProperty("IsPaused");
+            if (pp?.GetValue(b) is bool paused && paused) return "paused";
+        }
+        catch { }
+        if (b is Eremite.Buildings.ProductionBuilding pb)
+        {
+            // Unstaffed: workers array exists but no positive entries.
+            try
+            {
+                var w = pb.Workers;
+                if (w != null && w.Length > 0 && !w.Any(x => x > 0)) return "unstaffed";
+            }
+            catch { }
+            Eremite.Buildings.RecipeModel? recipe = null;
+            try { recipe = pb.GetCurrentRecipeFor(0); } catch { }
+            if (recipe != null && catalog.Recipes.TryGetValue(recipe.Name, out var info))
+            {
+                // No inputs: every required slot has zero best-of stock.
+                if (info.RequiredGoods.Count > 0)
+                {
+                    var anyEmpty = false;
+                    foreach (var slot in info.RequiredGoods)
+                    {
+                        var best = 0;
+                        foreach (var opt in slot.Options)
+                            best = Math.Max(best, StockpileOf(opt.Good));
+                        if (best == 0) { anyEmpty = true; break; }
+                    }
+                    if (anyEmpty) return "no inputs";
+                }
+                // Output full: produced good has > 200 stockpile (heuristic).
+                if (!string.IsNullOrEmpty(info.ProducedGood) &&
+                    StockpileOf(info.ProducedGood) > 200) return "output full";
+            }
+        }
+        return "";
+    }
+
+    /// <summary>
+    /// Returns the catalog GoodInfo whose display name appears in the
+    /// objective description, longest first. Used by the Orders plan-of-
+    /// attack panel to suggest recipes that satisfy the objective.
+    /// </summary>
+    public static StormGuide.Domain.GoodInfo? MatchedGoodFor(
+        OrderObjective ob, StormGuide.Domain.Catalog catalog)
+    {
+        if (string.IsNullOrEmpty(ob.Description)) return null;
+        foreach (var gi in catalog.Goods.Values
+                     .OrderByDescending(g => g.DisplayName?.Length ?? 0))
+        {
+            if (string.IsNullOrEmpty(gi.DisplayName)) continue;
+            if (ob.Description.IndexOf(gi.DisplayName,
+                    StringComparison.OrdinalIgnoreCase) >= 0) return gi;
+        }
+        return null;
+    }
+
+    /// <summary>Live current resolve for a race, or null if unavailable.</summary>
+    public static float? CurrentResolveFor(string raceName)
+    {
+        var r = ResolveFor(raceName);
+        return r is null ? null : r.Value.Item1;
+    }
+
     /// <summary>
     /// Cornerstone IDs the player has previously drafted this run (best-effort
     /// via reflection). Returns empty when no history field is exposed.

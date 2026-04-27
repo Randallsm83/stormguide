@@ -137,6 +137,25 @@ internal sealed class SidePanel : MonoBehaviour
     // log spam when the locale resolution is failing in bulk.
     private bool _localeWarned;
 
+    // Per-race rolling resolve samples (60s ring; ~1 sample/s) so the Villagers
+    // tab can render a small trajectory sparkline next to the resolve bar.
+    private readonly Dictionary<string, Queue<float>> _resolveSamples =
+        new(StringComparer.Ordinal);
+    private float _lastResolveSampleTime;
+
+    // Cornerstone option that the user clicked "compare" on; null = nobody.
+    private string? _compareOption;
+
+    // Free-text filter for the Settings tab (matches against the *property*
+    // names so the table-of-contents shrinks as the user types).
+    private string _settingsFilter = "";
+
+    // Trader buy-list builder: which sells the user has ticked, plus a cached
+    // visit key so the ticks reset on trader change.
+    private readonly HashSet<string> _buyListSelections =
+        new(StringComparer.OrdinalIgnoreCase);
+    private string? _buyListVisitKey;
+
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
 
@@ -342,6 +361,31 @@ internal sealed class SidePanel : MonoBehaviour
         if (LiveGameState.IsReady && _sessionStartTime is null)
             _sessionStartTime = LiveGameState.GameTimeNow();
         if (LiveGameState.IsReady) TickCornerstoneHistory();
+        if (LiveGameState.IsReady) TickResolveSamples();
+    }
+
+    /// <summary>
+    /// Once a second, push the live current-resolve value for each race onto
+    /// a 60-sample ring. Used by <see cref="DrawResolveSparkline"/>.
+    /// </summary>
+    private void TickResolveSamples()
+    {
+        var now = LiveGameState.GameTimeNow() ?? Time.unscaledTime;
+        if (now - _lastResolveSampleTime < 1f) return;
+        _lastResolveSampleTime = now;
+        try
+        {
+            foreach (var raceName in Catalog.Races.Keys)
+            {
+                var v = LiveGameState.CurrentResolveFor(raceName);
+                if (v is null) continue;
+                if (!_resolveSamples.TryGetValue(raceName, out var q))
+                    _resolveSamples[raceName] = q = new Queue<float>(64);
+                q.Enqueue(v.Value);
+                while (q.Count > 60) q.Dequeue();
+            }
+        }
+        catch { }
     }
 
     /// <summary>
@@ -831,6 +875,18 @@ internal sealed class SidePanel : MonoBehaviour
                 }
             }
             stockTag += forecast;
+            // Storm-clock chip: how many cycles will fit before the next
+            // weather phase ends? Useful for "is this pin worth running NOW".
+            if (LiveGameState.IsReady && r.ProductionTime > 0)
+            {
+                var w = LiveGameState.Weather();
+                if (w?.SecondsLeft is float sl && sl > 0f)
+                {
+                    var cycles = (int)Math.Floor(sl / r.ProductionTime);
+                    if (cycles >= 0 && cycles < 200)
+                        stockTag += $" \u00b7 {cycles} cycle(s) before phase";
+                }
+            }
             // Inputs draining tag: any input good with net flow < 0 across
             // the settlement gets a ⚠ prefix so the row reads as at-risk.
             var draining = false;
@@ -1136,6 +1192,62 @@ internal sealed class SidePanel : MonoBehaviour
                 $"   next: {disp} · wants {nxt.Buys.Count} · sells {nxt.Sells.Count}",
                 _mutedStyle);
         }
+        // Buy-list builder: pick from the current trader's Sells, see total
+        // currency cost vs current pot from selling top-3 desires.
+        if (cur is not null && cur.IsInVillage && cur.Sells.Count > 0)
+            DrawTraderBuyList(cur);
+    }
+
+    /// <summary>
+    /// Renders a small "shopping list" panel under the current trader. The
+    /// user ticks goods they want to buy; the panel sums the per-unit cost
+    /// and compares against the available currency from selling top-3 desires.
+    /// Selections reset on visit change.
+    /// </summary>
+    private void DrawTraderBuyList(LiveGameState.TraderInfo cur)
+    {
+        var visitKey = cur.DisplayName ?? "";
+        if (_buyListVisitKey != visitKey)
+        {
+            _buyListVisitKey = visitKey;
+            _buyListSelections.Clear();
+        }
+        GUILayout.Space(2);
+        GUILayout.Label("   buy list — click to tick:", _mutedStyle);
+        // Render up to 8 sells per row of toggles.
+        var sells = cur.Sells.Take(12).ToList();
+        double totalCost = 0;
+        GUILayout.BeginHorizontal();
+        for (var i = 0; i < sells.Count; i++)
+        {
+            var s = sells[i];
+            var disp = Catalog.Goods.TryGetValue(s, out var gi) ? gi.DisplayName : s;
+            var on = _buyListSelections.Contains(s);
+            var price = LiveGameState.BuyValueAtCurrentTrader(s);
+            if (on) totalCost += price;
+            var label = $"{(on ? "✓" : "·")} {disp} ({price:0.##})";
+            if (GUILayout.Button(label, _chipStyle ?? _tabStyle))
+            {
+                if (on) _buyListSelections.Remove(s); else _buyListSelections.Add(s);
+            }
+            if ((i + 1) % 4 == 0 && i < sells.Count - 1)
+            {
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+            }
+        }
+        GUILayout.EndHorizontal();
+        if (_buyListSelections.Count > 0)
+        {
+            var pot = (_currentDesiresCache?.Get() ?? Array.Empty<LiveGameState.TraderDesire>())
+                .Take(3).Sum(d => d.TotalValue);
+            var afford = pot >= totalCost ? "✓ affordable" : "✗ short";
+            var diff = pot - totalCost;
+            GUILayout.Label(
+                $"   list cost: {totalCost:0.##} · pot (top-3 sells): {pot:0.##} · {afford} ({diff:+0.##;-0.##;0})",
+                pot >= totalCost ? (_okStyle ?? _mutedStyle)
+                                 : (_critStyle ?? _mutedStyle));
+        }
     }
 
     /// <summary>
@@ -1221,8 +1333,52 @@ internal sealed class SidePanel : MonoBehaviour
                 _flowExpanded = true;
             }
             DrawFlowSparkline(g.Good);
+            DrawFlowForecastChip(g.Good, g.RunwayMinutes);
             GUILayout.EndHorizontal();
         }
+    }
+
+    /// <summary>
+    /// 60-second forecast extrapolation from the recent net-flow ring. Fits a
+    /// linear trend across <see cref="_flowSamples"/> for <paramref name="good"/>
+    /// and renders a small "→ X.Ym" chip indicating the projected runway one
+    /// minute from now (or "steady" when the slope is negligible).
+    /// </summary>
+    private void DrawFlowForecastChip(string good, double currentRunwayMin)
+    {
+        if (!_flowSamples.TryGetValue(good, out var q) || q.Count < 4) return;
+        var samples = q.ToArray();
+        var n = samples.Length;
+        // Simple linear fit: slope of net flow over sample index (1 sample/s).
+        double meanX = (n - 1) / 2.0, meanY = 0;
+        for (var i = 0; i < n; i++) meanY += samples[i];
+        meanY /= n;
+        double num = 0, den = 0;
+        for (var i = 0; i < n; i++)
+        {
+            num += (i - meanX) * (samples[i] - meanY);
+            den += (i - meanX) * (i - meanX);
+        }
+        var slopePerSec = den > 1e-9 ? num / den : 0; // Δnet per sample (~1s)
+        if (Math.Abs(slopePerSec) < 0.001)
+        {
+            GUILayout.Label("steady", _mutedStyle, GUILayout.Width(50));
+            return;
+        }
+        // Project net 60s ahead, recompute runway from the projected net.
+        var projectedNet = samples[n - 1] + slopePerSec * 60.0;
+        var stock = LiveGameState.IsReady ? LiveGameState.StockpileOf(good) : 0;
+        if (projectedNet >= 0 || stock <= 0)
+        {
+            GUILayout.Label(slopePerSec > 0 ? "↗ recovering" : "→ ?",
+                _mutedStyle, GUILayout.Width(80));
+            return;
+        }
+        var projRunwayMin = stock / -projectedNet;
+        var arrow = projRunwayMin < currentRunwayMin ? "↘" : "↗";
+        GUILayout.Label($"{arrow} {projRunwayMin:0.#}m in 60s",
+            projRunwayMin < currentRunwayMin ? (_critStyle ?? _mutedStyle)
+            : _mutedStyle, GUILayout.Width(110));
     }
 
     /// <summary>
@@ -1350,6 +1506,35 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(
                 $"   ⚠ {summary.RewardChasesActive} reward-chase{(summary.RewardChasesActive == 1 ? "" : "s")} active",
                 _mutedStyle);
+        // Best-next-chase pin: rank by (reward score / remaining time) so the
+        // player chases the most valuable + soonest-to-expire one first.
+        if (summary.Chases.Count > 0)
+        {
+            var now = LiveGameState.GameTimeNow();
+            var best = summary.Chases
+                .Select(c =>
+                {
+                    var remaining = (now is float t && c.End > t) ? c.End - t : c.Duration;
+                    if (remaining <= 0) return (Chase: (LiveGameState.GladeRewardChase?)null, Priority: 0.0);
+                    var rewardValue = c.Rewards.Sum(r =>
+                        Catalog.Goods.TryGetValue(r, out var gi) ? gi.TradingBuyValue : 1.0);
+                    if (rewardValue <= 0) rewardValue = c.Rewards.Count;
+                    var priority = rewardValue / Math.Max(1, remaining);
+                    return (Chase: (LiveGameState.GladeRewardChase?)c, Priority: priority);
+                })
+                .Where(t => t.Chase != null)
+                .OrderByDescending(t => t.Priority)
+                .FirstOrDefault();
+            if (best.Chase is { } chase)
+            {
+                var remaining = (now is float t2 && chase.End > t2) ? chase.End - t2 : chase.Duration;
+                var mins = Mathf.Max(0, Mathf.FloorToInt(remaining / 60f));
+                var secs = Mathf.Max(0, Mathf.FloorToInt(remaining % 60f));
+                GUILayout.Label(
+                    $"   ★ next chase: {chase.Model} — {mins}:{secs:00} left",
+                    _warnStyle ?? _mutedStyle);
+            }
+        }
     }
 
     private void DrawHomeCornerstones()
@@ -1396,14 +1581,17 @@ internal sealed class SidePanel : MonoBehaviour
     private void DrawIdleBuildingsBanner()
     {
         if (!LiveGameState.IsReady) return;
-        // Use IdleAnyBuildings so haulers/woodcutters/services are surfaced too.
-        var idle = LiveGameState.IdleAnyBuildings();
+        // Idle list with best-effort root-cause tags so the player can act on
+        // the actionable subset ("unstaffed" → hire, "no inputs" → supply).
+        var idle = LiveGameState.IdleAnyBuildingsWithReasons(Catalog);
         if (idle.Count == 0) return;
 
-        // Group by model name so duplicates collapse: "3× Bakery, 1× Brewery".
+        // Group by (model, reason) so duplicates collapse with their cause.
         var grouped = idle
-            .GroupBy(t => t.ModelName)
-            .Select(g => $"{g.Count()}× {g.First().DisplayName}")
+            .GroupBy(t => (t.ModelName, t.DisplayName, t.Reason))
+            .Select(g => string.IsNullOrEmpty(g.Key.Reason)
+                ? $"{g.Count()}× {g.Key.DisplayName}"
+                : $"{g.Count()}× {g.Key.DisplayName} ({g.Key.Reason})")
             .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
         GUILayout.Label("⚠ Idle workplaces: " + string.Join(", ", grouped), _bodyStyle);
         GUILayout.Space(2);
@@ -1773,10 +1961,40 @@ internal sealed class SidePanel : MonoBehaviour
                 GUILayout.Label(line, _mutedStyle);
             }
         }
+        // Alternative producers: top-2 other recipes that produce the same
+        // good (not this one), ranked by base throughput. Surfaces the
+        // "what else makes this?" question without a tab switch.
+        DrawAlternativeProducers(rk.Recipe);
         GUILayout.EndVertical();
 
         GUILayout.EndHorizontal();
         GUILayout.Space(4);
+    }
+
+    /// <summary>
+    /// Lists top-2 catalog recipes (other than <paramref name="current"/>)
+    /// that produce the same good, with their base throughput. Skipped when
+    /// nothing else makes that good.
+    /// </summary>
+    private void DrawAlternativeProducers(RecipeInfo current)
+    {
+        if (string.IsNullOrEmpty(current.ProducedGood)) return;
+        var alts = Catalog.Recipes.Values
+            .Where(rr => rr.Name != current.Name &&
+                         string.Equals(rr.ProducedGood, current.ProducedGood,
+                             StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(rr => rr.ProductionTime > 0
+                ? (60.0 * rr.ProducedAmount) / rr.ProductionTime : 0)
+            .Take(2)
+            .ToList();
+        if (alts.Count == 0) return;
+        var summary = string.Join(", ", alts.Select(rr =>
+        {
+            var pm = rr.ProductionTime > 0
+                ? (60.0 * rr.ProducedAmount) / rr.ProductionTime : 0;
+            return $"{rr.DisplayName} ({pm:0.##}/min)";
+        }));
+        GUILayout.Label("   also produced by: " + summary, _mutedStyle);
     }
 
     private static string FormatRecipeInputs(RecipeInfo r)
@@ -2436,14 +2654,44 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndVertical();
     }
 
+    /// <summary>
+    /// Tiny sparkline of the rolling resolve samples for a race. Colours rise
+    /// green / fall red. Skips when fewer than 2 samples have been collected.
+    /// </summary>
+    private void DrawResolveSparkline(string raceName)
+    {
+        if (!_resolveSamples.TryGetValue(raceName, out var q) || q.Count < 2) return;
+        var samples = q.ToArray();
+        var rect = GUILayoutUtility.GetRect(80, 14, GUILayout.Width(80));
+        GUI.Box(rect, GUIContent.none);
+        var min = samples.Min(); var max = samples.Max();
+        var span = Math.Max(0.001f, max - min);
+        var rising = samples[samples.Length - 1] >= samples[0];
+        var color = rising ? new Color(0.45f, 0.85f, 0.55f, 0.9f)
+                           : new Color(0.95f, 0.45f, 0.45f, 0.9f);
+        for (var i = 1; i < samples.Length; i++)
+        {
+            var x0 = rect.x + rect.width * (i - 1) / (float)(samples.Length - 1);
+            var x1 = rect.x + rect.width *  i      / (float)(samples.Length - 1);
+            var y0 = rect.y + rect.height * (1f - (samples[i - 1] - min) / span);
+            var y1 = rect.y + rect.height * (1f - (samples[i]     - min) / span);
+            DrawSegment(x0, y0, x1, y1, color);
+        }
+    }
+
     private void DrawResolveSnapshot(ResolveSnapshot? r)
     {
         if (r is null) return;
 
         GUILayout.Space(6);
+        GUILayout.BeginHorizontal();
         GUILayout.Label(
             $"● live resolve: {r.Current:0.0} now · target {r.Target} · range {r.Min}–{r.Max}",
             _bodyStyle);
+        GUILayout.FlexibleSpace();
+        if (!string.IsNullOrEmpty(_selectedRace))
+            DrawResolveSparkline(_selectedRace!);
+        GUILayout.EndHorizontal();
 
         // Bar: width 0..1 mapped from Min..Max for current; faint marker for target.
         var barRect = GUILayoutUtility.GetRect(0, 12, GUILayout.ExpandWidth(true));
@@ -2620,6 +2868,8 @@ internal sealed class SidePanel : MonoBehaviour
                 GUILayout.Label(prefix + ob.Description, _mutedStyle);
                 DrawObjectiveProgress(ob);
                 DrawObjectiveEta(ob);
+                if (o.Tracked && o.ShouldBeFailable && !ob.Completed)
+                    DrawObjectivePlanOfAttack(ob);
             }
         }
         if (o.Rewards.Count > 0)
@@ -2687,10 +2937,24 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label("Settings", _h1Style);
         _settingsScroll = GUILayout.BeginScrollView(_settingsScroll, GUILayout.ExpandHeight(true));
 
+        // Free-text filter: matches against the *property* names we render so
+        // the table-of-contents shrinks as the user types.
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("   filter:", _mutedStyle, GUILayout.Width(60));
+        _settingsFilter = GUILayout.TextField(_settingsFilter ?? "", GUILayout.Width(180));
+        if (!string.IsNullOrEmpty(_settingsFilter) &&
+            GUILayout.Button("✕", _tabStyle, GUILayout.Width(24)))
+            _settingsFilter = "";
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+
         DrawSettingHeader("General");
-        DrawBoolSetting(Config.ShowRecommendations,      "Show recommendations");
-        DrawBoolSetting(Config.VisibleByDefault,         "Visible by default");
-        DrawBoolSetting(Config.HideEmptyRecipeBuildings, "Hide empty-recipe buildings");
+        if (MatchesSettingsFilter("ShowRecommendations"))
+            DrawBoolSetting(Config.ShowRecommendations,      "Show recommendations");
+        if (MatchesSettingsFilter("VisibleByDefault"))
+            DrawBoolSetting(Config.VisibleByDefault,         "Visible by default");
+        if (MatchesSettingsFilter("HideEmptyRecipeBuildings"))
+            DrawBoolSetting(Config.HideEmptyRecipeBuildings, "Hide empty-recipe buildings");
 
         DrawSettingHeader("Tabs");
         // Reflection-driven: any future ConfigEntry<bool> named Show*Tab is
@@ -2703,6 +2967,7 @@ internal sealed class SidePanel : MonoBehaviour
             .OrderBy(p => p.Name, StringComparer.Ordinal);
         foreach (var prop in tabToggles)
         {
+            if (!MatchesSettingsFilter(prop.Name)) continue;
             var entry = (BepInEx.Configuration.ConfigEntry<bool>?)prop.GetValue(Config);
             if (entry is null) continue;
             // Strip "Show" prefix and "Tab" suffix for the human-friendly label.
@@ -2848,6 +3113,51 @@ internal sealed class SidePanel : MonoBehaviour
     {
         GUILayout.Space(4);
         GUILayout.Label(label, _bodyStyle);
+    }
+
+    /// <summary>
+    /// Returns true when the Settings filter is empty or when
+    /// <paramref name="propertyName"/> contains the filter substring (case
+    /// insensitive). Used to gate individual setting rows.
+    /// </summary>
+    private bool MatchesSettingsFilter(string propertyName)
+    {
+        if (string.IsNullOrEmpty(_settingsFilter)) return true;
+        return propertyName.IndexOf(_settingsFilter,
+            StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    /// <summary>
+    /// Suggests catalog recipes that satisfy the goal of an order objective.
+    /// Resolves the matched good via <see cref="LiveGameState.MatchedGoodFor"/>
+    /// and ranks producers by (RecipeProfit + base throughput). Indented under
+    /// the objective so it reads as a plan-of-attack list.
+    /// </summary>
+    private void DrawObjectivePlanOfAttack(LiveGameState.OrderObjective ob)
+    {
+        var matched = LiveGameState.MatchedGoodFor(ob, Catalog);
+        if (matched is null) return;
+        var recipes = Catalog.Recipes.Values
+            .Where(rr => string.Equals(rr.ProducedGood, matched.Name,
+                            StringComparison.OrdinalIgnoreCase))
+            .Select(rr =>
+            {
+                var perMin = rr.ProductionTime > 0
+                    ? (60.0 * rr.ProducedAmount) / rr.ProductionTime : 0;
+                return (Recipe: rr, PerMin: perMin, Profit: RecipeProfit(rr));
+            })
+            .OrderByDescending(t => t.Profit)
+            .ThenByDescending(t => t.PerMin)
+            .Take(2)
+            .ToList();
+        if (recipes.Count == 0) return;
+        GUILayout.Label("      plan:", _mutedStyle);
+        foreach (var (rr, perMin, profit) in recipes)
+        {
+            GUILayout.Label(
+                $"        → {rr.DisplayName}  · {perMin:0.##}/min  · profit {(profit >= 0 ? "+" : "")}{profit:0.##}/cycle",
+                _mutedStyle);
+        }
     }
 
     private static void DrawBoolSetting(
@@ -3081,6 +3391,42 @@ internal sealed class SidePanel : MonoBehaviour
             }
         }
 
+        // Starting goods recommendation: union all races' needs, score each
+        // good by (number of races that need it × trade value), surface the
+        // top 5 as "bring these on day 1".
+        GUILayout.Space(6);
+        GUILayout.Label("Starting goods — ranked by need overlap × value", _bodyStyle);
+        var startingScore = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+        var startingHits  = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var race in Catalog.Races.Values)
+        {
+            foreach (var n in race.Needs)
+            {
+                if (string.IsNullOrEmpty(n)) continue;
+                startingHits.TryGetValue(n, out var h);
+                startingHits[n] = h + 1;
+            }
+        }
+        foreach (var kv in startingHits)
+        {
+            var val = Catalog.Goods.TryGetValue(kv.Key, out var gi)
+                ? Math.Max(1, gi.TradingBuyValue) : 1;
+            startingScore[kv.Key] = kv.Value * val;
+        }
+        var top = startingScore
+            .OrderByDescending(kv => kv.Value)
+            .Take(5)
+            .ToList();
+        if (top.Count == 0)
+            GUILayout.Label("   (no race needs found)", _mutedStyle);
+        foreach (var kv in top)
+        {
+            var disp = Catalog.Goods.TryGetValue(kv.Key, out var gi) ? gi.DisplayName : kv.Key;
+            GUILayout.Label(
+                $"   ★ {disp}  · needed by {startingHits[kv.Key]} race(s)  · score {kv.Value:0.##}",
+                _mutedStyle);
+        }
+
         GUILayout.Space(6);
         GUILayout.Label(
             "Tip: races with overlapping needs (e.g. fuel + porridge) are easier to keep above target resolve early; combine with cornerstones that target their preferred building tags.",
@@ -3198,7 +3544,7 @@ internal sealed class SidePanel : MonoBehaviour
         }
 
         GUILayout.Label($"Cornerstone Draft — {vm.Options.Count} options", _h1Style);
-        foreach (var o in vm.Options) DrawCornerstoneOption(o);
+        foreach (var o in vm.Options) DrawCornerstoneOption(o, vm.Options);
         DrawOwnedCornerstones(vm.Owned);
         DrawCornerstoneHistory();
     }
@@ -3301,7 +3647,8 @@ internal sealed class SidePanel : MonoBehaviour
         }
     }
 
-    private void DrawCornerstoneOption(CornerstoneOption o)
+    private void DrawCornerstoneOption(
+        CornerstoneOption o, IReadOnlyList<CornerstoneOption> all)
     {
         GUILayout.BeginHorizontal();
         var marker = o.IsTopRanked && Config.ShowRecommendations.Value ? "★" : $"#{o.Rank}";
@@ -3317,6 +3664,16 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label(new GUIContent(o.DisplayName, o.Description ?? ""), _bodyStyle);
         GUILayout.FlexibleSpace();
         GUILayout.Label(o.Synergy.Format("0"), _bodyStyle);
+        // Compare toggle: shows a side-by-side delta against the other
+        // options. Click again on the same row to collapse.
+        var compareOpen = _compareOption == o.EffectId;
+        if (GUILayout.Button(
+                new GUIContent(compareOpen ? "▾ vs" : "▸ vs",
+                    "Compare against the other options"),
+                _tabStyle, GUILayout.Width(50)))
+        {
+            _compareOption = compareOpen ? null : o.EffectId;
+        }
         GUILayout.EndHorizontal();
         if (!string.IsNullOrEmpty(o.Description))
             GUILayout.Label(o.Description, _mutedStyle);
@@ -3328,9 +3685,41 @@ internal sealed class SidePanel : MonoBehaviour
             if (!string.IsNullOrEmpty(c.Note)) line += $"   {c.Note}";
             GUILayout.Label(line, _mutedStyle);
         }
+        if (compareOpen) DrawCornerstoneCompare(o, all);
         GUILayout.EndVertical();
         GUILayout.EndHorizontal();
         GUILayout.Space(4);
+    }
+
+    /// <summary>
+    /// Renders a small side-by-side delta panel showing this option's score,
+    /// affected-buildings count, and unique tags vs each of the other options.
+    /// Acts as the "if I skip this, what do I lose?" view during draft.
+    /// </summary>
+    private void DrawCornerstoneCompare(
+        CornerstoneOption focus, IReadOnlyList<CornerstoneOption> all)
+    {
+        GUILayout.Label("   compare — vs other options:", _mutedStyle);
+        foreach (var other in all)
+        {
+            if (other.EffectId == focus.EffectId) continue;
+            var dScore   = focus.Synergy.Value - other.Synergy.Value;
+            var dAffect  = focus.AffectedBuildings - other.AffectedBuildings;
+            var focusTags = focus.NewlyTargetedTags ?? Array.Empty<string>();
+            var otherTags = other.NewlyTargetedTags ?? Array.Empty<string>();
+            var onlyHere = focusTags
+                .Where(t => !otherTags.Contains(t, StringComparer.OrdinalIgnoreCase))
+                .Take(3).ToList();
+            var loseHint = onlyHere.Count == 0
+                ? ""
+                : $"  unique tag(s): {string.Join(", ", onlyHere)}";
+            var style = dScore > 0 ? (_okStyle ?? _mutedStyle)
+                      : dScore < 0 ? (_critStyle ?? _mutedStyle)
+                      : _mutedStyle;
+            GUILayout.Label(
+                $"      vs {other.DisplayName}: \u0394score {dScore:+0.##;-0.##;0} \u00b7 \u0394buildings {dAffect:+0;-0;0}{loseHint}",
+                style);
+        }
     }
 
     /// <summary>
