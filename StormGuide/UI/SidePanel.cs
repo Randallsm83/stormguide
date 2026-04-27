@@ -203,6 +203,16 @@ internal sealed class SidePanel : MonoBehaviour
     private string _resolveEffectFilter = "";
     private float  _runwayWhatIf = 1f;
 
+    // Cornerstone history search (Draft tab); restored from config in Start.
+    private string _cornerstoneHistorySearch = "";
+
+    // Resolve goal calculator target (Villagers tab). Coarse climb estimate.
+    private string _resolveGoalText = "";
+
+    // Order pick "what-if" expansion: which (orderId, setIndexLabel) is open.
+    // SetIndexLabel is the option's stable id ("set 0", "set 1", \u2026).
+    private (int OrderId, string SetIndexLabel)? _orderPickPreview;
+
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
 
@@ -300,6 +310,9 @@ internal sealed class SidePanel : MonoBehaviour
         if (!string.IsNullOrEmpty(Config.MarkedPriorityRecipes.Value))
             foreach (var s in Config.MarkedPriorityRecipes.Value.Split(','))
                 if (!string.IsNullOrEmpty(s)) _markedPriority.Add(s);
+        // Restore the cornerstone-history search filter so the Draft tab's
+        // previously-drafted list keeps its filter across sessions.
+        _cornerstoneHistorySearch = Config.CornerstoneHistorySearch.Value ?? "";
 
         // Cache the slow aggregates: 0.5s is well below player perception
         // for these kinds of metrics, but it cuts redundant scans by ~30x at
@@ -1230,6 +1243,29 @@ internal sealed class SidePanel : MonoBehaviour
             // TickPinnedFlows even when the good isn't currently at-risk).
             if (LiveGameState.IsReady && !string.IsNullOrEmpty(r.ProducedGood))
                 DrawFlowSparkline(r.ProducedGood);
+            // Worker assignment chip: assigned/capacity for the host building.
+            // Painted red when the row has 0 workers so the player can spot
+            // an unstaffed pin without opening the building tab.
+            if (LiveGameState.IsReady)
+            {
+                var ws = LiveGameState.WorkersFor(bldg);
+                if (ws is not null && ws.Capacity > 0)
+                {
+                    var workersLabel = $"{ws.Assigned}/{ws.Capacity}";
+                    var workersStyle = ws.Assigned == 0
+                        ? (_critStyle ?? _mutedStyle)
+                        : ws.Idle ? (_warnStyle ?? _mutedStyle)
+                                  : _mutedStyle;
+                    GUILayout.Label(
+                        new GUIContent(workersLabel,
+                            ws.Assigned == 0
+                                ? "No workers assigned to this building"
+                                : ws.Idle
+                                    ? "Building reports idle"
+                                    : "Worker assignment"),
+                        workersStyle, GUILayout.Width(40));
+                }
+            }
             // Up/down reorder buttons (no-op at the edges).
             var idx = _pinned.IndexOf((bldg, recipe));
             if (GUILayout.Button(new GUIContent("▴", "Move up"),
@@ -1315,6 +1351,55 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label($"   {good}: {n}", _mutedStyle);
         if (fr.ByGood.Count > 3)
             GUILayout.Label($"   … and {fr.ByGood.Count - 3} more", _mutedStyle);
+        // Fuel auto-pin: when runway < 5 min, surface a one-click button to
+        // pin the highest-throughput fuel-producing recipe to Home. Pulls the
+        // first fuel good actually present in the settlement and finds its
+        // top catalog producer. Skipped when nothing actionable is found.
+        if (fr.RunwayMinutes < 5 && fr.ByGood.Count > 0)
+        {
+            // The fuel goods come back display-name-keyed; reverse-resolve to
+            // the catalog model name so we can scan recipes against it.
+            var topFuelDisplay = fr.ByGood[0].Good;
+            var fuelGood = Catalog.Goods.Values
+                .FirstOrDefault(g => string.Equals(g.DisplayName, topFuelDisplay,
+                    StringComparison.OrdinalIgnoreCase));
+            if (fuelGood is not null)
+            {
+                var topRecipe = Catalog.Recipes.Values
+                    .Where(rr => string.Equals(rr.ProducedGood, fuelGood.Name,
+                                    StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(rr => rr.ProductionTime > 0
+                        ? (60.0 * rr.ProducedAmount) / rr.ProductionTime : 0)
+                    .FirstOrDefault();
+                var building = topRecipe is null ? null : Catalog.Buildings.Values
+                    .FirstOrDefault(b => b.Recipes.Contains(topRecipe.Name));
+                if (topRecipe is not null && building is not null)
+                {
+                    var key = (building.Name, topRecipe.Name);
+                    GUILayout.BeginHorizontal();
+                    if (_pinned.Contains(key))
+                    {
+                        GUILayout.Label(
+                            $"   \u2713 fuel producer pinned: {building.DisplayName} \u2192 {topRecipe.DisplayName}",
+                            _okStyle ?? _mutedStyle);
+                    }
+                    else
+                    {
+                        if (GUILayout.Button(
+                                new GUIContent(
+                                    $"   \u2606 auto-pin top fuel producer ({building.DisplayName} \u2192 {topRecipe.DisplayName})",
+                                    "Pin the highest-throughput producer of the top fuel good to Home"),
+                                _warnStyle ?? _tabStyle))
+                        {
+                            _pinned.Add(key);
+                            SavePins();
+                        }
+                    }
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndHorizontal();
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -2546,6 +2631,32 @@ internal sealed class SidePanel : MonoBehaviour
                 GUILayout.Label(
                     $"{prefix}{ia.Good}: {ia.InStock} in stock (need {ia.Required}/cycle)",
                     _mutedStyle);
+                // Buy-now hint: when this input is at-risk AND the current
+                // trader sells it, surface a one-click "buy at trader" jump
+                // to the Good tab so the player can act without scrolling.
+                if (ia.AtRisk && LiveGameState.IsReady)
+                {
+                    var cur = LiveGameState.CurrentTrader();
+                    var goodModel = Catalog.Goods.Values.FirstOrDefault(g =>
+                        string.Equals(g.DisplayName, ia.Good, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(g.Name,        ia.Good, StringComparison.OrdinalIgnoreCase));
+                    var soldByTrader = cur is { IsInVillage: true } &&
+                                       goodModel is not null &&
+                                       cur.Sells.Contains(goodModel.Name);
+                    if (soldByTrader && goodModel is not null)
+                    {
+                        var price = LiveGameState.BuyValueAtCurrentTrader(goodModel.Name);
+                        if (GUILayout.Button(
+                                new GUIContent(
+                                    $"      \u2192 buy from current trader @ {price:0.##}/u",
+                                    "Open this good in the Good tab"),
+                                _warnStyle ?? _tabStyle))
+                        {
+                            _selectedGood = goodModel.Name;
+                            _activeTab = Tab.Good;
+                        }
+                    }
+                }
             }
         }
 
@@ -3192,7 +3303,7 @@ internal sealed class SidePanel : MonoBehaviour
     {
         GUILayout.BeginHorizontal();
 
-        var marker = p.IsCheapest && Config.ShowRecommendations.Value ? "★" : $"#{p.Rank}";
+        var marker = p.IsCheapest && Config.ShowRecommendations.Value ? "\u2605" : $"#{p.Rank}";
         GUILayout.Label(marker, _badgeStyle, GUILayout.Width(24));
 
         GUILayout.BeginVertical();
@@ -3204,8 +3315,38 @@ internal sealed class SidePanel : MonoBehaviour
 
         var line = p.Building is null
             ? FormatRecipeInputs(p.Recipe)
-            : $"@ {p.Building.DisplayName} · " + FormatRecipeInputs(p.Recipe);
+            : $"@ {p.Building.DisplayName} \u00b7 " + FormatRecipeInputs(p.Recipe);
         GUILayout.Label(line, _mutedStyle);
+        // Throughput delta vs the cheapest path. Useful for comparing
+        // "5 more goods/min" vs the cheapest option when picking which
+        // recipe to pin. Only renders for non-cheapest rows.
+        if (!p.IsCheapest && p.Recipe.ProductionTime > 0)
+        {
+            var thisPerMin = (60.0 * p.Recipe.ProducedAmount) / p.Recipe.ProductionTime;
+            // Cheapest is rank 1; we don't have that path here so look it up
+            // by walking the catalog for the same good and taking the
+            // smallest base cost (mirrors GoodProvider's ranking heuristic).
+            var cheapest = Catalog.Recipes.Values
+                .Where(rr => string.Equals(rr.ProducedGood, p.Recipe.ProducedGood,
+                                StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(rr => rr.ProductionTime > 0
+                    ? (60.0 * rr.ProducedAmount) / rr.ProductionTime : 0)
+                .FirstOrDefault();
+            if (cheapest is not null && cheapest.ProductionTime > 0)
+            {
+                var topPerMin = (60.0 * cheapest.ProducedAmount) / cheapest.ProductionTime;
+                var delta = thisPerMin - topPerMin;
+                if (Math.Abs(delta) > 1e-3)
+                {
+                    var sign = delta >= 0 ? "+" : "";
+                    var deltaStyle = delta >= 0 ? (_okStyle ?? _mutedStyle)
+                                                : (_critStyle ?? _mutedStyle);
+                    GUILayout.Label(
+                        $"   {sign}{delta:0.##}/min vs cheapest path ({cheapest.DisplayName})",
+                        deltaStyle);
+                }
+            }
+        }
 
         var key = "prod:" + p.Recipe.Name;
         var expanded = _expandedProducers.Contains(key);
@@ -3343,8 +3484,50 @@ internal sealed class SidePanel : MonoBehaviour
         {
             var gap = rsv.Target - rsv.Current;
             GUILayout.Label(
-                $"   forecast: ~{gap / 1.0:0.#}m to target (climb ≈ 1/min, approximate)",
+                $"   forecast: ~{gap / 1.0:0.#}m to target (climb \u2248 1/min, approximate)",
                 _mutedStyle);
+        }
+
+        // Resolve goal calculator: user enters a target resolve, panel lists
+        // which top contributor stacks would be needed to hit it. Coarse \u2014
+        // assumes the visible TopEffects scale linearly with stack count.
+        if (vm.Resolve is { } rgr && rgr.TopEffects.Count > 0)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("   resolve goal:", _mutedStyle, GUILayout.Width(110));
+            _resolveGoalText = GUILayout.TextField(
+                _resolveGoalText ?? "", GUILayout.Width(60));
+            GUILayout.Label("(target value)", _mutedStyle);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            if (int.TryParse(_resolveGoalText, out var goal) && goal > rgr.Current)
+            {
+                var gap2 = goal - rgr.Current;
+                // Rank positive contributors by per-stack gain; show how many
+                // additional stacks of each would close the gap.
+                var positive = rgr.TopEffects
+                    .Where(e => e.ResolvePerStack > 0)
+                    .OrderByDescending(e => e.ResolvePerStack)
+                    .ToList();
+                if (positive.Count == 0)
+                    GUILayout.Label(
+                        "      (no positive contributor exposes a per-stack value)",
+                        _mutedStyle);
+                foreach (var e in positive.Take(3))
+                {
+                    if (e.ResolvePerStack <= 0) continue;
+                    var stacksNeeded = (int)Math.Ceiling(gap2 / (float)e.ResolvePerStack);
+                    GUILayout.Label(
+                        $"      \u2192 {stacksNeeded} more stack(s) of {e.Name} (+{e.ResolvePerStack}/stack) closes the {gap2:0.#} gap",
+                        _mutedStyle);
+                }
+            }
+            else if (!string.IsNullOrEmpty(_resolveGoalText))
+            {
+                GUILayout.Label(
+                    $"      (target must be greater than current {rgr.Current:0.#})",
+                    _mutedStyle);
+            }
         }
 
         DrawResolveSnapshot(vm.Resolve);
@@ -3559,6 +3742,33 @@ internal sealed class SidePanel : MonoBehaviour
                     .ToList();
         }
 
+        // Bulk track / untrack: applies to whatever subset is currently in
+        // the filtered view, so the user can scope it via the tier chips and
+        // then flip every visible order in one click.
+        if (sorted.Count > 1)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(
+                $"   bulk ({sorted.Count} visible):",
+                _mutedStyle, GUILayout.Width(140));
+            if (GUILayout.Button(
+                    new GUIContent("track all", "Mark every visible order as tracked"),
+                    _tabStyle, GUILayout.Width(80)))
+            {
+                foreach (var o in sorted)
+                    if (!o.Tracked) LiveGameState.SetOrderTracked(o.Id, true);
+            }
+            if (GUILayout.Button(
+                    new GUIContent("untrack all", "Clear tracked status on every visible order"),
+                    _tabStyle, GUILayout.Width(90)))
+            {
+                foreach (var o in sorted)
+                    if (o.Tracked) LiveGameState.SetOrderTracked(o.Id, false);
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+        }
+
         _ordersScroll = GUILayout.BeginScrollView(_ordersScroll, GUILayout.ExpandHeight(true));
         foreach (var o in sorted) DrawOrderCard(o);
         GUILayout.EndScrollView();
@@ -3690,20 +3900,36 @@ internal sealed class SidePanel : MonoBehaviour
                 for (var i = 1; i < live.Count; i++)
                     common.IntersectWith(live[i].RewardCategories);
 
-                GUILayout.Label("   picks — ranked by reward score:", _mutedStyle);
+                GUILayout.Label("   picks \u2014 ranked by reward score:", _mutedStyle);
+                // Compute the running max so the what-if can show "\u0394 vs best".
+                var bestScore = live.Count == 0 ? 0 : live.Max(p => p.RewardScore);
                 foreach (var p in picks)
                 {
                     var marker = p.Failed
-                        ? "✕"
-                        : (p.IsTopRanked && Config.ShowRecommendations.Value ? "★" : "·");
+                        ? "\u2715"
+                        : (p.IsTopRanked && Config.ShowRecommendations.Value ? "\u2605" : "\u00b7");
                     var rewardNames = p.Rewards.Count == 0
                         ? "(no rewards)"
                         : string.Join(", ", p.Rewards.Select(r => r.DisplayName));
                     var cats = p.RewardCategories.Count == 0 ? "" :
                         $" [{string.Join("+", p.RewardCategories)}]";
+                    GUILayout.BeginHorizontal();
                     GUILayout.Label(
-                        $"      {marker} {p.SetIndexLabel} (score {p.RewardScore:0}){cats} → {rewardNames}",
+                        $"      {marker} {p.SetIndexLabel} (score {p.RewardScore:0}){cats} \u2192 {rewardNames}",
                         _mutedStyle);
+                    GUILayout.FlexibleSpace();
+                    // What-if: open a small breakdown of this pick's rewards
+                    // relative to the best available pick. Toggles per-row.
+                    var previewKey = (o.Id, p.SetIndexLabel ?? "");
+                    var open = _orderPickPreview is { } cur && cur == previewKey;
+                    if (!p.Failed && GUILayout.Button(
+                            new GUIContent(open ? "\u25be what-if" : "\u25b8 what-if",
+                                "Compare this pick's rewards against the best alternative"),
+                            _tabStyle, GUILayout.Width(90)))
+                    {
+                        _orderPickPreview = open ? null : previewKey;
+                    }
+                    GUILayout.EndHorizontal();
                     // Diff: categories in this pick that no other pick offers.
                     if (!p.Failed && live.Count > 1)
                     {
@@ -3716,6 +3942,24 @@ internal sealed class SidePanel : MonoBehaviour
                             GUILayout.Label(
                                 $"         only here: {string.Join(", ", uniques)}",
                                 _mutedStyle);
+                    }
+                    if (open && !p.Failed)
+                    {
+                        var dScore = p.RewardScore - bestScore;
+                        var sign = dScore >= 0 ? "+" : "";
+                        GUILayout.Label(
+                            $"         what-if: \u0394score {sign}{dScore:0} vs best ({bestScore:0})",
+                            dScore >= 0 ? (_okStyle ?? _mutedStyle)
+                                        : (_warnStyle ?? _mutedStyle));
+                        // Per-reward weight breakdown. RewardScore is the sum of
+                        // these weights; surface each component so the player
+                        // can see which reward category drives the score.
+                        foreach (var r in p.Rewards)
+                        {
+                            GUILayout.Label(
+                                $"            \u00b7 {r.DisplayName} [{r.Category}] \u2248 {r.Weight:0.##} weight",
+                                _mutedStyle);
+                        }
                     }
                 }
             }
@@ -3749,6 +3993,18 @@ internal sealed class SidePanel : MonoBehaviour
             DrawBoolSetting(Config.VisibleByDefault,         "Visible by default");
         if (MatchesSettingsFilter("HideEmptyRecipeBuildings"))
             DrawBoolSetting(Config.HideEmptyRecipeBuildings, "Hide empty-recipe buildings");
+        // Reset General section to compiled-in defaults.
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button(new GUIContent("reset general",
+                "Reset general toggles to defaults"),
+                _tabStyle, GUILayout.Width(120)))
+        {
+            ResetEntryToDefault(Config.ShowRecommendations);
+            ResetEntryToDefault(Config.VisibleByDefault);
+            ResetEntryToDefault(Config.HideEmptyRecipeBuildings);
+        }
+        GUILayout.EndHorizontal();
 
         DrawSettingHeader("Tabs");
         // Reflection-driven: any future ConfigEntry<bool> named Show*Tab is
@@ -3840,8 +4096,19 @@ internal sealed class SidePanel : MonoBehaviour
             Config.RaceRatioTargets.Value ?? "", GUILayout.Width(220));
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
-        GUILayout.Label("   format: race=pct,race=pct — e.g. beaver=30,human=40",
+        GUILayout.Label("   format: race=pct,race=pct \u2014 e.g. beaver=30,human=40",
             _mutedStyle);
+        // Reset Risk thresholds section to compiled-in defaults.
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button(new GUIContent("reset risk thresholds",
+                "Reset goods runway threshold and race ratio targets to defaults"),
+                _tabStyle, GUILayout.Width(170)))
+        {
+            ResetEntryToDefault(Config.GoodsAtRiskThresholdMinutes);
+            ResetEntryToDefault(Config.RaceRatioTargets);
+        }
+        GUILayout.EndHorizontal();
 
         GUILayout.Space(8);
         DrawSettingHeader("Config sync");
@@ -4108,6 +4375,17 @@ internal sealed class SidePanel : MonoBehaviour
     }
 
     /// <summary>
+    /// Restores a single <see cref="BepInEx.Configuration.ConfigEntry{T}"/> to
+    /// its compiled-in default. Used by the per-section reset buttons in the
+    /// Settings tab so each section can be returned to a known baseline
+    /// without nuking the entire config.
+    /// </summary>
+    private static void ResetEntryToDefault<T>(BepInEx.Configuration.ConfigEntry<T> entry)
+    {
+        if (entry.DefaultValue is T def) entry.Value = def;
+    }
+
+    /// <summary>
     /// Serialises a flat snapshot of the config's bool/string entries to a
     /// minimal JSON object. Reflection-driven so new entries are picked up
     /// without changes here. KeyboardShortcut/Vector2 are skipped because they
@@ -4213,11 +4491,17 @@ internal sealed class SidePanel : MonoBehaviour
                     var mins = Mathf.Max(0, Mathf.FloorToInt(remaining / 60f));
                     var secs = Mathf.Max(0, Mathf.FloorToInt(remaining % 60f));
                     var pct = Mathf.Clamp01((t - c.Start) / c.Duration) * 100f;
-                    var rowStyle = remaining < 60f ? (_critStyle ?? _mutedStyle)
+                    // Doomed chip: when remaining is under 30s and we've
+                    // already spent more than 80% of the window, flag the row
+                    // as effectively impossible to close out in time.
+                    var doomed = remaining < 30f && pct > 80f;
+                    var doomTag = doomed ? "  \u2620 doomed" : "";
+                    var rowStyle = doomed ? (_critStyle ?? _mutedStyle)
+                                 : remaining < 60f ? (_critStyle ?? _mutedStyle)
                                  : remaining < 180f ? (_warnStyle ?? _mutedStyle)
                                  : _mutedStyle;
                     GUILayout.Label(
-                        $"   · {c.Model}  —  {mins}:{secs:00} left ({pct:0}% elapsed of {c.Duration:0.#}s window)",
+                        $"   \u00b7 {c.Model}  \u2014  {mins}:{secs:00} left ({pct:0}% elapsed of {c.Duration:0.#}s window){doomTag}",
                         rowStyle);
                 }
                 else
@@ -4468,6 +4752,7 @@ internal sealed class SidePanel : MonoBehaviour
         DrawSessionStats();
         DrawPerfHistory();
         DrawCrashDumpsList();
+        DrawSnapshotsList();
         DrawSnapshotButton();
 
         var snapshot = tail.Snapshot();
@@ -4614,6 +4899,45 @@ internal sealed class SidePanel : MonoBehaviour
     }
 
     /// <summary>
+    /// Mirror of <see cref="DrawCrashDumpsList"/> for state snapshots saved by
+    /// <see cref="DrawSnapshotButton"/>. Lists any <c>stormguide-snapshot-*.txt</c>
+    /// next to the BepInEx config so the player can find their archive at a
+    /// glance. Skipped when no snapshots are present.
+    /// </summary>
+    private void DrawSnapshotsList()
+    {
+        string? dir = null;
+        try { dir = BepInEx.Paths.ConfigPath; } catch { }
+        if (string.IsNullOrEmpty(dir)) return;
+        string[] files;
+        try { files = System.IO.Directory.GetFiles(dir!, "stormguide-snapshot-*.txt"); }
+        catch { return; }
+        if (files.Length == 0) return;
+        GUILayout.Space(4);
+        GUILayout.Label($"Snapshots \u2014 {files.Length} on disk", _bodyStyle);
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button(new GUIContent("copy paths",
+                "Copy all snapshot paths to clipboard"),
+                _tabStyle, GUILayout.Width(110)))
+        {
+            try { GUIUtility.systemCopyBuffer = string.Join("\n", files); }
+            catch { }
+        }
+        if (GUILayout.Button(new GUIContent("open dir",
+                "Open BepInEx config dir in the system file browser"),
+                _tabStyle, GUILayout.Width(110)))
+        {
+            try { Application.OpenURL("file://" + dir!.Replace("\\", "/")); }
+            catch { }
+        }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        foreach (var f in files.OrderByDescending(x => x).Take(5))
+            GUILayout.Label("   \u00b7 " + System.IO.Path.GetFileName(f),
+                _mutedStyle);
+    }
+
+    /// <summary>
     /// Lists any <c>stormguide-crash-*.txt</c> dumps in the BepInEx config
     /// directory with copy-paths and open-folder buttons. Skipped when none
     /// are present so the section stays out of the way most of the time.
@@ -4717,9 +5041,30 @@ internal sealed class SidePanel : MonoBehaviour
         var history = LiveGameState.CornerstoneHistory();
         if (history.Count == 0) return;
         GUILayout.Space(8);
-        GUILayout.Label($"Previously drafted — {history.Count}", _bodyStyle);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label($"Previously drafted \u2014 {history.Count}", _bodyStyle);
+        GUILayout.FlexibleSpace();
+        // Free-text filter persisted to PluginConfig.CornerstoneHistorySearch
+        // so a long-run player keeps their last-used filter across sessions.
+        GUILayout.Label("filter:", _mutedStyle, GUILayout.Width(50));
+        var newFilter = GUILayout.TextField(
+            _cornerstoneHistorySearch ?? "", GUILayout.Width(140));
+        if (newFilter != _cornerstoneHistorySearch)
+        {
+            _cornerstoneHistorySearch = newFilter;
+            Config.CornerstoneHistorySearch.Value = newFilter;
+        }
+        if (!string.IsNullOrEmpty(_cornerstoneHistorySearch) &&
+            GUILayout.Button("\u2715", _tabStyle, GUILayout.Width(24)))
+        {
+            _cornerstoneHistorySearch = "";
+            Config.CornerstoneHistorySearch.Value = "";
+        }
+        GUILayout.EndHorizontal();
         var ms = LiveGameState.Services?.GameModelService;
-        foreach (var id in history.Take(20))
+        // Resolve display names once so the filter matches against the
+        // strings the player actually sees (not raw effect ids).
+        var rendered = history.Select(id =>
         {
             string display = id;
             try
@@ -4728,10 +5073,22 @@ internal sealed class SidePanel : MonoBehaviour
                 if (eff != null) display = eff.DisplayName ?? id;
             }
             catch { }
-            GUILayout.Label($"   · {display}", _mutedStyle);
-        }
-        if (history.Count > 20)
-            GUILayout.Label($"   … and {history.Count - 20} more", _mutedStyle);
+            return (Id: id, Display: display);
+        }).ToList();
+        var filtered = string.IsNullOrEmpty(_cornerstoneHistorySearch)
+            ? rendered
+            : rendered.Where(t => t.Display.IndexOf(_cornerstoneHistorySearch,
+                StringComparison.OrdinalIgnoreCase) >= 0 ||
+                t.Id.IndexOf(_cornerstoneHistorySearch,
+                    StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+        if (filtered.Count == 0 && !string.IsNullOrEmpty(_cornerstoneHistorySearch))
+            GUILayout.Label(
+                $"   (no history rows match '{_cornerstoneHistorySearch}')",
+                _mutedStyle);
+        foreach (var (_, display) in filtered.Take(20))
+            GUILayout.Label($"   \u00b7 {display}", _mutedStyle);
+        if (filtered.Count > 20)
+            GUILayout.Label($"   \u2026 and {filtered.Count - 20} more", _mutedStyle);
     }
 
     /// <summary>
@@ -4827,11 +5184,20 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.FlexibleSpace();
         GUILayout.Label(o.Synergy.Format("0"), _bodyStyle);
         // Compare toggle: shows a side-by-side delta against the other
-        // options. Click again on the same row to collapse.
+        // options. Click again on the same row to collapse. Tooltip carries
+        // a one-line summary of the synergy delta against the best other
+        // option so the player can size up the trade-off without expanding.
         var compareOpen = _compareOption == o.EffectId;
+        var bestOther = all
+            .Where(x => x.EffectId != o.EffectId)
+            .OrderByDescending(x => x.Synergy.Value)
+            .FirstOrDefault();
+        var tooltip = bestOther is null
+            ? "Compare against the other options"
+            : $"Compare \u00b7 vs best other ({bestOther.DisplayName}): " +
+              $"\u0394synergy {(o.Synergy.Value - bestOther.Synergy.Value):+0.##;-0.##;0}";
         if (GUILayout.Button(
-                new GUIContent(compareOpen ? "▾ vs" : "▸ vs",
-                    "Compare against the other options"),
+                new GUIContent(compareOpen ? "\u25be vs" : "\u25b8 vs", tooltip),
                 _tabStyle, GUILayout.Width(50)))
         {
             _compareOption = compareOpen ? null : o.EffectId;

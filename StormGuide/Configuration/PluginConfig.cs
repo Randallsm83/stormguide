@@ -50,6 +50,7 @@ public sealed class PluginConfig
     public ConfigEntry<string>           MarkedPriorityRecipes { get; }
     public ConfigEntry<string>           PinnedChaseModel { get; }
     public ConfigEntry<string>           TraderVisitArchive { get; }
+    public ConfigEntry<string>           CornerstoneHistorySearch { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -158,5 +159,7 @@ public sealed class PluginConfig
             "Model name of a glade reward chase pinned to Home. Empty = none.");
         TraderVisitArchive = cfg.Bind(SectionUI, "Trader Visit Archive", "",
             "Semicolon-separated archive of past trader visits. Format: 'trader|good=val,good=val,good=val;...'. Rolling 20 entries.");
+        CornerstoneHistorySearch = cfg.Bind(SectionUI, "Cornerstone History Search", "",
+            "Last text filter applied to the Draft tab's previously-drafted list. Persists between sessions.");
     }
 }
