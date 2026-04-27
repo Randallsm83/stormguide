@@ -1,0 +1,7999 @@
+[
+  {
+    "Name": "Wood",
+    "DisplayName": "Wood",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 7,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Clay (Collector)",
+    "DisplayName": "Clay (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Raw] Clay",
+    "ProducedAmount": 5,
+    "ProductionTime": 150,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Crystalized Dew T0 (Collector)",
+    "DisplayName": "Crystalized Dew T0 (Collector)",
+    "Grade": "Grade0",
+    "ProducedGood": "[Metal] Crystalized Dew",
+    "ProducedAmount": 1,
+    "ProductionTime": 40,
+    "Tags": [
+      "Metal Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Crystalized Dew [ancient]",
+    "DisplayName": "Crystalized Dew [ancient]",
+    "Grade": "Grade3",
+    "ProducedGood": "[Metal] Crystalized Dew",
+    "ProducedAmount": 2,
+    "ProductionTime": 30,
+    "Tags": [
+      "Metal Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Herbs (Collector)",
+    "DisplayName": "Herbs (Collector)",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Herbs",
+    "ProducedAmount": 5,
+    "ProductionTime": 150,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Ink T1 (Collector)",
+    "DisplayName": "Ink T1 (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Crafting] Dye",
+    "ProducedAmount": 3,
+    "ProductionTime": 60,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Insects (Collector)",
+    "DisplayName": "Insects (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Insects",
+    "ProducedAmount": 2,
+    "ProductionTime": 10,
+    "Tags": [
+      "Food Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Leather (Collector)",
+    "DisplayName": "Leather (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Raw] Leather",
+    "ProducedAmount": 2,
+    "ProductionTime": 10,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Meat (Collector)",
+    "DisplayName": "Meat (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Meat",
+    "ProducedAmount": 2,
+    "ProductionTime": 10,
+    "Tags": [
+      "Food Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Mushrooms (Collector)",
+    "DisplayName": "Mushrooms (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Mushrooms",
+    "ProducedAmount": 3,
+    "ProductionTime": 150,
+    "Tags": [
+      "Food Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Reeds (Collector)",
+    "DisplayName": "Reeds (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Raw] Reeds",
+    "ProducedAmount": 5,
+    "ProductionTime": 150,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Roots (Collector)",
+    "DisplayName": "Roots (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Roots",
+    "ProducedAmount": 2,
+    "ProductionTime": 10,
+    "Tags": [
+      "Food Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Sparkdew T1 (Collector)",
+    "DisplayName": "Sparkdew T1 (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Raw] Sparkdew",
+    "ProducedAmount": 2,
+    "ProductionTime": 30,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Stone [ancient]",
+    "DisplayName": "Stone [ancient]",
+    "Grade": "Grade3",
+    "ProducedGood": "[Mat Raw] Stone",
+    "ProducedAmount": 2,
+    "ProductionTime": 30,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Wine T1 (Collector)",
+    "DisplayName": "Wine T1 (Collector)",
+    "Grade": "Grade1",
+    "ProducedGood": "[Needs] Wine",
+    "ProducedAmount": 4,
+    "ProductionTime": 60,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Berries Plantation",
+    "DisplayName": "Berries Plantation",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Berries",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Plantation"
+    ]
+  },
+  {
+    "Name": "Crystalized Dew Grove",
+    "DisplayName": "Crystalized Dew Grove",
+    "Grade": "Grade2",
+    "ProducedGood": "[Metal] Crystalized Dew",
+    "ProducedAmount": 3,
+    "ProductionTime": 1,
+    "Tags": [
+      "Metal Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Grove"
+    ]
+  },
+  {
+    "Name": "Fibre Plantation",
+    "DisplayName": "Fibre Plantation",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Raw] Plant Fibre",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Plantation"
+    ]
+  },
+  {
+    "Name": "Grain Big Farm",
+    "DisplayName": "Grain Big Farm",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Raw] Grain",
+    "ProducedAmount": 9,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Homestead"
+    ]
+  },
+  {
+    "Name": "Grain Small Farm",
+    "DisplayName": "Grain Small Farm",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Grain",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "SmallFarm"
+    ]
+  },
+  {
+    "Name": "Herbs Herb Garden",
+    "DisplayName": "Herbs Herb Garden",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Herbs",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Herb Garden"
+    ]
+  },
+  {
+    "Name": "Insects Brineworks",
+    "DisplayName": "Insects Brineworks",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Insects",
+    "ProducedAmount": 3,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Brineworks"
+    ]
+  },
+  {
+    "Name": "More Berries Plantation",
+    "DisplayName": "More Berries Plantation",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Raw] Berries",
+    "ProducedAmount": 9,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "More Crystalized Dew Grove",
+    "DisplayName": "More Crystalized Dew Grove",
+    "Grade": "Grade3",
+    "ProducedGood": "[Metal] Crystalized Dew",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Metal Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "More Fibre Small Farm",
+    "DisplayName": "More Fibre Small Farm",
+    "Grade": "Grade3",
+    "ProducedGood": "[Mat Raw] Plant Fibre",
+    "ProducedAmount": 9,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "More Grain Small Farm",
+    "DisplayName": "More Grain Small Farm",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Raw] Grain",
+    "ProducedAmount": 9,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Hallowed SmallFarm"
+    ]
+  },
+  {
+    "Name": "More Herbs Herb Garden",
+    "DisplayName": "More Herbs Herb Garden",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Raw] Herbs",
+    "ProducedAmount": 9,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Hallowed Herb Garden"
+    ]
+  },
+  {
+    "Name": "More Roots Herb Garden",
+    "DisplayName": "More Roots Herb Garden",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Raw] Roots",
+    "ProducedAmount": 9,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Hallowed Herb Garden"
+    ]
+  },
+  {
+    "Name": "More Vegetable Small Farm",
+    "DisplayName": "More Vegetable Small Farm",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Raw] Vegetables",
+    "ProducedAmount": 9,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Hallowed SmallFarm"
+    ]
+  },
+  {
+    "Name": "Mushrooms Big Farm",
+    "DisplayName": "Mushrooms Big Farm",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Mushrooms",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Homestead"
+    ]
+  },
+  {
+    "Name": "Mushrooms Small Farm - Altar",
+    "DisplayName": "Mushrooms Small Farm - Altar",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Raw] Mushrooms",
+    "ProducedAmount": 9,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Mushrooms Small Farm",
+    "DisplayName": "Mushrooms Small Farm",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Mushrooms",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Plant Fibre Big Farm",
+    "DisplayName": "Plant Fibre Big Farm",
+    "Grade": "Grade3",
+    "ProducedGood": "[Mat Raw] Plant Fibre",
+    "ProducedAmount": 9,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Homestead"
+    ]
+  },
+  {
+    "Name": "Resin Grove",
+    "DisplayName": "Resin Grove",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Raw] Resin",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Grove"
+    ]
+  },
+  {
+    "Name": "Roots Herb Garden",
+    "DisplayName": "Roots Herb Garden",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Roots",
+    "ProducedAmount": 3,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Herb Garden"
+    ]
+  },
+  {
+    "Name": "Roots Small Farm",
+    "DisplayName": "Roots Small Farm",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Roots",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Salt Brineworks",
+    "DisplayName": "Salt Brineworks",
+    "Grade": "Grade2",
+    "ProducedGood": "[Crafting] Salt",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Brineworks"
+    ]
+  },
+  {
+    "Name": "Vegetable Big Farm",
+    "DisplayName": "Vegetable Big Farm",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Vegetables",
+    "ProducedAmount": 6,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Homestead"
+    ]
+  },
+  {
+    "Name": "Vegetable Small Farm",
+    "DisplayName": "Vegetable Small Farm",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Vegetables",
+    "ProducedAmount": 3,
+    "ProductionTime": 1,
+    "Tags": [
+      "Food Tag",
+      "Farm Recipe Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "SmallFarm"
+    ]
+  },
+  {
+    "Name": "Algae T1",
+    "DisplayName": "Algae T1",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 12,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Fishing Hut"
+    ]
+  },
+  {
+    "Name": "Algae T2",
+    "DisplayName": "Algae T2",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 8,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Fishing Hut"
+    ]
+  },
+  {
+    "Name": "Fish T1",
+    "DisplayName": "Fish T1",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 20,
+    "Tags": [
+      "Food Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Fishing Hut"
+    ]
+  },
+  {
+    "Name": "Fish T2",
+    "DisplayName": "Fish T2",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 15,
+    "Tags": [
+      "Food Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Fishing Hut"
+    ]
+  },
+  {
+    "Name": "Scales T1",
+    "DisplayName": "Scales T1",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 12,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Fishing Hut"
+    ]
+  },
+  {
+    "Name": "Scales T2",
+    "DisplayName": "Scales T2",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 8,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Fishing Hut"
+    ]
+  },
+  {
+    "Name": "Berries T0",
+    "DisplayName": "Berries T0",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 25,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Herbalist\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Berries",
+    "DisplayName": "Berries",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 17,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Herbalist\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Clay",
+    "DisplayName": "Clay",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 8,
+    "Tags": [
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Stonecutter\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Eggs T0",
+    "DisplayName": "Eggs T0",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 25,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Trapper\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Eggs",
+    "DisplayName": "Eggs",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 17,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Trapper\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Grain T0",
+    "DisplayName": "Grain T0",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 25,
+    "Tags": [
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Forager\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Grain",
+    "DisplayName": "Grain",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 17,
+    "Tags": [
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Forager\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Herbs T0",
+    "DisplayName": "Herbs T0",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 25,
+    "Tags": [
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Herbalist\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Herbs",
+    "DisplayName": "Herbs",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 17,
+    "Tags": [
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Herbalist\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Insects T0",
+    "DisplayName": "Insects T0",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 25,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Trapper\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Insects",
+    "DisplayName": "Insects",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 17,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Trapper\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Leather",
+    "DisplayName": "Leather",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 8,
+    "Tags": [
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Harvester Camp"
+    ]
+  },
+  {
+    "Name": "Meat T0",
+    "DisplayName": "Meat T0",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 25,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Trapper\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Meat",
+    "DisplayName": "Meat",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 17,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Trapper\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Mushrooms T0",
+    "DisplayName": "Mushrooms T0",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 25,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Herbalist\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Mushrooms",
+    "DisplayName": "Mushrooms",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 17,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Herbalist\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Plant Fibre",
+    "DisplayName": "Plant Fibre",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 8,
+    "Tags": [
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Harvester Camp"
+    ]
+  },
+  {
+    "Name": "Reeds",
+    "DisplayName": "Reeds",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 8,
+    "Tags": [
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Harvester Camp"
+    ]
+  },
+  {
+    "Name": "Roots T0",
+    "DisplayName": "Roots T0",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 25,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Forager\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Roots",
+    "DisplayName": "Roots",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 17,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Forager\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Sea Marrow",
+    "DisplayName": "Sea Marrow",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 8,
+    "Tags": [
+      "Gathering Tag",
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Stonecutter\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Stone",
+    "DisplayName": "Stone",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 8,
+    "Tags": [
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Stonecutter\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Vegetables T0",
+    "DisplayName": "Vegetables T0",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 25,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Primitive Forager\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Vegetables",
+    "DisplayName": "Vegetables",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 17,
+    "Tags": [
+      "Food Tag",
+      "Gathering Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Forager\u0027s Camp"
+    ]
+  },
+  {
+    "Name": "Bloodthirst",
+    "DisplayName": "Bloodthirst",
+    "Grade": "Grade1 - institution",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 1,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Clan Hall",
+      "Forum",
+      "Academy",
+      "Feast Hall"
+    ]
+  },
+  {
+    "Name": "Brotherhood_Free",
+    "DisplayName": "Brotherhood_Free",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 1,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Education_Free",
+    "DisplayName": "Education_Free",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 1,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Education",
+    "DisplayName": "Education",
+    "Grade": "Grade1 - institution",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 1,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Holy Temple",
+      "Temple",
+      "Holy Guild House",
+      "Guild House",
+      "Academy"
+    ]
+  },
+  {
+    "Name": "Leasiure",
+    "DisplayName": "Leasiure",
+    "Grade": "Grade1 - institution",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 1,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Tavern",
+      "Monastery",
+      "Holy Market",
+      "Market"
+    ]
+  },
+  {
+    "Name": "Luxury_Free",
+    "DisplayName": "Luxury_Free",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 1,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": []
+  },
+  {
+    "Name": "Luxury",
+    "DisplayName": "Luxury",
+    "Grade": "Grade1 - institution",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 1,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Tavern",
+      "Holy Guild House",
+      "Forum",
+      "Guild House"
+    ]
+  },
+  {
+    "Name": "Religion",
+    "DisplayName": "Religion",
+    "Grade": "Grade1 - institution",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 1,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Holy Temple",
+      "Temple",
+      "Monastery",
+      "Tea Doctor"
+    ]
+  },
+  {
+    "Name": "Treatment",
+    "DisplayName": "Treatment",
+    "Grade": "Grade1 - institution",
+    "ProducedGood": "",
+    "ProducedAmount": 1,
+    "ProductionTime": 1,
+    "Tags": [],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Holy Market",
+      "Market",
+      "Tea Doctor",
+      "Bath House",
+      "Feast Hall"
+    ]
+  },
+  {
+    "Name": "Coal",
+    "DisplayName": "Coal",
+    "Grade": "Grade2",
+    "ProducedGood": "[Crafting] Coal",
+    "ProducedAmount": 1,
+    "ProductionTime": 35,
+    "Tags": [
+      "Fuel Tag",
+      "Ore Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Mine"
+    ]
+  },
+  {
+    "Name": "Copper",
+    "DisplayName": "Copper",
+    "Grade": "Grade2",
+    "ProducedGood": "[Metal] Copper Ore",
+    "ProducedAmount": 1,
+    "ProductionTime": 30,
+    "Tags": [
+      "Metal Tag",
+      "Ore Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Mine"
+    ]
+  },
+  {
+    "Name": "Salt",
+    "DisplayName": "Salt",
+    "Grade": "Grade2",
+    "ProducedGood": "[Crafting] Salt",
+    "ProducedAmount": 1,
+    "ProductionTime": 30,
+    "Tags": [
+      "Ore Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Mine"
+    ]
+  },
+  {
+    "Name": "Clearance Rain Catcher (T0)",
+    "DisplayName": "Clearance Rain Catcher (T0)",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 2,
+    "ProductionTime": 20,
+    "Tags": [
+      "[Tag] Rainpunk",
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Rain Catcher"
+    ]
+  },
+  {
+    "Name": "Clearance Rain Catcher (T1)",
+    "DisplayName": "Clearance Rain Catcher (T1)",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 4,
+    "ProductionTime": 20,
+    "Tags": [
+      "[Tag] Rainpunk",
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Advanced Rain Catcher"
+    ]
+  },
+  {
+    "Name": "Drizzle Rain Catcher (T0)",
+    "DisplayName": "Drizzle Rain Catcher (T0)",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 2,
+    "ProductionTime": 20,
+    "Tags": [
+      "[Tag] Rainpunk",
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Rain Catcher"
+    ]
+  },
+  {
+    "Name": "Drizzle Rain Catcher (T1)",
+    "DisplayName": "Drizzle Rain Catcher (T1)",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 4,
+    "ProductionTime": 20,
+    "Tags": [
+      "[Tag] Rainpunk",
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Advanced Rain Catcher"
+    ]
+  },
+  {
+    "Name": "Storm Rain Catcher (T0)",
+    "DisplayName": "Storm Rain Catcher (T0)",
+    "Grade": "Grade1",
+    "ProducedGood": "",
+    "ProducedAmount": 2,
+    "ProductionTime": 20,
+    "Tags": [
+      "[Tag] Rainpunk",
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Rain Catcher"
+    ]
+  },
+  {
+    "Name": "Storm Rain Catcher (T1)",
+    "DisplayName": "Storm Rain Catcher (T1)",
+    "Grade": "Grade2",
+    "ProducedGood": "",
+    "ProducedAmount": 4,
+    "ProductionTime": 20,
+    "Tags": [
+      "[Tag] Rainpunk",
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [],
+    "Buildings": [
+      "Advanced Rain Catcher"
+    ]
+  },
+  {
+    "Name": "- todelete - Pack of Luxury Goods",
+    "DisplayName": "- todelete - Pack of Luxury Goods",
+    "Grade": "Grade1",
+    "ProducedGood": "[Packs] Pack of Luxury Goods",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Needs] Incense",
+            "Amount": 2
+          },
+          {
+            "Good": "[Needs] Wine",
+            "Amount": 2
+          },
+          {
+            "Good": "[Needs] Ale",
+            "Amount": 3
+          },
+          {
+            "Good": "[Needs] Scrolls",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Coal T0",
+    "DisplayName": "Coal T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Crafting] Coal",
+    "ProducedAmount": 2,
+    "ProductionTime": 126,
+    "Tags": [
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 20
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 15
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Coal T1",
+    "DisplayName": "Coal T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Crafting] Coal",
+    "ProducedAmount": 3,
+    "ProductionTime": 126,
+    "Tags": [
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 15
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 8
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Brick Oven"
+    ]
+  },
+  {
+    "Name": "Coal T2",
+    "DisplayName": "Coal T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Crafting] Coal",
+    "ProducedAmount": 4,
+    "ProductionTime": 126,
+    "Tags": [
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 12
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Coal T3",
+    "DisplayName": "Coal T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Crafting] Coal",
+    "ProducedAmount": 5,
+    "ProductionTime": 84,
+    "Tags": [
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 10
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Kiln"
+    ]
+  },
+  {
+    "Name": "Copper Bar T0",
+    "DisplayName": "Copper Bar T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Metal] Copper Bar",
+    "ProducedAmount": 2,
+    "ProductionTime": 56,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Copper Bar and Crystalized Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 10
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 10
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 10
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Copper Bar T1",
+    "DisplayName": "Copper Bar T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Metal] Copper Bar",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Copper Bar and Crystalized Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Grill"
+    ]
+  },
+  {
+    "Name": "Copper Bar T2",
+    "DisplayName": "Copper Bar T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Metal] Copper Bar",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Copper Bar and Crystalized Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Stamping Mill",
+      "Furnace"
+    ]
+  },
+  {
+    "Name": "Copper Bar T3",
+    "DisplayName": "Copper Bar T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Metal] Copper Bar",
+    "ProducedAmount": 2,
+    "ProductionTime": 28,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Copper Bar and Crystalized Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Smelter",
+      "Smelter"
+    ]
+  },
+  {
+    "Name": "Crystalized Dew T0",
+    "DisplayName": "Crystalized Dew T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Metal] Crystalized Dew",
+    "ProducedAmount": 2,
+    "ProductionTime": 56,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Recipe With Water Tag",
+      "Copper Bar and Crystalized Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 12
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 16
+          },
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 20
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Crystalized Dew T1",
+    "DisplayName": "Crystalized Dew T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Metal] Crystalized Dew",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Recipe With Water Tag",
+      "Copper Bar and Crystalized Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 10
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 14
+          },
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 18
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Brickyard",
+      "Beanery"
+    ]
+  },
+  {
+    "Name": "Crystalized Dew T2",
+    "DisplayName": "Crystalized Dew T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Metal] Crystalized Dew",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Recipe With Water Tag",
+      "Copper Bar and Crystalized Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 8
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 12
+          },
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 16
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Alchemist Hut"
+    ]
+  },
+  {
+    "Name": "Crystalized Dew T3",
+    "DisplayName": "Crystalized Dew T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Metal] Crystalized Dew",
+    "ProducedAmount": 2,
+    "ProductionTime": 28,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Recipe With Water Tag",
+      "Copper Bar and Crystalized Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 6
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 10
+          },
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 14
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Dye T0",
+    "DisplayName": "Dye T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Crafting] Dye",
+    "ProducedAmount": 10,
+    "ProductionTime": 168,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 8
+          },
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 8
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 8
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 7
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Dye T1",
+    "DisplayName": "Dye T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Crafting] Dye",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 5
+          },
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cobbler"
+    ]
+  },
+  {
+    "Name": "Dye T2",
+    "DisplayName": "Dye T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Crafting] Dye",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 4
+          },
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Apothecary",
+      "Manufactory"
+    ]
+  },
+  {
+    "Name": "Dye T3",
+    "DisplayName": "Dye T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Crafting] Dye",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 3
+          },
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Tinctury"
+    ]
+  },
+  {
+    "Name": "Flour T0",
+    "DisplayName": "Flour T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Crafting] Flour",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 10
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 10
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 10
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 10
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Flour T1",
+    "DisplayName": "Flour T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Crafting] Flour",
+    "ProducedAmount": 10,
+    "ProductionTime": 84,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 8
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 8
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Press"
+    ]
+  },
+  {
+    "Name": "Flour T2",
+    "DisplayName": "Flour T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Crafting] Flour",
+    "ProducedAmount": 10,
+    "ProductionTime": 63,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 7
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 7
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Provisioner",
+      "Stamping Mill",
+      "Supplier"
+    ]
+  },
+  {
+    "Name": "Flour T3",
+    "DisplayName": "Flour T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Crafting] Flour",
+    "ProducedAmount": 10,
+    "ProductionTime": 63,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Rain Mill",
+      "Rain Mill"
+    ]
+  },
+  {
+    "Name": "Hearth Parts T3",
+    "DisplayName": "Hearth Parts T3",
+    "Grade": "Grade3",
+    "ProducedGood": "Hearth Parts",
+    "ProducedAmount": 1,
+    "ProductionTime": 90,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 15
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 1
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 1
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 10
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 10
+          },
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 10
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Rainpunk Foundry"
+    ]
+  },
+  {
+    "Name": "Leather (workshop) T1",
+    "DisplayName": "Leather (workshop) T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Raw] Leather",
+    "ProducedAmount": 4,
+    "ProductionTime": 42,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Ranch"
+    ]
+  },
+  {
+    "Name": "Meat (workshop) T1",
+    "DisplayName": "Meat (workshop) T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Meat",
+    "ProducedAmount": 10,
+    "ProductionTime": 84,
+    "Tags": [
+      "Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 8
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 8
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Ranch"
+    ]
+  },
+  {
+    "Name": "Oil T0",
+    "DisplayName": "Oil T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Crafting] Oil",
+    "ProducedAmount": 5,
+    "ProductionTime": 126,
+    "Tags": [
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Oil T1",
+    "DisplayName": "Oil T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Crafting] Oil",
+    "ProducedAmount": 5,
+    "ProductionTime": 84,
+    "Tags": [
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Oil T2",
+    "DisplayName": "Oil T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Crafting] Oil",
+    "ProducedAmount": 5,
+    "ProductionTime": 84,
+    "Tags": [
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Butcher"
+    ]
+  },
+  {
+    "Name": "Oil T3",
+    "DisplayName": "Oil T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Crafting] Oil",
+    "ProducedAmount": 5,
+    "ProductionTime": 63,
+    "Tags": [
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Press",
+      "Druid",
+      "Flawless Druid"
+    ]
+  },
+  {
+    "Name": "Pack of Building Materials T0",
+    "DisplayName": "Pack of Building Materials T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Packs] Pack of Building Materials",
+    "ProducedAmount": 2,
+    "ProductionTime": 56,
+    "Tags": [
+      "Packs Tag",
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 10
+          },
+          {
+            "Good": "[Mat Processed] Fabric",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Processed] Bricks",
+            "Amount": 6
+          },
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 14
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Makeshift Post"
+    ]
+  },
+  {
+    "Name": "Pack of Building Materials T1",
+    "DisplayName": "Pack of Building Materials T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Packs] Pack of Building Materials",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag",
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 8
+          },
+          {
+            "Good": "[Mat Processed] Fabric",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Processed] Bricks",
+            "Amount": 5
+          },
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 12
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Pack of Building Materials T2",
+    "DisplayName": "Pack of Building Materials T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Packs] Pack of Building Materials",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag",
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 7
+          },
+          {
+            "Good": "[Mat Processed] Fabric",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Processed] Bricks",
+            "Amount": 4
+          },
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 10
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cobbler",
+      "Clothier"
+    ]
+  },
+  {
+    "Name": "Pack of Building Materials T3",
+    "DisplayName": "Pack of Building Materials T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Packs] Pack of Building Materials",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag",
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Processed] Fabric",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Processed] Bricks",
+            "Amount": 3
+          },
+          {
+            "Good": "[Metal] Copper Ore",
+            "Amount": 8
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Pack of Crops T0",
+    "DisplayName": "Pack of Crops T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Packs] Pack of Crops",
+    "ProducedAmount": 2,
+    "ProductionTime": 56,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Makeshift Post"
+    ]
+  },
+  {
+    "Name": "Pack of Crops T1",
+    "DisplayName": "Pack of Crops T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Packs] Pack of Crops",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Brewery"
+    ]
+  },
+  {
+    "Name": "Pack of Crops T2",
+    "DisplayName": "Pack of Crops T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Packs] Pack of Crops",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Granary"
+    ]
+  },
+  {
+    "Name": "Pack of Crops T3",
+    "DisplayName": "Pack of Crops T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Packs] Pack of Crops",
+    "ProducedAmount": 2,
+    "ProductionTime": 28,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Brewery"
+    ]
+  },
+  {
+    "Name": "Pack of Luxury Goods T0",
+    "DisplayName": "Pack of Luxury Goods T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Packs] Pack of Luxury Goods",
+    "ProducedAmount": 2,
+    "ProductionTime": 56,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Needs] Wine",
+            "Amount": 6
+          },
+          {
+            "Good": "[Needs] Training Gear",
+            "Amount": 6
+          },
+          {
+            "Good": "[Needs] Incense",
+            "Amount": 6
+          },
+          {
+            "Good": "[Needs] Scrolls",
+            "Amount": 6
+          },
+          {
+            "Good": "[Needs] Ale",
+            "Amount": 6
+          },
+          {
+            "Good": "[Needs] Tea",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Pack of Luxury Goods T1",
+    "DisplayName": "Pack of Luxury Goods T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Packs] Pack of Luxury Goods",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Needs] Wine",
+            "Amount": 5
+          },
+          {
+            "Good": "[Needs] Training Gear",
+            "Amount": 5
+          },
+          {
+            "Good": "[Needs] Incense",
+            "Amount": 5
+          },
+          {
+            "Good": "[Needs] Scrolls",
+            "Amount": 5
+          },
+          {
+            "Good": "[Needs] Ale",
+            "Amount": 5
+          },
+          {
+            "Good": "[Needs] Tea",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cooperage"
+    ]
+  },
+  {
+    "Name": "Pack of Luxury Goods T2",
+    "DisplayName": "Pack of Luxury Goods T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Packs] Pack of Luxury Goods",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Needs] Wine",
+            "Amount": 4
+          },
+          {
+            "Good": "[Needs] Training Gear",
+            "Amount": 4
+          },
+          {
+            "Good": "[Needs] Incense",
+            "Amount": 4
+          },
+          {
+            "Good": "[Needs] Scrolls",
+            "Amount": 4
+          },
+          {
+            "Good": "[Needs] Ale",
+            "Amount": 4
+          },
+          {
+            "Good": "[Needs] Tea",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Carpenter",
+      "Pantry"
+    ]
+  },
+  {
+    "Name": "Pack of Luxury Goods T3",
+    "DisplayName": "Pack of Luxury Goods T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Packs] Pack of Luxury Goods",
+    "ProducedAmount": 2,
+    "ProductionTime": 28,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Needs] Wine",
+            "Amount": 3
+          },
+          {
+            "Good": "[Needs] Training Gear",
+            "Amount": 3
+          },
+          {
+            "Good": "[Needs] Incense",
+            "Amount": 3
+          },
+          {
+            "Good": "[Needs] Scrolls",
+            "Amount": 3
+          },
+          {
+            "Good": "[Needs] Ale",
+            "Amount": 3
+          },
+          {
+            "Good": "[Needs] Tea",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Cooperage"
+    ]
+  },
+  {
+    "Name": "Pack of Provisions T0",
+    "DisplayName": "Pack of Provisions T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Packs] Pack of Provisions",
+    "ProducedAmount": 3,
+    "ProductionTime": 56,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Makeshift Post"
+    ]
+  },
+  {
+    "Name": "Pack of Provisions T1",
+    "DisplayName": "Pack of Provisions T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Packs] Pack of Provisions",
+    "ProducedAmount": 3,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cellar"
+    ]
+  },
+  {
+    "Name": "Pack of Provisions T2",
+    "DisplayName": "Pack of Provisions T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Packs] Pack of Provisions",
+    "ProducedAmount": 3,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Provisioner"
+    ]
+  },
+  {
+    "Name": "Pack of Provisions T3",
+    "DisplayName": "Pack of Provisions T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Packs] Pack of Provisions",
+    "ProducedAmount": 3,
+    "ProductionTime": 28,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Cellar"
+    ]
+  },
+  {
+    "Name": "Pack of Trade Goods T0",
+    "DisplayName": "Pack of Trade Goods T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Packs] Pack of Trade Goods",
+    "ProducedAmount": 2,
+    "ProductionTime": 56,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 10
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 10
+          },
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 8
+          },
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 8
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 8
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 8
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Pack of Trade Goods T1",
+    "DisplayName": "Pack of Trade Goods T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Packs] Pack of Trade Goods",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 8
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 8
+          },
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 6
+          },
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 6
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 6
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Lumbermill"
+    ]
+  },
+  {
+    "Name": "Pack of Trade Goods T2",
+    "DisplayName": "Pack of Trade Goods T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Packs] Pack of Trade Goods",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 6
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 6
+          },
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 4
+          },
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 4
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 4
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Smithy",
+      "Scribe"
+    ]
+  },
+  {
+    "Name": "Pack of Trade Goods T3",
+    "DisplayName": "Pack of Trade Goods T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Packs] Pack of Trade Goods",
+    "ProducedAmount": 2,
+    "ProductionTime": 28,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Pipe T0",
+    "DisplayName": "Pipe T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Mat Processed] Pipe",
+    "ProducedAmount": 2,
+    "ProductionTime": 60,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 3
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Crude Workstation",
+      "Workshop"
+    ]
+  },
+  {
+    "Name": "Pipe T1",
+    "DisplayName": "Pipe T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Processed] Pipe",
+    "ProducedAmount": 2,
+    "ProductionTime": 60,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 2
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Pipe T2",
+    "DisplayName": "Pipe T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Processed] Pipe",
+    "ProducedAmount": 3,
+    "ProductionTime": 60,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 2
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Smithy",
+      "Toolshop"
+    ]
+  },
+  {
+    "Name": "Pipe T3",
+    "DisplayName": "Pipe T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Mat Processed] Pipe",
+    "ProducedAmount": 4,
+    "ProductionTime": 60,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe",
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 2
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Ruins Pack of Crops T3",
+    "DisplayName": "Ruins Pack of Crops T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Packs] Pack of Crops",
+    "ProducedAmount": 5,
+    "ProductionTime": 28,
+    "Tags": [
+      "Packs Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Ruins [Food Processed] Pickled Goods T3",
+    "DisplayName": "Ruins [Food Processed] Pickled Goods T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Processed] Pickled Goods",
+    "ProducedAmount": 15,
+    "ProductionTime": 105,
+    "Tags": [
+      "Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Ruins [Needs Fullfilment] Ale T3",
+    "DisplayName": "Ruins [Needs Fullfilment] Ale T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Needs] Ale",
+    "ProducedAmount": 15,
+    "ProductionTime": 105,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 2
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 1
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Sparkdew",
+    "DisplayName": "Sparkdew",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Raw] Sparkdew",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 1
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "T1 Blight Fuel",
+    "DisplayName": "T1 Blight Fuel",
+    "Grade": "Grade3",
+    "ProducedGood": "Blight Fuel",
+    "ProducedAmount": 1,
+    "ProductionTime": 40,
+    "Tags": [
+      "Fuel Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 10
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Tools Simple T0",
+    "DisplayName": "Tools Simple T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Tools] Simple Tools",
+    "ProducedAmount": 2,
+    "ProductionTime": 100,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 12
+          },
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 5
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Tools Simple T1",
+    "DisplayName": "Tools Simple T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Tools] Simple Tools",
+    "ProducedAmount": 2,
+    "ProductionTime": 90,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 10
+          },
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 4
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "Tools Simple T2",
+    "DisplayName": "Tools Simple T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Tools] Simple Tools",
+    "ProducedAmount": 2,
+    "ProductionTime": 75,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 8
+          },
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 3
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Carpenter",
+      "Smithy",
+      "Tinkerer"
+    ]
+  },
+  {
+    "Name": "Tools Simple T3",
+    "DisplayName": "Tools Simple T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Tools] Simple Tools",
+    "ProducedAmount": 2,
+    "ProductionTime": 60,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 2
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Toolshop",
+      "Finesmith"
+    ]
+  },
+  {
+    "Name": "Workshop Eggs T1",
+    "DisplayName": "Workshop Eggs T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Raw] Eggs",
+    "ProducedAmount": 5,
+    "ProductionTime": 84,
+    "Tags": [
+      "Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Ranch"
+    ]
+  },
+  {
+    "Name": "[Biome] Fuel Rod T3",
+    "DisplayName": "[Biome] Fuel Rod T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Other] Fuel Rod",
+    "ProducedAmount": 1,
+    "ProductionTime": 120,
+    "Tags": [
+      "Fuel Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 12
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 9
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 9
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 4
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 12
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 12
+          },
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 12
+          },
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 12
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 12
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 12
+          },
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 12
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 12
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Building Material] Bricks T0",
+    "DisplayName": "[Building Material] Bricks T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Mat Processed] Bricks",
+    "ProducedAmount": 2,
+    "ProductionTime": 56,
+    "Tags": [
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Crude Workstation"
+    ]
+  },
+  {
+    "Name": "[Building Material] Bricks T1",
+    "DisplayName": "[Building Material] Bricks T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Processed] Bricks",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Kiln"
+    ]
+  },
+  {
+    "Name": "[Building Material] Bricks T2",
+    "DisplayName": "[Building Material] Bricks T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Processed] Bricks",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Workshop",
+      "Stamping Mill"
+    ]
+  },
+  {
+    "Name": "[Building Material] Bricks T3",
+    "DisplayName": "[Building Material] Bricks T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Mat Processed] Bricks",
+    "ProducedAmount": 2,
+    "ProductionTime": 28,
+    "Tags": [
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Brickyard"
+    ]
+  },
+  {
+    "Name": "[Building Material] Fabric T0",
+    "DisplayName": "[Building Material] Fabric T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Mat Processed] Fabric",
+    "ProducedAmount": 2,
+    "ProductionTime": 56,
+    "Tags": [
+      "Building Material Tag",
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Crude Workstation"
+    ]
+  },
+  {
+    "Name": "[Building Material] Fabric T1",
+    "DisplayName": "[Building Material] Fabric T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Processed] Fabric",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Building Material Tag",
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Building Material] Fabric T2",
+    "DisplayName": "[Building Material] Fabric T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Processed] Fabric",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Building Material Tag",
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Workshop",
+      "Granary",
+      "Manufactory"
+    ]
+  },
+  {
+    "Name": "[Building Material] Fabric T3",
+    "DisplayName": "[Building Material] Fabric T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Mat Processed] Fabric",
+    "ProducedAmount": 2,
+    "ProductionTime": 28,
+    "Tags": [
+      "Building Material Tag",
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Algae",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Weaver"
+    ]
+  },
+  {
+    "Name": "[Building Material] Planks T0",
+    "DisplayName": "[Building Material] Planks T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Mat Processed] Planks",
+    "ProducedAmount": 2,
+    "ProductionTime": 56,
+    "Tags": [
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 8
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Crude Workstation"
+    ]
+  },
+  {
+    "Name": "[Building Material] Planks T1",
+    "DisplayName": "[Building Material] Planks T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Mat Processed] Planks",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Building Material] Planks T2",
+    "DisplayName": "[Building Material] Planks T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Processed] Planks",
+    "ProducedAmount": 2,
+    "ProductionTime": 42,
+    "Tags": [
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Workshop",
+      "Carpenter",
+      "Supplier"
+    ]
+  },
+  {
+    "Name": "[Building Material] Planks T3",
+    "DisplayName": "[Building Material] Planks T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Mat Processed] Planks",
+    "ProducedAmount": 2,
+    "ProductionTime": 28,
+    "Tags": [
+      "Building Material Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Lumbermill"
+    ]
+  },
+  {
+    "Name": "[Clay Pit] Clay T2",
+    "DisplayName": "[Clay Pit] Clay T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Raw] Clay",
+    "ProducedAmount": 4,
+    "ProductionTime": 60,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Clay Pit Workshop"
+    ]
+  },
+  {
+    "Name": "[Clay Pit] Reeds T2",
+    "DisplayName": "[Clay Pit] Reeds T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Raw] Reeds",
+    "ProducedAmount": 4,
+    "ProductionTime": 60,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Clay Pit Workshop"
+    ]
+  },
+  {
+    "Name": "[Clay Pit] Resin T2",
+    "DisplayName": "[Clay Pit] Resin T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Raw] Resin",
+    "ProducedAmount": 4,
+    "ProductionTime": 60,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Clay Pit Workshop"
+    ]
+  },
+  {
+    "Name": "[Clay Pit] Stone T2",
+    "DisplayName": "[Clay Pit] Stone T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Mat Raw] Stone",
+    "ProducedAmount": 4,
+    "ProductionTime": 84,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Food Processed] Biscuits T0",
+    "DisplayName": "[Food Processed] Biscuits T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Food Processed] Biscuits",
+    "ProducedAmount": 10,
+    "ProductionTime": 110,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 8
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Field Kitchen"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Biscuits T1",
+    "DisplayName": "[Food Processed] Biscuits T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Processed] Biscuits",
+    "ProducedAmount": 10,
+    "ProductionTime": 110,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cannery"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Biscuits T2",
+    "DisplayName": "[Food Processed] Biscuits T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Processed] Biscuits",
+    "ProducedAmount": 10,
+    "ProductionTime": 110,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Bakery",
+      "Cookhouse"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Biscuits T3",
+    "DisplayName": "[Food Processed] Biscuits T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Processed] Biscuits",
+    "ProducedAmount": 10,
+    "ProductionTime": 90,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Brick Oven"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Jerky T0",
+    "DisplayName": "[Food Processed] Jerky T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Food Processed] Jerky",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 8
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Food Processed] Jerky T1",
+    "DisplayName": "[Food Processed] Jerky T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Processed] Jerky",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Kiln"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Jerky T2",
+    "DisplayName": "[Food Processed] Jerky T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Processed] Jerky",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Butcher",
+      "Apothecary"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Jerky T3",
+    "DisplayName": "[Food Processed] Jerky T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Processed] Jerky",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Smokehouse"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Paste T0",
+    "DisplayName": "[Food Processed] Paste T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Food Processed] Paste",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 8
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Field Kitchen"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Paste T1",
+    "DisplayName": "[Food Processed] Paste T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Processed] Paste",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Press",
+      "Rain Mill"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Paste T2",
+    "DisplayName": "[Food Processed] Paste T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Processed] Paste",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Grill"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Paste T3",
+    "DisplayName": "[Food Processed] Paste T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Processed] Paste",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cannery",
+      "Flawless Rain Mill"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Pickled Goods T0",
+    "DisplayName": "[Food Processed] Pickled Goods T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Food Processed] Pickled Goods",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 7
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Field Kitchen"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Pickled Goods T1",
+    "DisplayName": "[Food Processed] Pickled Goods T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Processed] Pickled Goods",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Beanery"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Pickled Goods T2",
+    "DisplayName": "[Food Processed] Pickled Goods T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Processed] Pickled Goods",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cellar",
+      "Granary",
+      "Distillery"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Pickled Goods T3",
+    "DisplayName": "[Food Processed] Pickled Goods T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Processed] Pickled Goods",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Cellar"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Pie T0",
+    "DisplayName": "[Food Processed] Pie T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Food Processed] Pie",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 7
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 7
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Food Processed] Pie T1",
+    "DisplayName": "[Food Processed] Pie T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Processed] Pie",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Smelter"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Pie T2",
+    "DisplayName": "[Food Processed] Pie T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Processed] Pie",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Bakery",
+      "Pantry",
+      "Furnace"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Pie T3",
+    "DisplayName": "[Food Processed] Pie T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Processed] Pie",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Flour",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Smelter"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Porridge T0",
+    "DisplayName": "[Food Processed] Porridge T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Food Processed] Porridge",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Recipe With Water Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 8
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 10
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 12
+          },
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 14
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Food Processed] Porridge T1",
+    "DisplayName": "[Food Processed] Porridge T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Processed] Porridge",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Recipe With Water Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 8
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 10
+          },
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 12
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Food Processed] Porridge T2",
+    "DisplayName": "[Food Processed] Porridge T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Processed] Porridge",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Recipe With Water Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 7
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 9
+          },
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 11
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cookhouse",
+      "Pantry",
+      "Brewery"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Porridge T3",
+    "DisplayName": "[Food Processed] Porridge T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Processed] Porridge",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Food Tag",
+      "Recipe With Water Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 6
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 8
+          },
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 10
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Beanery",
+      "Flawless Brewery"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Skewers T0",
+    "DisplayName": "[Food Processed] Skewers T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Food Processed] Skewers",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Processed] Jerky",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Field Kitchen"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Skewers T1",
+    "DisplayName": "[Food Processed] Skewers T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Food Processed] Skewers",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Processed] Jerky",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Food Processed] Skewers T2",
+    "DisplayName": "[Food Processed] Skewers T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Processed] Skewers",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Processed] Jerky",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cookhouse",
+      "Butcher",
+      "Furnace"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Skewers T3",
+    "DisplayName": "[Food Processed] Skewers T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Food Processed] Skewers",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Food Tag",
+      "Complex Food Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Fish",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Processed] Jerky",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Vegetables",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Eggs",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Grill"
+    ]
+  },
+  {
+    "Name": "[Greenhouse] Herbs T2",
+    "DisplayName": "[Greenhouse] Herbs T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Herbs",
+    "ProducedAmount": 4,
+    "ProductionTime": 84,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Greenhouse Workshop"
+    ]
+  },
+  {
+    "Name": "[Greenhouse] Mushrooms T2",
+    "DisplayName": "[Greenhouse] Mushrooms T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Mushrooms",
+    "ProducedAmount": 4,
+    "ProductionTime": 84,
+    "Tags": [
+      "Food Tag",
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Greenhouse Workshop"
+    ]
+  },
+  {
+    "Name": "[Greenhouse] Vegetables T2",
+    "DisplayName": "[Greenhouse] Vegetables T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Food Raw] Vegetables",
+    "ProducedAmount": 4,
+    "ProductionTime": 84,
+    "Tags": [
+      "Food Tag",
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Ale T0",
+    "DisplayName": "[Needs Fullfilment] Ale T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Needs] Ale",
+    "ProducedAmount": 10,
+    "ProductionTime": 168,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 8
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 5
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Ale T1",
+    "DisplayName": "[Needs Fullfilment] Ale T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Needs] Ale",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 2
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Scribe"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Ale T2",
+    "DisplayName": "[Needs Fullfilment] Ale T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Needs] Ale",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 2
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Distillery",
+      "Tinctury"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Ale T3",
+    "DisplayName": "[Needs Fullfilment] Ale T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Needs] Ale",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Grain",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 2
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 1
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Brewery",
+      "Flawless Brewery"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Boots T1",
+    "DisplayName": "[Needs Fullfilment] Boots T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Needs] Boots",
+    "ProducedAmount": 10,
+    "ProductionTime": 168,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Weaver"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Boots T2",
+    "DisplayName": "[Needs Fullfilment] Boots T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Needs] Boots",
+    "ProducedAmount": 10,
+    "ProductionTime": 168,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Leatherworks",
+      "Toolshop"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Boots T3",
+    "DisplayName": "[Needs Fullfilment] Boots T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Needs] Boots",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cobbler",
+      "Flawless Leatherworks"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Coats T0",
+    "DisplayName": "[Needs Fullfilment] Coats T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Needs] Coats",
+    "ProducedAmount": 10,
+    "ProductionTime": 168,
+    "Tags": [
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Fabric",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 6
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Coats T1",
+    "DisplayName": "[Needs Fullfilment] Coats T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Needs] Coats",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Fabric",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Druid"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Coats T2",
+    "DisplayName": "[Needs Fullfilment] Coats T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Needs] Coats",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Fabric",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cooperage",
+      "Artisan"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Coats T3",
+    "DisplayName": "[Needs Fullfilment] Coats T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Needs] Coats",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Fabric Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Fabric",
+            "Amount": 1
+          },
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Cooperage",
+      "Clothier",
+      "Flawless Druid"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Incense T0",
+    "DisplayName": "[Needs Fullfilment] Incense T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Needs] Incense",
+    "ProducedAmount": 10,
+    "ProductionTime": 168,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 8
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 8
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 8
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 8
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 10
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 10
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Incense T1",
+    "DisplayName": "[Needs Fullfilment] Incense T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Needs] Incense",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 6
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 8
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 6
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Smokehouse"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Incense T2",
+    "DisplayName": "[Needs Fullfilment] Incense T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Needs] Incense",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 7
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 6
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Brick Oven",
+      "Tea House",
+      "Distillery"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Incense T3",
+    "DisplayName": "[Needs Fullfilment] Incense T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Needs] Incense",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Insects",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 6
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Scrolls T0",
+    "DisplayName": "[Needs Fullfilment] Scrolls T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Needs] Scrolls",
+    "ProducedAmount": 8,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 7
+          },
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 7
+          },
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 16
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 4
+          },
+          {
+            "Good": "[Needs] Wine",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Scrolls T1",
+    "DisplayName": "[Needs Fullfilment] Scrolls T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Needs] Scrolls",
+    "ProducedAmount": 8,
+    "ProductionTime": 84,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 10
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 3
+          },
+          {
+            "Good": "[Needs] Wine",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Lumbermill",
+      "Rain Mill"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Scrolls T2",
+    "DisplayName": "[Needs Fullfilment] Scrolls T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Needs] Scrolls",
+    "ProducedAmount": 8,
+    "ProductionTime": 84,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 8
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 2
+          },
+          {
+            "Good": "[Needs] Wine",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Artisan"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Scrolls T3",
+    "DisplayName": "[Needs Fullfilment] Scrolls T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Needs] Scrolls",
+    "ProducedAmount": 8,
+    "ProductionTime": 63,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Plant Fibre",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 1
+          },
+          {
+            "Good": "[Needs] Wine",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Rain Mill",
+      "Scribe"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Tea T0",
+    "DisplayName": "[Needs Fullfilment] Tea T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Needs] Tea",
+    "ProducedAmount": 10,
+    "ProductionTime": 168,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 5
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 5
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 6
+          },
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 7
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 5
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Tea T1",
+    "DisplayName": "[Needs Fullfilment] Tea T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Needs] Tea",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 4
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 5
+          },
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 2
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Tea T2",
+    "DisplayName": "[Needs Fullfilment] Tea T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Needs] Tea",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 3
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 4
+          },
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 2
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Apothecary",
+      "Alchemist Hut",
+      "Druid"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Tea T3",
+    "DisplayName": "[Needs Fullfilment] Tea T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Needs] Tea",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Herbs",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Dye",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Roots",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 2
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 3
+          },
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 2
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 1
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Tea House",
+      "Flawless Druid"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Training Gear T0",
+    "DisplayName": "[Needs Fullfilment] Training Gear T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Needs] Training Gear",
+    "ProducedAmount": 10,
+    "ProductionTime": 168,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 10
+          },
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 5
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Training Gear T1",
+    "DisplayName": "[Needs Fullfilment] Training Gear T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Needs] Training Gear",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 8
+          },
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 3
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Weaver",
+      "Leatherworks"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Training Gear T2",
+    "DisplayName": "[Needs Fullfilment] Training Gear T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Needs] Training Gear",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 5
+          },
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 2
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Smelter",
+      "Tinkerer"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Training Gear T3",
+    "DisplayName": "[Needs Fullfilment] Training Gear T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Needs] Training Gear",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Stone",
+            "Amount": 3
+          },
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 1
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Leatherworks",
+      "Flawless Smelter"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Wine T0",
+    "DisplayName": "[Needs Fullfilment] Wine T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Needs] Wine",
+    "ProducedAmount": 5,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 6
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 4
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 4
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Needs Fullfilment] Wine T1",
+    "DisplayName": "[Needs Fullfilment] Wine T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Needs] Wine",
+    "ProducedAmount": 10,
+    "ProductionTime": 84,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Tinctury"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Wine T2",
+    "DisplayName": "[Needs Fullfilment] Wine T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Needs] Wine",
+    "ProducedAmount": 10,
+    "ProductionTime": 84,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 3
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 3
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cannery",
+      "Alchemist Hut"
+    ]
+  },
+  {
+    "Name": "[Needs Fullfilment] Wine T3",
+    "DisplayName": "[Needs Fullfilment] Wine T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Needs] Wine",
+    "ProducedAmount": 10,
+    "ProductionTime": 63,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Food Raw] Berries",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Mushrooms",
+            "Amount": 2
+          },
+          {
+            "Good": "[Mat Raw] Reeds",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Vessel] Pottery",
+            "Amount": 2
+          },
+          {
+            "Good": "[Vessel] Barrels",
+            "Amount": 2
+          },
+          {
+            "Good": "[Vessel] Waterskin",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cellar",
+      "Flawless Cellar"
+    ]
+  },
+  {
+    "Name": "[R] Amber",
+    "DisplayName": "[R] Amber",
+    "Grade": "Grade3",
+    "ProducedGood": "[Valuable] Amber",
+    "ProducedAmount": 1,
+    "ProductionTime": 42,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Resin",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 10
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Finesmith"
+    ]
+  },
+  {
+    "Name": "[R] Parts",
+    "DisplayName": "[R] Parts",
+    "Grade": "Grade3",
+    "ProducedGood": "[Mat Processed] Parts",
+    "ProducedAmount": 1,
+    "ProductionTime": 90,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 3
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 1
+          },
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Rainpunk Foundry"
+    ]
+  },
+  {
+    "Name": "[TES] Fuel Core",
+    "DisplayName": "[TES] Fuel Core",
+    "Grade": "Grade1",
+    "ProducedGood": "[WE] Fuel Core",
+    "ProducedAmount": 1,
+    "ProductionTime": 120,
+    "Tags": [
+      "Recipe With Water Tag"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Water] Storm Water",
+            "Amount": 25
+          },
+          {
+            "Good": "[Water] Clearance Water",
+            "Amount": 25
+          },
+          {
+            "Good": "[Water] Drizzle Water",
+            "Amount": 25
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 6
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Vessel] Barrels T0",
+    "DisplayName": "[Vessel] Barrels T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Vessel] Barrels",
+    "ProducedAmount": 10,
+    "ProductionTime": 168,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 5
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Vessel] Barrels T1",
+    "DisplayName": "[Vessel] Barrels T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Vessel] Barrels",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 3
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Vessel] Barrels T2",
+    "DisplayName": "[Vessel] Barrels T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Vessel] Barrels",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 2
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Provisioner",
+      "Artisan",
+      "Manufactory"
+    ]
+  },
+  {
+    "Name": "[Vessel] Barrels T3",
+    "DisplayName": "[Vessel] Barrels T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Vessel] Barrels",
+    "ProducedAmount": 10,
+    "ProductionTime": 105,
+    "Tags": [
+      "Metal Tag",
+      "[Tag] Metal Bars in recipe"
+    ],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Metal] Copper Bar",
+            "Amount": 1
+          },
+          {
+            "Good": "[Metal] Crystalized Dew",
+            "Amount": 1
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Processed] Planks",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Cooperage",
+      "Flawless Cooperage"
+    ]
+  },
+  {
+    "Name": "[Vessel] Pottery T0",
+    "DisplayName": "[Vessel] Pottery T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Vessel] Pottery",
+    "ProducedAmount": 5,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Vessel] Pottery T1",
+    "DisplayName": "[Vessel] Pottery T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Vessel] Pottery",
+    "ProducedAmount": 5,
+    "ProductionTime": 84,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Smokehouse"
+    ]
+  },
+  {
+    "Name": "[Vessel] Pottery T2",
+    "DisplayName": "[Vessel] Pottery T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Vessel] Pottery",
+    "ProducedAmount": 5,
+    "ProductionTime": 84,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 3
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Bakery",
+      "Brickyard",
+      "Tinkerer"
+    ]
+  },
+  {
+    "Name": "[Vessel] Pottery T3",
+    "DisplayName": "[Vessel] Pottery T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Vessel] Pottery",
+    "ProducedAmount": 5,
+    "ProductionTime": 63,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Clay",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Wood",
+            "Amount": 5
+          },
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Coal",
+            "Amount": 1
+          },
+          {
+            "Good": "[Crafting] Sea Marrow",
+            "Amount": 1
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Vessel] Waterskin T0",
+    "DisplayName": "[Vessel] Waterskin T0",
+    "Grade": "Grade0",
+    "ProducedGood": "[Vessel] Waterskin",
+    "ProducedAmount": 10,
+    "ProductionTime": 126,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 6
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": []
+  },
+  {
+    "Name": "[Vessel] Waterskin T1",
+    "DisplayName": "[Vessel] Waterskin T1",
+    "Grade": "Grade1",
+    "ProducedGood": "[Vessel] Waterskin",
+    "ProducedAmount": 10,
+    "ProductionTime": 84,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 6
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 6
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 4
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 4
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 4
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Clothier",
+      "Tea House"
+    ]
+  },
+  {
+    "Name": "[Vessel] Waterskin T2",
+    "DisplayName": "[Vessel] Waterskin T2",
+    "Grade": "Grade2",
+    "ProducedGood": "[Vessel] Waterskin",
+    "ProducedAmount": 10,
+    "ProductionTime": 84,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 5
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 5
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 3
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 3
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Supplier"
+    ]
+  },
+  {
+    "Name": "[Vessel] Waterskin T3",
+    "DisplayName": "[Vessel] Waterskin T3",
+    "Grade": "Grade3",
+    "ProducedGood": "[Vessel] Waterskin",
+    "ProducedAmount": 10,
+    "ProductionTime": 63,
+    "Tags": [],
+    "RequiredGoods": [
+      {
+        "Options": [
+          {
+            "Good": "[Mat Raw] Leather",
+            "Amount": 4
+          },
+          {
+            "Good": "[Mat Raw] Scales",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Options": [
+          {
+            "Good": "[Crafting] Oil",
+            "Amount": 2
+          },
+          {
+            "Good": "[Food Raw] Meat",
+            "Amount": 2
+          },
+          {
+            "Good": "[Crafting] Salt",
+            "Amount": 2
+          }
+        ]
+      }
+    ],
+    "Buildings": [
+      "Flawless Leatherworks",
+      "Leatherworks"
+    ]
+  }
+]

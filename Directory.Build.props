@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    Local environment paths. These are user-specific.
+    If you fork/share this repo, update these to match your setup.
+  -->
+  <PropertyGroup>
+    <StormPath>A:\SteamGames\steamapps\common\Against the Storm</StormPath>
+    <BepInExPath>$(APPDATA)\r2modmanPlus-local\AgainstTheStorm\profiles\Default</BepInExPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ManagedPath>$(StormPath)\Against the Storm_Data\Managed</ManagedPath>
+    <BepInExCorePath>$(BepInExPath)\BepInEx\core</BepInExCorePath>
+    <ATSAPIPath>$(BepInExPath)\BepInEx\plugins\ATS_API_Devs-API</ATSAPIPath>
+    <PluginDeployPath>$(BepInExPath)\BepInEx\plugins\StormGuide</PluginDeployPath>
+  </PropertyGroup>
+</Project>

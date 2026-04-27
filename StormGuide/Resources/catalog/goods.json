@@ -1,0 +1,1792 @@
+[
+  {
+    "Name": "Blight Fuel",
+    "DisplayName": "Blight Fuel",
+    "Category": "Fuel",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 60,
+    "TradingBuyValue": 6.25,
+    "TradingSellValue": 3.75,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "Hearth Parts",
+    "DisplayName": "Hearth Parts",
+    "Category": "Building Materials",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 60,
+    "TradingBuyValue": 50,
+    "TradingSellValue": 30,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "TEMP_Meta_Exp",
+    "DisplayName": "TEMP_Meta_Exp",
+    "Category": "Fuel",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 20,
+    "TradingSellValue": 15,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[Crafting] Coal",
+    "DisplayName": "[Crafting] Coal",
+    "Category": "Fuel",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": true,
+    "BurningTime": 40,
+    "TradingBuyValue": 6,
+    "TradingSellValue": 3.5,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 2 - Brass Order",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": [
+      "Fuel Tag"
+    ]
+  },
+  {
+    "Name": "[Crafting] Dye",
+    "DisplayName": "[Crafting] Dye",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 2.8,
+    "TradingSellValue": 1.68,
+    "TradersBuying": [
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Crafting] Flour",
+    "DisplayName": "[Crafting] Flour",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader 1 - First Dawn Company",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 3 - Ancient"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Crafting] Oil",
+    "DisplayName": "[Crafting] Oil",
+    "Category": "Fuel",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": true,
+    "BurningTime": 25,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": [
+      "Fuel Tag"
+    ]
+  },
+  {
+    "Name": "[Crafting] Salt",
+    "DisplayName": "[Crafting] Salt",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 40,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 1 - First Dawn Company",
+      "Trader 3 - Ancient",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader 0 - General",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Crafting] Sea Marrow",
+    "DisplayName": "[Crafting] Sea Marrow",
+    "Category": "Fuel",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": true,
+    "BurningTime": 40,
+    "TradingBuyValue": 6.25,
+    "TradingSellValue": 3.75,
+    "TradersBuying": [
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": [
+      "Fuel Tag"
+    ]
+  },
+  {
+    "Name": "[Food Processed] Biscuits",
+    "DisplayName": "[Food Processed] Biscuits",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 2,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.6,
+    "TradingSellValue": 2.3,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader 1 - First Dawn Company",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Processed] Jerky",
+    "DisplayName": "[Food Processed] Jerky",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 2,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3.4,
+    "TradingSellValue": 1.7,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 1 - First Dawn Company",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Processed] Paste",
+    "DisplayName": "[Food Processed] Paste",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 2,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3.5,
+    "TradingSellValue": 1.75,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader 1 - First Dawn Company",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 1 - First Dawn Company",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Processed] Pickled Goods",
+    "DisplayName": "[Food Processed] Pickled Goods",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 3,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4,
+    "TradingSellValue": 2,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 1 - First Dawn Company",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Processed] Pie",
+    "DisplayName": "[Food Processed] Pie",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 3,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.2,
+    "TradingSellValue": 2.1,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader 1 - First Dawn Company",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Processed] Porridge",
+    "DisplayName": "[Food Processed] Porridge",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 2,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3.8,
+    "TradingSellValue": 1.9,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 1 - First Dawn Company",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Processed] Skewers",
+    "DisplayName": "[Food Processed] Skewers",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 3,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4,
+    "TradingSellValue": 2,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 1 - First Dawn Company",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Berries",
+    "DisplayName": "[Food Raw] Berries",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Eggs",
+    "DisplayName": "[Food Raw] Eggs",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Fish",
+    "DisplayName": "[Food Raw] Fish",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Grain",
+    "DisplayName": "[Food Raw] Grain",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Herbs",
+    "DisplayName": "[Food Raw] Herbs",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 3 - Ancient"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Insects",
+    "DisplayName": "[Food Raw] Insects",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Meat",
+    "DisplayName": "[Food Raw] Meat",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 100,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 0.5,
+    "TradingSellValue": 200.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 1 - First Dawn Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Mushrooms",
+    "DisplayName": "[Food Raw] Mushrooms",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Roots",
+    "DisplayName": "[Food Raw] Roots",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Food Raw] Vegetables",
+    "DisplayName": "[Food Raw] Vegetables",
+    "Category": "Food",
+    "IsEatable": true,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.5,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Processed] Bricks",
+    "DisplayName": "[Mat Processed] Bricks",
+    "Category": "Building Materials",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 5.5,
+    "TradingSellValue": 3.3,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Processed] Fabric",
+    "DisplayName": "[Mat Processed] Fabric",
+    "Category": "Building Materials",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 5.5,
+    "TradingSellValue": 3.3,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Processed] Parts",
+    "DisplayName": "[Mat Processed] Parts",
+    "Category": "Building Materials",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 48,
+    "TradingSellValue": 28.8,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Processed] Pipe",
+    "DisplayName": "[Mat Processed] Pipe",
+    "Category": "Building Materials",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 15,
+    "TradingBuyValue": 12,
+    "TradingSellValue": 7,
+    "TradersBuying": [],
+    "TradersSelling": [
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Processed] Planks",
+    "DisplayName": "[Mat Processed] Planks",
+    "Category": "Building Materials",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 15,
+    "TradingBuyValue": 3.5,
+    "TradingSellValue": 2.1,
+    "TradersBuying": [
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Algae",
+    "DisplayName": "[Mat Raw] Algae",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 0 - General",
+      "Trader 3 - Ancient",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Clay",
+    "DisplayName": "[Mat Raw] Clay",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 6 - Wandering Merchant"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Leather",
+    "DisplayName": "[Mat Raw] Leather",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 3 - Ancient",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Plant Fibre",
+    "DisplayName": "[Mat Raw] Plant Fibre",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Reeds",
+    "DisplayName": "[Mat Raw] Reeds",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 0 - General",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Resin",
+    "DisplayName": "[Mat Raw] Resin",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 3 - Ancient",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Scales",
+    "DisplayName": "[Mat Raw] Scales",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader 0 - General",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 3 - Ancient",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Sparkdew",
+    "DisplayName": "[Mat Raw] Sparkdew",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 1.25,
+    "TradingSellValue": 0.75,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Stone",
+    "DisplayName": "[Mat Raw] Stone",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 0.5,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader 0 - General",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Mat Raw] Wood",
+    "DisplayName": "[Mat Raw] Wood",
+    "Category": "Fuel",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": true,
+    "BurningTime": 12,
+    "TradingBuyValue": 1.25,
+    "TradingSellValue": 0.75,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 2 - Brass Order",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader 6 - Wandering Merchant"
+    ],
+    "Tags": [
+      "Fuel Tag"
+    ]
+  },
+  {
+    "Name": "[Metal] Copper Bar",
+    "DisplayName": "[Metal] Copper Bar",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 12,
+    "TradingSellValue": 7.2,
+    "TradersBuying": [
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader 2 - Brass Order",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Metal] Copper Ore",
+    "DisplayName": "[Metal] Copper Ore",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 2 - Brass Order",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Metal] Crystalized Dew",
+    "DisplayName": "[Metal] Crystalized Dew",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 12,
+    "TradingSellValue": 7.2,
+    "TradersBuying": [
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 2 - Brass Order",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Needs] Ale",
+    "DisplayName": "[Needs] Ale",
+    "Category": "Consumable Items",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3.75,
+    "TradingSellValue": 1.95,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 1 - First Dawn Company",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Needs] Boots",
+    "DisplayName": "[Needs] Boots",
+    "Category": "Consumable Items",
+    "IsEatable": false,
+    "EatingFullness": 0,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 1.75,
+    "TradingSellValue": 0.9,
+    "TradersBuying": [
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 3 - Ancient",
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Needs] Coats",
+    "DisplayName": "[Needs] Coats",
+    "Category": "Consumable Items",
+    "IsEatable": false,
+    "EatingFullness": 0,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.05,
+    "TradingSellValue": 2.1,
+    "TradersBuying": [
+      "Trader 1 - First Dawn Company",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 6 - Wandering Merchant",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Needs] Incense",
+    "DisplayName": "[Needs] Incense",
+    "Category": "Consumable Items",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.05,
+    "TradingSellValue": 2.1,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Needs] Scrolls - tutorial",
+    "DisplayName": "[Needs] Scrolls - tutorial",
+    "Category": "Consumable Items",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[Needs] Scrolls",
+    "DisplayName": "[Needs] Scrolls",
+    "Category": "Consumable Items",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 2.8,
+    "TradingSellValue": 1.44,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Needs] Tea",
+    "DisplayName": "[Needs] Tea",
+    "Category": "Consumable Items",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3.5,
+    "TradingSellValue": 1.8,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Needs] Training Gear",
+    "DisplayName": "[Needs] Training Gear",
+    "Category": "Consumable Items",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4.9,
+    "TradingSellValue": 2.55,
+    "TradersBuying": [
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Needs] Wine",
+    "DisplayName": "[Needs] Wine",
+    "Category": "Consumable Items",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3,
+    "TradingSellValue": 1.5,
+    "TradersBuying": [
+      "Trader 3 - Ancient",
+      "Trader 5 - Royal Trading Company",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader 1 - First Dawn Company",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Other] Fertilizer",
+    "DisplayName": "[Other] Fertilizer",
+    "Category": "Building Materials",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 13,
+    "TradingBuyValue": 4,
+    "TradingSellValue": 2.4,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[Other] Fishing Bait",
+    "DisplayName": "[Other] Fishing Bait",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 13,
+    "TradingBuyValue": 4,
+    "TradingSellValue": 2.4,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[Other] Fuel Rod",
+    "DisplayName": "[Other] Fuel Rod",
+    "Category": "Fuel",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 320,
+    "TradingSellValue": 192,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[Packs] Pack of Building Materials",
+    "DisplayName": "[Packs] Pack of Building Materials",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 13,
+    "TradingBuyValue": 20,
+    "TradingSellValue": 12,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Packs] Pack of Crops",
+    "DisplayName": "[Packs] Pack of Crops",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 13,
+    "TradingBuyValue": 20,
+    "TradingSellValue": 12,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Packs] Pack of Luxury Goods",
+    "DisplayName": "[Packs] Pack of Luxury Goods",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 13,
+    "TradingBuyValue": 30,
+    "TradingSellValue": 18,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Packs] Pack of Provisions",
+    "DisplayName": "[Packs] Pack of Provisions",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 13,
+    "TradingBuyValue": 10,
+    "TradingSellValue": 6,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Packs] Pack of Trade Goods",
+    "DisplayName": "[Packs] Pack of Trade Goods",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 13,
+    "TradingBuyValue": 30,
+    "TradingSellValue": 18,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader 7 - Trickster"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Tools] Simple Tools",
+    "DisplayName": "[Tools] Simple Tools",
+    "Category": "Fuel",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 12,
+    "TradingBuyValue": 27.75,
+    "TradingSellValue": 16.65,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Valuable] Amber",
+    "DisplayName": "[Valuable] Amber",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 15,
+    "TradingSellValue": 12,
+    "TradersBuying": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader - Glade 02",
+      "Trader - Glade 03",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 4 - Vanguard of the Stolen Keys",
+      "Trader 5 - Royal Trading Company",
+      "Trader 6 - Wandering Merchant",
+      "Trader 7 - Trickster",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Valuable] Thunderblight Shard",
+    "DisplayName": "[Valuable] Thunderblight Shard",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 160,
+    "TradingSellValue": 96,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[Vessel] Barrels",
+    "DisplayName": "[Vessel] Barrels",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 4,
+    "TradingSellValue": 2.4,
+    "TradersBuying": [
+      "Trader 2 - Brass Order",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 03",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Vessel] Pottery",
+    "DisplayName": "[Vessel] Pottery",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3.5,
+    "TradingSellValue": 2.1,
+    "TradersBuying": [
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 02",
+      "Trader 0 - General",
+      "Trader 1 - First Dawn Company",
+      "Trader 2 - Brass Order",
+      "Trader 3 - Ancient",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Vessel] Waterskin",
+    "DisplayName": "[Vessel] Waterskin",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 3.75,
+    "TradingSellValue": 2.25,
+    "TradersBuying": [
+      "Trader 2 - Brass Order",
+      "Trader 7 - Trickster"
+    ],
+    "TradersSelling": [
+      "Trader - Glade 01",
+      "Trader 0 - General",
+      "Trader 3 - Ancient",
+      "Trader 8 - Syndicate"
+    ],
+    "Tags": []
+  },
+  {
+    "Name": "[Water] Clearance Water",
+    "DisplayName": "[Water] Clearance Water",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 60,
+    "TradingBuyValue": 1.25,
+    "TradingSellValue": 0.75,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[Water] Drizzle Water",
+    "DisplayName": "[Water] Drizzle Water",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 60,
+    "TradingBuyValue": 1.25,
+    "TradingSellValue": 0.75,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[Water] Storm Water",
+    "DisplayName": "[Water] Storm Water",
+    "Category": "Crafting",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 60,
+    "TradingBuyValue": 1.25,
+    "TradingSellValue": 0.75,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "[WE] Fuel Core",
+    "DisplayName": "[WE] Fuel Core",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 160,
+    "TradingSellValue": 96,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "_Meta Artifacts",
+    "DisplayName": "_Meta Artifacts",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 90,
+    "TradingSellValue": 60,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "_Meta Food Stockpiles",
+    "DisplayName": "_Meta Food Stockpiles",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 45,
+    "TradingSellValue": 30,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  },
+  {
+    "Name": "_Meta Machinery",
+    "DisplayName": "_Meta Machinery",
+    "Category": "Trade Goods",
+    "IsEatable": false,
+    "EatingFullness": 1,
+    "CanBeBurned": false,
+    "BurningTime": 1,
+    "TradingBuyValue": 90,
+    "TradingSellValue": 60,
+    "TradersBuying": [],
+    "TradersSelling": [],
+    "Tags": []
+  }
+]

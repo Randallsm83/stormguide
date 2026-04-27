@@ -1,0 +1,283 @@
+[
+  {
+    "Name": "Bat",
+    "DisplayName": "Bat",
+    "BaseSpeed": 1.8,
+    "InitialResolve": 5,
+    "MinResolve": 0,
+    "MaxResolve": 50,
+    "ResolvePositiveChangePerSec": 0.15,
+    "ResolveNegativeChangePerSec": 0.05,
+    "HungerTolerance": 4,
+    "Needs": [
+      "Any Housing",
+      "Bat Housing",
+      "Biscuits",
+      "Paste",
+      "Skewer",
+      "Clothes",
+      "Bloodthirst",
+      "Education"
+    ],
+    "Characteristics": [
+      {
+        "BuildingTag": "Metallurgy",
+        "VillagerPerkEffect": "Proficiency",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Hearth_Bats",
+        "VillagerPerkEffect": "",
+        "GlobalEffect": "Bats Lower Food Consumption",
+        "BuildingPerk": ""
+      }
+    ]
+  },
+  {
+    "Name": "Beaver",
+    "DisplayName": "Beaver",
+    "BaseSpeed": 1.8,
+    "InitialResolve": 10,
+    "MinResolve": 0,
+    "MaxResolve": 50,
+    "ResolvePositiveChangePerSec": 0.15,
+    "ResolveNegativeChangePerSec": 0.12,
+    "HungerTolerance": 6,
+    "Needs": [
+      "Any Housing",
+      "Beaver Housing",
+      "Biscuits",
+      "Pickled Goods",
+      "Clothes",
+      "Leasiure",
+      "Education",
+      "Luxury"
+    ],
+    "Characteristics": [
+      {
+        "BuildingTag": "Wood",
+        "VillagerPerkEffect": "Proficiency",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Tech",
+        "VillagerPerkEffect": "Comfortable Job",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Hearth_Beavers",
+        "VillagerPerkEffect": "",
+        "GlobalEffect": "FuelConsumption_HearthEffect_Beaver",
+        "BuildingPerk": ""
+      }
+    ]
+  },
+  {
+    "Name": "Foxes",
+    "DisplayName": "Foxes",
+    "BaseSpeed": 1.8,
+    "InitialResolve": 5,
+    "MinResolve": 0,
+    "MaxResolve": 50,
+    "ResolvePositiveChangePerSec": 0.15,
+    "ResolveNegativeChangePerSec": 0.12,
+    "HungerTolerance": 3,
+    "Needs": [
+      "Any Housing",
+      "Fox Housing",
+      "Porridge",
+      "Skewer",
+      "Pickled Goods",
+      "Boots",
+      "Religion",
+      "Treatment"
+    ],
+    "Characteristics": [
+      {
+        "BuildingTag": "Forest",
+        "VillagerPerkEffect": "",
+        "GlobalEffect": "",
+        "BuildingPerk": "[Spec] Relics Working Time"
+      },
+      {
+        "BuildingTag": "FoxesCooperation",
+        "VillagerPerkEffect": "Comfortable Job",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Hearth_Foxes",
+        "VillagerPerkEffect": "",
+        "GlobalEffect": "Fox Hostility Hearth Bonus",
+        "BuildingPerk": ""
+      }
+    ]
+  },
+  {
+    "Name": "Frog",
+    "DisplayName": "Frog",
+    "BaseSpeed": 1.8,
+    "InitialResolve": 10,
+    "MinResolve": 0,
+    "MaxResolve": 50,
+    "ResolvePositiveChangePerSec": 0.15,
+    "ResolveNegativeChangePerSec": 0.085,
+    "HungerTolerance": 8,
+    "Needs": [
+      "Frog Housing",
+      "Porridge",
+      "Paste",
+      "Pie",
+      "Boots",
+      "Bloodthirst",
+      "Religion",
+      "Luxury"
+    ],
+    "Characteristics": [
+      {
+        "BuildingTag": "Stone",
+        "VillagerPerkEffect": "Proficiency",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Rainwater",
+        "VillagerPerkEffect": "Comfortable Job",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Hearth_Frogs",
+        "VillagerPerkEffect": "",
+        "GlobalEffect": "Frog Newcomer Bonus",
+        "BuildingPerk": ""
+      }
+    ]
+  },
+  {
+    "Name": "Harpy",
+    "DisplayName": "Harpy",
+    "BaseSpeed": 1.8,
+    "InitialResolve": 5,
+    "MinResolve": 0,
+    "MaxResolve": 50,
+    "ResolvePositiveChangePerSec": 0.15,
+    "ResolveNegativeChangePerSec": 0.12,
+    "HungerTolerance": 4,
+    "Needs": [
+      "Any Housing",
+      "Harpy Housing",
+      "Jerky",
+      "Paste",
+      "Boots",
+      "Clothes",
+      "Education",
+      "Treatment"
+    ],
+    "Characteristics": [
+      {
+        "BuildingTag": "Alchemy",
+        "VillagerPerkEffect": "Proficiency",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Cloth",
+        "VillagerPerkEffect": "Comfortable Job",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Hearth_Harpies",
+        "VillagerPerkEffect": "",
+        "GlobalEffect": "Harpy Global Capacity",
+        "BuildingPerk": ""
+      }
+    ]
+  },
+  {
+    "Name": "Human",
+    "DisplayName": "Human",
+    "BaseSpeed": 1.8,
+    "InitialResolve": 15,
+    "MinResolve": 0,
+    "MaxResolve": 50,
+    "ResolvePositiveChangePerSec": 0.15,
+    "ResolveNegativeChangePerSec": 0.12,
+    "HungerTolerance": 6,
+    "Needs": [
+      "Any Housing",
+      "Human Housing",
+      "Porridge",
+      "Biscuits",
+      "Pie",
+      "Clothes",
+      "Leasiure",
+      "Religion"
+    ],
+    "Characteristics": [
+      {
+        "BuildingTag": "Farming",
+        "VillagerPerkEffect": "Proficiency",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Brewing",
+        "VillagerPerkEffect": "Comfortable Job",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Hearth_Humans",
+        "VillagerPerkEffect": "",
+        "GlobalEffect": "ReputationPenaltyRate_HearthEffect_Human",
+        "BuildingPerk": ""
+      }
+    ]
+  },
+  {
+    "Name": "Lizard",
+    "DisplayName": "Lizard",
+    "BaseSpeed": 1.8,
+    "InitialResolve": 5,
+    "MinResolve": 0,
+    "MaxResolve": 50,
+    "ResolvePositiveChangePerSec": 0.15,
+    "ResolveNegativeChangePerSec": 0.05,
+    "HungerTolerance": 12,
+    "Needs": [
+      "Any Housing",
+      "Lizard Housing",
+      "Jerky",
+      "Skewer",
+      "Pie",
+      "Pickled Goods",
+      "Boots",
+      "Bloodthirst"
+    ],
+    "Characteristics": [
+      {
+        "BuildingTag": "Animals",
+        "VillagerPerkEffect": "Proficiency",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Warmth",
+        "VillagerPerkEffect": "Comfortable Job",
+        "GlobalEffect": "",
+        "BuildingPerk": ""
+      },
+      {
+        "BuildingTag": "Hearth_Lizards",
+        "VillagerPerkEffect": "",
+        "GlobalEffect": "GlobalResolve_HearthEffect_Lizard",
+        "BuildingPerk": ""
+      }
+    ]
+  }
+]

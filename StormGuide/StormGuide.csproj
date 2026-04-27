@@ -1,0 +1,78 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>StormGuide</AssemblyName>
+    <RootNamespace>StormGuide</RootNamespace>
+    <Description>Decision-time game guide overlay for Against the Storm.</Description>
+    <Version>0.0.1</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <NoWarn>NU1701;CS0436;MSB3277</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- BepInEx + HarmonyX (HarmonyX ships with BepInEx.Core) -->
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" PrivateAssets="all" />
+    <!-- Unity 2021.3.15 reference assemblies -->
+    <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" IncludeAssets="compile" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Game assemblies (paths from Directory.Build.props) -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(ManagedPath)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass" Condition="Exists('$(ManagedPath)\Assembly-CSharp-firstpass.dll')">
+      <HintPath>$(ManagedPath)\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UniRx" Condition="Exists('$(ManagedPath)\UniRx.dll')">
+      <HintPath>$(ManagedPath)\UniRx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro" Condition="Exists('$(ManagedPath)\Unity.TextMeshPro.dll')">
+      <HintPath>$(ManagedPath)\Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(ManagedPath)\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Sirenix.Serialization">
+      <HintPath>$(ManagedPath)\Sirenix.Serialization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Sirenix.OdinInspector.Attributes">
+      <HintPath>$(ManagedPath)\Sirenix.OdinInspector.Attributes.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <!-- Community API -->
+    <Reference Include="API">
+      <HintPath>$(ATSAPIPath)\API.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Embed trimmed catalog JSON files at StormGuide.Resources.catalog.* -->
+    <EmbeddedResource Include="Resources\catalog\*.json" />
+  </ItemGroup>
+
+  <Target Name="Deploy" AfterTargets="Build">
+    <MakeDir Directories="$(PluginDeployPath)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginDeployPath)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb"
+          DestinationFolder="$(PluginDeployPath)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    <Message Text="StormGuide deployed to $(PluginDeployPath)" Importance="high" />
+  </Target>
+
+</Project>

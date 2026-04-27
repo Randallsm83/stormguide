@@ -1,0 +1,16 @@
+# Build output
+bin/
+obj/
+*.user
+*.suo
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Local overrides (uncomment if introducing per-machine override props)
+# Directory.Build.local.props
+
+# Decompiled game source (regenerate with `ilspycmd -p` against Assembly-CSharp.dll)
+research/AssemblyCSharp/

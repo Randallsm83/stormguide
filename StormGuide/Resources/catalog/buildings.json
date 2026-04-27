@@ -1,0 +1,2378 @@
+[
+  {
+    "Name": "Woodcutters Camp",
+    "DisplayName": "Woodcutters Camp",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Woodcutter",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Wood",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Aestherics 2x2 - Garden",
+    "DisplayName": "Aestherics 2x2 - Garden",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Ancient Gravestone",
+    "DisplayName": "Ancient Gravestone",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Anvil",
+    "DisplayName": "Anvil",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Archaeology Scorpion Positive",
+    "DisplayName": "Archaeology Scorpion Positive",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Archaeology Snake Positive",
+    "DisplayName": "Archaeology Snake Positive",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Archaeology Spider Positive",
+    "DisplayName": "Archaeology Spider Positive",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Archeology office",
+    "DisplayName": "Archeology office",
+    "Kind": "Other",
+    "Category": "City Buildings",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Arch",
+    "DisplayName": "Arch",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Bamboo Plant",
+    "DisplayName": "Bamboo Plant",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Bank",
+    "DisplayName": "Bank",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Barrels",
+    "DisplayName": "Barrels",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Bat Fence Corner",
+    "DisplayName": "Bat Fence Corner",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Bat Fence",
+    "DisplayName": "Bat Fence",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Bonfire",
+    "DisplayName": "Bonfire",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Bush",
+    "DisplayName": "Bush",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Cages",
+    "DisplayName": "Cages",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Cave Plant",
+    "DisplayName": "Cave Plant",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Chest Syndicate",
+    "DisplayName": "Chest Syndicate",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Chest",
+    "DisplayName": "Chest",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Coastal Grove Plant",
+    "DisplayName": "Coastal Grove Plant",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Comfort 2x2 - Park",
+    "DisplayName": "Comfort 2x2 - Park",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Coral Decor",
+    "DisplayName": "Coral Decor",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "CornerFence",
+    "DisplayName": "CornerFence",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Crates",
+    "DisplayName": "Crates",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Decay Altar Positive",
+    "DisplayName": "Decay Altar Positive",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Fence",
+    "DisplayName": "Fence",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Fire Shrine",
+    "DisplayName": "Fire Shrine",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Fish",
+    "DisplayName": "Fish",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Flower Bed",
+    "DisplayName": "Flower Bed",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Fountain",
+    "DisplayName": "Fountain",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Fox Fence Corner",
+    "DisplayName": "Fox Fence Corner",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Fox Fence",
+    "DisplayName": "Fox Fence",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Frog Tree",
+    "DisplayName": "Frog Tree",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Gate",
+    "DisplayName": "Gate",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Golden Leaf",
+    "DisplayName": "Golden Leaf",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Harmony Spirit Altar Positive",
+    "DisplayName": "Harmony Spirit Altar Positive",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Industrial Chimney",
+    "DisplayName": "Industrial Chimney",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lamp",
+    "DisplayName": "Lamp",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lizard Post",
+    "DisplayName": "Lizard Post",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lore Tablet 1",
+    "DisplayName": "Lore Tablet 1",
+    "Kind": "Other",
+    "Category": "Lore Tablet 1",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lore Tablet 2",
+    "DisplayName": "Lore Tablet 2",
+    "Kind": "Other",
+    "Category": "Lore Tablet 2",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lore Tablet 3",
+    "DisplayName": "Lore Tablet 3",
+    "Kind": "Other",
+    "Category": "Lore Tablet 3",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lore Tablet 4",
+    "DisplayName": "Lore Tablet 4",
+    "Kind": "Other",
+    "Category": "Lore Tablet 4",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lore Tablet 5",
+    "DisplayName": "Lore Tablet 5",
+    "Kind": "Other",
+    "Category": "Lore Tablet 5",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lore Tablet 6",
+    "DisplayName": "Lore Tablet 6",
+    "Kind": "Other",
+    "Category": "Lore Tablet 6",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lore Tablet 7",
+    "DisplayName": "Lore Tablet 7",
+    "Kind": "Other",
+    "Category": "Lore Tablet 7",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Monolith Positive",
+    "DisplayName": "Monolith Positive",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Moument of Greed",
+    "DisplayName": "Moument of Greed",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Mushroom Decor",
+    "DisplayName": "Mushroom Decor",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Nightfern",
+    "DisplayName": "Nightfern",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Ornate Column",
+    "DisplayName": "Ornate Column",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Pipe Cross",
+    "DisplayName": "Pipe Cross",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Pipe Elbow",
+    "DisplayName": "Pipe Elbow",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Pipe End",
+    "DisplayName": "Pipe End",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Pipe T Cross",
+    "DisplayName": "Pipe T Cross",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Pipe Valve",
+    "DisplayName": "Pipe Valve",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Pipe",
+    "DisplayName": "Pipe",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Rain Totem Positive",
+    "DisplayName": "Rain Totem Positive",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Rainpunk Barrels",
+    "DisplayName": "Rainpunk Barrels",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Road Sign",
+    "DisplayName": "Road Sign",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Sacrifice Totem Positive",
+    "DisplayName": "Sacrifice Totem Positive",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Scarlet Decor",
+    "DisplayName": "Scarlet Decor",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Seal Guidepost",
+    "DisplayName": "Seal Guidepost",
+    "Kind": "Other",
+    "Category": "Relics",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Signboard",
+    "DisplayName": "Signboard",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Stone Fence Corner",
+    "DisplayName": "Stone Fence Corner",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Stone Fence",
+    "DisplayName": "Stone Fence",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Tomb",
+    "DisplayName": "Tomb",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Tower",
+    "DisplayName": "Tower",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Town Board",
+    "DisplayName": "Town Board",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Umbrella",
+    "DisplayName": "Umbrella",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Wall Corner",
+    "DisplayName": "Wall Corner",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Wall",
+    "DisplayName": "Wall",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Water Barrels",
+    "DisplayName": "Water Barrels",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Water Shrine",
+    "DisplayName": "Water Shrine",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Well",
+    "DisplayName": "Well",
+    "Kind": "Other",
+    "Category": "Decorations",
+    "Profession": "",
+    "MaxBuilders": 1,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Water Extractor",
+    "DisplayName": "Water Extractor",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Geologist",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Rainwater"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Brineworks",
+    "DisplayName": "Brineworks",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Farmer",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Farming"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Grove",
+    "DisplayName": "Grove",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Farmer",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Wood",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Hallowed Herb Garden",
+    "DisplayName": "Hallowed Herb Garden",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Farmer",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Farming",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Hallowed SmallFarm",
+    "DisplayName": "Hallowed SmallFarm",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Farmer",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Farming",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Herb Garden",
+    "DisplayName": "Herb Garden",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Farmer",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Farming"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Homestead",
+    "DisplayName": "Homestead",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Farmer",
+    "MaxBuilders": 3,
+    "Tags": [
+      "Farming",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Plantation",
+    "DisplayName": "Plantation",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Farmer",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Farming"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "SmallFarm",
+    "DisplayName": "SmallFarm",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Farmer",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Farming"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Fishing Hut",
+    "DisplayName": "Fishing Hut",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Fisherman",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Primitive Fishing Hut",
+    "DisplayName": "Primitive Fishing Hut",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Fisherman",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Forager\u0027s Camp",
+    "DisplayName": "Forager\u0027s Camp",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Forager",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Farming"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Harvester Camp",
+    "DisplayName": "Harvester Camp",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Harvester",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Herbalist\u0027s Camp",
+    "DisplayName": "Herbalist\u0027s Camp",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Herbalist",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Alchemy"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Primitive Forager\u0027s Camp",
+    "DisplayName": "Primitive Forager\u0027s Camp",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Forager",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Farming"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Primitive Herbalist\u0027s Camp",
+    "DisplayName": "Primitive Herbalist\u0027s Camp",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Herbalist",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Alchemy"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Primitive Trapper\u0027s Camp",
+    "DisplayName": "Primitive Trapper\u0027s Camp",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Trapper",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Animals"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Stonecutter\u0027s Camp",
+    "DisplayName": "Stonecutter\u0027s Camp",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Stonecutter",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Stone"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Trapper\u0027s Camp",
+    "DisplayName": "Trapper\u0027s Camp",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Trapper",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Animals"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Small Hearth",
+    "DisplayName": "Small Hearth",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "FireKeeper",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth",
+      "Hearth_Beavers",
+      "Hearth_Humans",
+      "Hearth_Lizards",
+      "Hearth_Harpies",
+      "Hearth_Foxes",
+      "Hearth_Frogs",
+      "Hearth_Bats"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Temporary Hearth (buildable)",
+    "DisplayName": "Temporary Hearth (buildable)",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "FireKeeper",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Temporary Hearth (not-buildable)",
+    "DisplayName": "Temporary Hearth (not-buildable)",
+    "Kind": "Workshop",
+    "Category": "Tutorial - invisible",
+    "Profession": "FireKeeper",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth",
+      "Hearth_Beavers",
+      "Hearth_Humans",
+      "Hearth_Lizards",
+      "Hearth_Harpies",
+      "Hearth_Foxes",
+      "Hearth_Frogs"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Bat House",
+    "DisplayName": "Bat House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Beaver House",
+    "DisplayName": "Beaver House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Big Shelter",
+    "DisplayName": "Big Shelter",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Fox House",
+    "DisplayName": "Fox House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Frog House",
+    "DisplayName": "Frog House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Harpy House",
+    "DisplayName": "Harpy House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Human House",
+    "DisplayName": "Human House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Lizard House",
+    "DisplayName": "Lizard House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Purged Bat House",
+    "DisplayName": "Purged Bat House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Purged Beaver House",
+    "DisplayName": "Purged Beaver House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Purged Fox House",
+    "DisplayName": "Purged Fox House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Purged Frog House",
+    "DisplayName": "Purged Frog House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Purged Harpy House",
+    "DisplayName": "Purged Harpy House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Purged Human House",
+    "DisplayName": "Purged Human House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Purged Lizard House",
+    "DisplayName": "Purged Lizard House",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Shelter",
+    "DisplayName": "Shelter",
+    "Kind": "Other",
+    "Category": "Housing",
+    "Profession": "",
+    "MaxBuilders": 2,
+    "Tags": [],
+    "Recipes": []
+  },
+  {
+    "Name": "Academy",
+    "DisplayName": "Academy",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Scholar",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Bath House",
+    "DisplayName": "Bath House",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Bath House worker",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Rainwater",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Clan Hall",
+    "DisplayName": "Clan Hall",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Clan Mamber",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Feast Hall",
+    "DisplayName": "Feast Hall",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Waiter",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Forum",
+    "DisplayName": "Forum",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Speaker",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Guild House",
+    "DisplayName": "Guild House",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Guild member",
+    "MaxBuilders": 4,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Holy Guild House",
+    "DisplayName": "Holy Guild House",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Guild member",
+    "MaxBuilders": 4,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Holy Market",
+    "DisplayName": "Holy Market",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Seller",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Holy Temple",
+    "DisplayName": "Holy Temple",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Priest",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Market",
+    "DisplayName": "Market",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Seller",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Monastery",
+    "DisplayName": "Monastery",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Monk",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Warmth",
+      "Brewing",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Tavern",
+    "DisplayName": "Tavern",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Waiter",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Brewing",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Tea Doctor",
+    "DisplayName": "Tea Doctor",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Teadoctor",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Temple",
+    "DisplayName": "Temple",
+    "Kind": "Workshop",
+    "Category": "City Buildings",
+    "Profession": "Priest",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Mine",
+    "DisplayName": "Mine",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Miner",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Metallurgy",
+      "Tech",
+      "FoxesCooperation"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Alchemist Hut",
+    "DisplayName": "Alchemist Hut",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Alchemist",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Alchemy",
+      "Brewing",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Crystalized Dew T2",
+      "[Needs Fullfilment] Tea T2",
+      "[Needs Fullfilment] Wine T2"
+    ]
+  },
+  {
+    "Name": "Apothecary",
+    "DisplayName": "Apothecary",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Apothecary",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Alchemy",
+      "Rainwater",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Tea T2",
+      "Dye T2",
+      "[Food Processed] Jerky T2"
+    ]
+  },
+  {
+    "Name": "Artisan",
+    "DisplayName": "Artisan",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Artisan",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Cloth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Vessel] Barrels T2",
+      "[Needs Fullfilment] Coats T2",
+      "[Needs Fullfilment] Scrolls T2"
+    ]
+  },
+  {
+    "Name": "Bakery",
+    "DisplayName": "Bakery",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Baker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Biscuits T2",
+      "[Food Processed] Pie T2",
+      "[Vessel] Pottery T2"
+    ]
+  },
+  {
+    "Name": "Beanery",
+    "DisplayName": "Beanery",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Beanery Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth",
+      "Rainwater",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Porridge T3",
+      "[Food Processed] Pickled Goods T1",
+      "Crystalized Dew T1"
+    ]
+  },
+  {
+    "Name": "Brewery",
+    "DisplayName": "Brewery",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Brewery Worker",
+    "MaxBuilders": 3,
+    "Tags": [
+      "Brewing",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Ale T3",
+      "[Food Processed] Porridge T2",
+      "Pack of Crops T1"
+    ]
+  },
+  {
+    "Name": "Brick Oven",
+    "DisplayName": "Brick Oven",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Oven worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Biscuits T3",
+      "[Needs Fullfilment] Incense T2",
+      "Coal T1"
+    ]
+  },
+  {
+    "Name": "Brickyard",
+    "DisplayName": "Brickyard",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Brickyard Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Stone",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Building Material] Bricks T3",
+      "[Vessel] Pottery T2",
+      "Crystalized Dew T1"
+    ]
+  },
+  {
+    "Name": "Butcher",
+    "DisplayName": "Butcher",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Butcher",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Animals",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Skewers T2",
+      "[Food Processed] Jerky T2",
+      "Oil T2"
+    ]
+  },
+  {
+    "Name": "Cannery",
+    "DisplayName": "Cannery",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Cannery Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Paste T3",
+      "[Needs Fullfilment] Wine T2",
+      "[Food Processed] Biscuits T1"
+    ]
+  },
+  {
+    "Name": "Carpenter",
+    "DisplayName": "Carpenter",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Carpenter",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Wood",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Building Material] Planks T2",
+      "Tools Simple T2",
+      "Pack of Luxury Goods T2"
+    ]
+  },
+  {
+    "Name": "Cellar",
+    "DisplayName": "Cellar",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Cellar worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Brewing",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Wine T3",
+      "[Food Processed] Pickled Goods T2",
+      "Pack of Provisions T1"
+    ]
+  },
+  {
+    "Name": "Clay Pit Workshop",
+    "DisplayName": "Clay Pit Workshop",
+    "Kind": "Workshop",
+    "Category": "Resource Gathering",
+    "Profession": "Clay Pit Workshop Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Stone",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Clay Pit] Clay T2",
+      "[Clay Pit] Reeds T2",
+      "[Clay Pit] Resin T2"
+    ]
+  },
+  {
+    "Name": "Clothier",
+    "DisplayName": "Clothier",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Sewer",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Cloth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Coats T3",
+      "Pack of Building Materials T2",
+      "[Vessel] Waterskin T1"
+    ]
+  },
+  {
+    "Name": "Cobbler",
+    "DisplayName": "Cobbler",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Cobbler",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Cloth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Boots T3",
+      "Pack of Building Materials T2",
+      "Dye T1"
+    ]
+  },
+  {
+    "Name": "Cookhouse",
+    "DisplayName": "Cookhouse",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Cook",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Skewers T2",
+      "[Food Processed] Biscuits T2",
+      "[Food Processed] Porridge T2"
+    ]
+  },
+  {
+    "Name": "Cooperage",
+    "DisplayName": "Cooperage",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Cooper",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Wood",
+      "Metallurgy",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Vessel] Barrels T3",
+      "[Needs Fullfilment] Coats T2",
+      "Pack of Luxury Goods T1"
+    ]
+  },
+  {
+    "Name": "Crude Workstation",
+    "DisplayName": "Crude Workstation",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Craftsman",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Building Material] Planks T0",
+      "[Building Material] Fabric T0",
+      "[Building Material] Bricks T0",
+      "Pipe T0"
+    ]
+  },
+  {
+    "Name": "Distillery",
+    "DisplayName": "Distillery",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Distillery Worker",
+    "MaxBuilders": 3,
+    "Tags": [
+      "Brewing",
+      "Rainwater",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Ale T2",
+      "[Needs Fullfilment] Incense T2",
+      "[Food Processed] Pickled Goods T2"
+    ]
+  },
+  {
+    "Name": "Druid",
+    "DisplayName": "Druid",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Druid",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Alchemy",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Oil T3",
+      "[Needs Fullfilment] Tea T2",
+      "[Needs Fullfilment] Coats T1"
+    ]
+  },
+  {
+    "Name": "Field Kitchen",
+    "DisplayName": "Field Kitchen",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Cook",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Skewers T0",
+      "[Food Processed] Paste T0",
+      "[Food Processed] Biscuits T0",
+      "[Food Processed] Pickled Goods T0"
+    ]
+  },
+  {
+    "Name": "Finesmith",
+    "DisplayName": "Finesmith",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Finesmith",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Metallurgy",
+      "Tech",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[R] Amber",
+      "Tools Simple T3"
+    ]
+  },
+  {
+    "Name": "Flawless Brewery",
+    "DisplayName": "Flawless Brewery",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Brewery Worker",
+    "MaxBuilders": 3,
+    "Tags": [
+      "Brewing",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Ale T3",
+      "[Food Processed] Porridge T3",
+      "Pack of Crops T3"
+    ]
+  },
+  {
+    "Name": "Flawless Cellar",
+    "DisplayName": "Flawless Cellar",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Cellar worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Brewing",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Wine T3",
+      "[Food Processed] Pickled Goods T3",
+      "Pack of Provisions T3"
+    ]
+  },
+  {
+    "Name": "Flawless Cooperage",
+    "DisplayName": "Flawless Cooperage",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Cooper",
+    "MaxBuilders": 2,
+    "Tags": [
+      "Wood",
+      "FoxesCooperation",
+      "Metallurgy"
+    ],
+    "Recipes": [
+      "[Vessel] Barrels T3",
+      "[Needs Fullfilment] Coats T3",
+      "Pack of Luxury Goods T3"
+    ]
+  },
+  {
+    "Name": "Flawless Druid",
+    "DisplayName": "Flawless Druid",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Druid",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Alchemy",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Oil T3",
+      "[Needs Fullfilment] Tea T3",
+      "[Needs Fullfilment] Coats T3"
+    ]
+  },
+  {
+    "Name": "Flawless Leatherworks",
+    "DisplayName": "Flawless Leatherworks",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Leatherworker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Cloth",
+      "Animals",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Vessel] Waterskin T3",
+      "[Needs Fullfilment] Boots T3",
+      "[Needs Fullfilment] Training Gear T3"
+    ]
+  },
+  {
+    "Name": "Flawless Rain Mill",
+    "DisplayName": "Flawless Rain Mill",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Mill worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Tech",
+      "Farming",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Flour T3",
+      "[Needs Fullfilment] Scrolls T3",
+      "[Food Processed] Paste T3"
+    ]
+  },
+  {
+    "Name": "Flawless Smelter",
+    "DisplayName": "Flawless Smelter",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Smelter",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Metallurgy",
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Copper Bar T3",
+      "[Needs Fullfilment] Training Gear T3",
+      "[Food Processed] Pie T3"
+    ]
+  },
+  {
+    "Name": "Furnace",
+    "DisplayName": "Furnace",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Furnace worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Metallurgy",
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Pie T2",
+      "[Food Processed] Skewers T2",
+      "Copper Bar T2"
+    ]
+  },
+  {
+    "Name": "Granary",
+    "DisplayName": "Granary",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Granary worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Farming",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Pickled Goods T2",
+      "[Building Material] Fabric T2",
+      "Pack of Crops T2"
+    ]
+  },
+  {
+    "Name": "Greenhouse Workshop",
+    "DisplayName": "Greenhouse Workshop",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Greenhouse Workshop Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Farming",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Greenhouse] Mushrooms T2",
+      "[Greenhouse] Herbs T2"
+    ]
+  },
+  {
+    "Name": "Grill",
+    "DisplayName": "Grill",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Grill Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Animals",
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Skewers T3",
+      "[Food Processed] Paste T2",
+      "Copper Bar T1"
+    ]
+  },
+  {
+    "Name": "Kiln",
+    "DisplayName": "Kiln",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Kiln worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth",
+      "Stone",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Coal T3",
+      "[Building Material] Bricks T1",
+      "[Food Processed] Jerky T1"
+    ]
+  },
+  {
+    "Name": "Leatherworks",
+    "DisplayName": "Leatherworks",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Leatherworker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Cloth",
+      "Animals",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Vessel] Waterskin T3",
+      "[Needs Fullfilment] Boots T2",
+      "[Needs Fullfilment] Training Gear T1"
+    ]
+  },
+  {
+    "Name": "Lumbermill",
+    "DisplayName": "Lumbermill",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Lumbermill worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Wood",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Building Material] Planks T3",
+      "[Needs Fullfilment] Scrolls T1",
+      "Pack of Trade Goods T1"
+    ]
+  },
+  {
+    "Name": "Makeshift Post",
+    "DisplayName": "Makeshift Post",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Craftsman",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Pack of Crops T0",
+      "Pack of Provisions T0",
+      "Pack of Building Materials T0"
+    ]
+  },
+  {
+    "Name": "Manufactory",
+    "DisplayName": "Manufactory",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Manufacturer",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Cloth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Building Material] Fabric T2",
+      "[Vessel] Barrels T2",
+      "Dye T2"
+    ]
+  },
+  {
+    "Name": "Pantry",
+    "DisplayName": "Pantry",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Pantry worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Farming",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Porridge T2",
+      "[Food Processed] Pie T2",
+      "Pack of Luxury Goods T2"
+    ]
+  },
+  {
+    "Name": "Press",
+    "DisplayName": "Press",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Press Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Tech",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Oil T3",
+      "Flour T1",
+      "[Food Processed] Paste T1"
+    ]
+  },
+  {
+    "Name": "Provisioner",
+    "DisplayName": "Provisioner",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Provisioner",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Flour T2",
+      "[Vessel] Barrels T2",
+      "Pack of Provisions T2"
+    ]
+  },
+  {
+    "Name": "Rain Mill",
+    "DisplayName": "Rain Mill",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Mill worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Tech",
+      "Farming",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Flour T3",
+      "[Needs Fullfilment] Scrolls T1",
+      "[Food Processed] Paste T1"
+    ]
+  },
+  {
+    "Name": "Rainpunk Foundry",
+    "DisplayName": "Rainpunk Foundry",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Factory Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Metallurgy",
+      "Tech",
+      "Rainwater",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[R] Parts",
+      "Hearth Parts T3"
+    ]
+  },
+  {
+    "Name": "Ranch",
+    "DisplayName": "Ranch",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Rancher",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Animals",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Meat (workshop) T1",
+      "Leather (workshop) T1",
+      "Workshop Eggs T1"
+    ]
+  },
+  {
+    "Name": "Scribe",
+    "DisplayName": "Scribe",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Scribe",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Brewing",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Scrolls T3",
+      "Pack of Trade Goods T2",
+      "[Needs Fullfilment] Ale T1"
+    ]
+  },
+  {
+    "Name": "Smelter",
+    "DisplayName": "Smelter",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Smelter",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Metallurgy",
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Copper Bar T3",
+      "[Needs Fullfilment] Training Gear T2",
+      "[Food Processed] Pie T1"
+    ]
+  },
+  {
+    "Name": "Smithy",
+    "DisplayName": "Smithy",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Smith",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Tech",
+      "Metallurgy",
+      "Warmth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Tools Simple T2",
+      "Pipe T2",
+      "Pack of Trade Goods T2"
+    ]
+  },
+  {
+    "Name": "Smokehouse",
+    "DisplayName": "Smokehouse",
+    "Kind": "Workshop",
+    "Category": "Food Production",
+    "Profession": "Smokehouse worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Warmth",
+      "Animals",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Food Processed] Jerky T3",
+      "[Vessel] Pottery T1",
+      "[Needs Fullfilment] Incense T1"
+    ]
+  },
+  {
+    "Name": "Stamping Mill",
+    "DisplayName": "Stamping Mill",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Stamping Mill Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Metallurgy",
+      "Tech",
+      "Stone",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Building Material] Bricks T2",
+      "Flour T2",
+      "Copper Bar T2"
+    ]
+  },
+  {
+    "Name": "Supplier",
+    "DisplayName": "Supplier",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Supplier",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Cloth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Flour T2",
+      "[Building Material] Planks T2",
+      "[Vessel] Waterskin T2"
+    ]
+  },
+  {
+    "Name": "Tea House",
+    "DisplayName": "Tea House",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Teahouse Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Alchemy",
+      "Rainwater",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Needs Fullfilment] Tea T3",
+      "[Needs Fullfilment] Incense T2",
+      "[Vessel] Waterskin T1"
+    ]
+  },
+  {
+    "Name": "Temporary Engineering Station",
+    "DisplayName": "Temporary Engineering Station",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Engineer",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation",
+      "Tech"
+    ],
+    "Recipes": []
+  },
+  {
+    "Name": "Tinctury",
+    "DisplayName": "Tinctury",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Tinctury Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Brewing",
+      "Alchemy",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Dye T3",
+      "[Needs Fullfilment] Ale T2",
+      "[Needs Fullfilment] Wine T1"
+    ]
+  },
+  {
+    "Name": "Tinkerer",
+    "DisplayName": "Tinkerer",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Tinkerer",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Metallurgy",
+      "Tech",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Tools Simple T2",
+      "[Needs Fullfilment] Training Gear T2",
+      "[Vessel] Pottery T2"
+    ]
+  },
+  {
+    "Name": "Toolshop",
+    "DisplayName": "Toolshop",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Toolshop Worker",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Tech",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "Tools Simple T3",
+      "Pipe T2",
+      "[Needs Fullfilment] Boots T2"
+    ]
+  },
+  {
+    "Name": "Weaver",
+    "DisplayName": "Weaver",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Weaver",
+    "MaxBuilders": 4,
+    "Tags": [
+      "Cloth",
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Building Material] Fabric T3",
+      "[Needs Fullfilment] Boots T1",
+      "[Needs Fullfilment] Training Gear T1"
+    ]
+  },
+  {
+    "Name": "Workshop",
+    "DisplayName": "Workshop",
+    "Kind": "Workshop",
+    "Category": "Industry",
+    "Profession": "Craftsman",
+    "MaxBuilders": 2,
+    "Tags": [
+      "FoxesCooperation"
+    ],
+    "Recipes": [
+      "[Building Material] Planks T2",
+      "[Building Material] Fabric T2",
+      "[Building Material] Bricks T2",
+      "Pipe T0"
+    ]
+  }
+]
