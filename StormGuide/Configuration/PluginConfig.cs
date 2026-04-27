@@ -27,7 +27,9 @@ public sealed class PluginConfig
     public ConfigEntry<bool>             ShowDraftTab { get; }
     public ConfigEntry<bool>             ShowSettingsTab { get; }
     public ConfigEntry<bool>             ShowDiagnosticsTab { get; }
+    public ConfigEntry<bool>             ShowEmbarkTab { get; }
     public ConfigEntry<bool>             HideEmptyRecipeBuildings { get; }
+    public ConfigEntry<bool>             CompactMode { get; }
     public ConfigEntry<bool>             WhyAllRecipes { get; }
     public ConfigEntry<bool>             WhyAllProducers { get; }
 
@@ -98,9 +100,13 @@ public sealed class PluginConfig
         ShowSettingsTab  = cfg.Bind(SectionUI, "Tab · Settings",  true, "Show the in-panel Settings tab.");
         ShowDiagnosticsTab = cfg.Bind(SectionUI, "Tab · Diagnostics", false,
             "Show the in-panel Diagnostics tab (recent plugin log lines).");
+        ShowEmbarkTab    = cfg.Bind(SectionUI, "Tab · Embark",    false,
+            "Show the Embark planner tab (pre-settlement helper, scaffolding only).");
 
         HideEmptyRecipeBuildings = cfg.Bind(SectionUI, "Hide empty-recipe buildings", true,
             "Hide buildings that have no recipes from the Building tab list.");
+        CompactMode = cfg.Bind(SectionUI, "Compact Mode", false,
+            "Use a smaller-font/tighter layout. Useful on small displays.");
 
         WhyAllRecipes   = cfg.Bind(SectionUI, "Expand all recipe reasoning",   false,
             "Persistent state for the Building tab “why × all” toggle.");

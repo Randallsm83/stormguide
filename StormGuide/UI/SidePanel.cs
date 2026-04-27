@@ -69,7 +69,15 @@ internal sealed class SidePanel : MonoBehaviour
     private TtlCache<StormGuide.Domain.VillageSummary?>? _summaryCache;
     private TtlCache<IReadOnlyList<LiveGameState.OwnedCornerstone>>? _ownedCache;
 
-    public enum Tab { Home, Building, Good, Villagers, Orders, Glades, Draft, Settings, Diagnostics }
+    public enum Tab { Home, Building, Good, Villagers, Orders, Glades, Draft, Settings, Diagnostics, Embark }
+
+    // Tracks last applied compact state so style rebuilds happen exactly once
+    // when the toggle flips at runtime.
+    private bool? _lastCompactApplied;
+
+    // Selected input good (Building tab recipe filter chip).
+    private string? _recipeInputFilter;
+    private Vector2 _embarkScroll;
 
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
@@ -116,7 +124,7 @@ internal sealed class SidePanel : MonoBehaviour
     private static readonly Tab[] TabOrder = new[]
     {
         Tab.Home, Tab.Building, Tab.Good, Tab.Villagers,
-        Tab.Orders, Tab.Glades, Tab.Draft, Tab.Settings, Tab.Diagnostics,
+        Tab.Orders, Tab.Glades, Tab.Draft, Tab.Settings, Tab.Diagnostics, Tab.Embark,
     };
 
     private void Start()
@@ -177,7 +185,7 @@ internal sealed class SidePanel : MonoBehaviour
             StormGuidePlugin.Log.LogInfo($"StormGuide panel {(_visible ? "shown" : "hidden")}.");
         }
 
-        // Ctrl+1..8 jumps to the corresponding visible tab.
+        // Ctrl+1..9 jumps to the corresponding visible tab.
         if (_visible && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
         {
             for (var i = 0; i < TabOrder.Length; i++)
@@ -188,6 +196,14 @@ internal sealed class SidePanel : MonoBehaviour
                     break;
                 }
             }
+        }
+
+        // F5 reloads the static catalog (mirrors the Settings button so power
+        // users don't have to navigate there after a JSONLoader regen).
+        if (_visible && Input.GetKeyDown(KeyCode.F5))
+        {
+            try { StormGuidePlugin.ReloadCatalog(); _catalogReloadStatus = "reloaded."; }
+            catch (Exception ex) { _catalogReloadStatus = "error: " + ex.Message; }
         }
 
         // Subscribe to in-game selection once GameController is ready.
@@ -273,6 +289,7 @@ internal sealed class SidePanel : MonoBehaviour
             case Tab.Draft:       DrawDraftTab();       break;
             case Tab.Settings:    DrawSettingsTab();    break;
             case Tab.Diagnostics: DrawDiagnosticsTab(); break;
+            case Tab.Embark:      DrawEmbarkTab();      break;
         }
 
         GUILayout.FlexibleSpace();
@@ -392,6 +409,7 @@ internal sealed class SidePanel : MonoBehaviour
         if (Config.ShowDraftTab.Value)     DrawTab(Tab.Draft,     "Draft");
         if (Config.ShowSettingsTab.Value)  DrawTab(Tab.Settings,  "⚙");
         if (Config.ShowDiagnosticsTab.Value) DrawTab(Tab.Diagnostics, "⚙?");
+        if (Config.ShowEmbarkTab.Value)    DrawTab(Tab.Embark,    "Embark");
         GUILayout.EndHorizontal();
 
         // Reroute to the first visible tab if the active one is hidden.
@@ -406,6 +424,7 @@ internal sealed class SidePanel : MonoBehaviour
             else if (Config.ShowDraftTab.Value)     _activeTab = Tab.Draft;
             else if (Config.ShowSettingsTab.Value)  _activeTab = Tab.Settings;
             else if (Config.ShowDiagnosticsTab.Value) _activeTab = Tab.Diagnostics;
+            else if (Config.ShowEmbarkTab.Value)    _activeTab = Tab.Embark;
         }
     }
 
@@ -420,6 +439,7 @@ internal sealed class SidePanel : MonoBehaviour
         Tab.Draft       => Config.ShowDraftTab.Value,
         Tab.Settings    => Config.ShowSettingsTab.Value,
         Tab.Diagnostics => Config.ShowDiagnosticsTab.Value,
+        Tab.Embark      => Config.ShowEmbarkTab.Value,
         _ => true
     };
 
@@ -805,6 +825,36 @@ internal sealed class SidePanel : MonoBehaviour
         var meta = $"{vm.Building.Kind} · {vm.Building.Profession}";
         GUILayout.Label(meta, _mutedStyle);
 
+        // Recipe input chip filter — union of all input-good display names
+        // for this building's recipes; click to scope the recipe list.
+        var inputs = vm.Recipes
+            .SelectMany(r => r.Recipe.RequiredGoods.SelectMany(s => s.Options.Select(o => o.Good)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (inputs.Count > 0)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("   uses:", _mutedStyle, GUILayout.Width(46));
+            foreach (var good in inputs)
+            {
+                var disp = Catalog.Goods.TryGetValue(good, out var gi) ? gi.DisplayName : good;
+                var label = string.Equals(_recipeInputFilter, good, StringComparison.OrdinalIgnoreCase)
+                    ? $"✓ {disp}"
+                    : disp;
+                if (GUILayout.Button(new GUIContent(label, $"Filter recipes consuming '{disp}'"),
+                                     _tabStyle))
+                {
+                    _recipeInputFilter = string.Equals(_recipeInputFilter, good,
+                                                       StringComparison.OrdinalIgnoreCase)
+                        ? null  // clicking the active chip clears the filter
+                        : good;
+                }
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+        }
+
         // Building tag chips — click to drop the tag into the search box and
         // re-filter the list.
         if (vm.Building.Tags.Count > 0)
@@ -841,7 +891,13 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndHorizontal();
 
         _buildingDetailScroll = GUILayout.BeginScrollView(_buildingDetailScroll, GUILayout.ExpandHeight(true));
-        foreach (var rk in vm.Recipes) DrawRecipeCard(rk);
+        var visibleRecipes = string.IsNullOrEmpty(_recipeInputFilter)
+            ? vm.Recipes
+            : vm.Recipes.Where(r => r.Recipe.RequiredGoods.Any(s =>
+                s.Options.Any(o =>
+                    string.Equals(o.Good, _recipeInputFilter, StringComparison.OrdinalIgnoreCase))))
+                .ToList();
+        foreach (var rk in visibleRecipes) DrawRecipeCard(rk);
         GUILayout.EndScrollView();
 
         GUILayout.EndVertical();
@@ -1163,7 +1219,10 @@ internal sealed class SidePanel : MonoBehaviour
         {
             var prog = LiveGameState.CurrentTraderTravelProgress();
             if (prog is float p)
+            {
                 GUILayout.Label($"   travel: {p * 100f:0}% en route", _mutedStyle);
+                DrawTraderTimeline(p);
+            }
         }
 
         // Trader desires ranking (top picks by total settlement value).
@@ -1229,6 +1288,20 @@ internal sealed class SidePanel : MonoBehaviour
         var fill = new Rect(rect.x, rect.y, rect.width * t, rect.height);
         GUI.DrawTexture(fill, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
             new Color(0.45f, 0.85f, 0.55f, 0.7f), 0, 0);
+    }
+
+    /// <summary>
+    /// Tiny progress bar visualising the current trader's travel %.
+    /// Indented under the trader line so it visually associates with it.
+    /// </summary>
+    private void DrawTraderTimeline(float progress)
+    {
+        var rect = GUILayoutUtility.GetRect(0, 6, GUILayout.ExpandWidth(true));
+        rect.xMin += 28;
+        GUI.Box(rect, GUIContent.none);
+        var fill = new Rect(rect.x, rect.y, rect.width * Mathf.Clamp01(progress), rect.height);
+        GUI.DrawTexture(fill, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
+            new Color(0.55f, 0.75f, 0.95f, 0.7f), 0, 0);   // sky blue
     }
 
     /// <summary>Coloured pill style by order tier name.</summary>
@@ -1757,6 +1830,14 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(
                 "   reward chases expire if untouched — prioritise scouting/clearing.",
                 _mutedStyle);
+            foreach (var c in summary.Chases.Take(8))
+            {
+                GUILayout.Label(
+                    $"   · {c.Model}  —  window {c.Start:0.#}…{c.End:0.#}s ({c.Duration:0.#}s)",
+                    _mutedStyle);
+            }
+            if (summary.Chases.Count > 8)
+                GUILayout.Label($"   … and {summary.Chases.Count - 8} more", _mutedStyle);
         }
 
         // Danger-level distribution: safe = total - dangerous - forbidden.
@@ -1804,6 +1885,28 @@ internal sealed class SidePanel : MonoBehaviour
             GUI.DrawTexture(new Rect(x, rect.y, forbW, rect.height),
                 Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
                 new Color(0.95f, 0.40f, 0.40f, 0.85f), 0, 0);
+    }
+
+    private void DrawEmbarkTab()
+    {
+        GUILayout.Label("Embark planner", _h1Style);
+        _embarkScroll = GUILayout.BeginScrollView(_embarkScroll, GUILayout.ExpandHeight(true));
+        GUILayout.Label(
+            "Pre-settlement helper. Scaffolding only — the catalog/cornerstone/seal joins live in the meta layer (MetaController) which we haven't mapped yet.",
+            _mutedStyle);
+        GUILayout.Space(6);
+        GUILayout.Label($"Catalog ready: {(Catalog.IsEmpty ? "no" : "yes")}.", _bodyStyle);
+        if (!Catalog.IsEmpty)
+        {
+            GUILayout.Label(
+                $"   {Catalog.Races.Count} races · {Catalog.Buildings.Count} buildings · {Catalog.Goods.Count} goods",
+                _mutedStyle);
+        }
+        GUILayout.Space(6);
+        GUILayout.Label(
+            "Planned: rank race picks against current biome, surface the cornerstone deck composition, and pre-flag goods you'll need (resolve incentives, hearth fuel coverage, food variety).",
+            _mutedStyle);
+        GUILayout.EndScrollView();
     }
 
     private void DrawDiagnosticsTab()
@@ -1871,7 +1974,11 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label($"Currently owned — {owned.Count}", _bodyStyle);
         foreach (var o in owned)
         {
-            GUILayout.Label($"   · {o.DisplayName}", _bodyStyle);
+            // Tooltip carries the description so hovering the name surfaces the
+            // full effect text without dedicating a permanent line to it.
+            GUILayout.Label(
+                new GUIContent($"   · {o.DisplayName}", o.Description ?? ""),
+                _bodyStyle);
             if (!string.IsNullOrEmpty(o.Description))
                 GUILayout.Label($"     {o.Description}", _mutedStyle);
         }
@@ -1884,7 +1991,8 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label(marker, _badgeStyle, GUILayout.Width(24));
         GUILayout.BeginVertical();
         GUILayout.BeginHorizontal();
-        GUILayout.Label(o.DisplayName, _bodyStyle);
+        // Tooltip: full effect description on hover.
+        GUILayout.Label(new GUIContent(o.DisplayName, o.Description ?? ""), _bodyStyle);
         GUILayout.FlexibleSpace();
         GUILayout.Label(o.Synergy.Format("0"), _bodyStyle);
         GUILayout.EndHorizontal();
@@ -1913,20 +2021,28 @@ internal sealed class SidePanel : MonoBehaviour
 
     private void EnsureStyles()
     {
-        if (_windowStyle != null) return;
+        var compact = Config.CompactMode.Value;
+        // Rebuild styles when compact mode flips so font sizes can change live.
+        if (_windowStyle != null && _lastCompactApplied == compact) return;
+        _lastCompactApplied = compact;
 
-        _windowStyle = new GUIStyle(GUI.skin.window) { padding = new RectOffset(10, 10, 22, 10) };
+        var body  = compact ? 11 : 12;
+        var muted = compact ? 10 : 11;
+        var h1    = compact ? 13 : 14;
+        var pad   = compact ? new RectOffset(8, 8, 20, 8) : new RectOffset(10, 10, 22, 10);
+
+        _windowStyle = new GUIStyle(GUI.skin.window) { padding = pad };
         _bodyStyle = new GUIStyle(GUI.skin.label)
         {
             wordWrap = true,
             alignment = TextAnchor.UpperLeft,
-            fontSize = 12,
+            fontSize = body,
         };
-        _h1Style = new GUIStyle(_bodyStyle) { fontSize = 14, fontStyle = FontStyle.Bold };
-        _mutedStyle = new GUIStyle(_bodyStyle) { fontSize = 11 };
+        _h1Style = new GUIStyle(_bodyStyle) { fontSize = h1, fontStyle = FontStyle.Bold };
+        _mutedStyle = new GUIStyle(_bodyStyle) { fontSize = muted };
         _mutedStyle.normal.textColor = new Color(0.75f, 0.75f, 0.78f, 1f);
-        _badgeStyle = new GUIStyle(_bodyStyle) { fontSize = 14, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
-        _tabStyle = new GUIStyle(GUI.skin.button) { fixedHeight = 24, fontSize = 12 };
+        _badgeStyle = new GUIStyle(_bodyStyle) { fontSize = h1, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+        _tabStyle = new GUIStyle(GUI.skin.button) { fixedHeight = compact ? 20 : 24, fontSize = body };
         _tabActiveStyle = new GUIStyle(_tabStyle);
         _tabActiveStyle.normal.background = _tabStyle.active.background;
         _tabActiveStyle.normal.textColor  = Color.white;

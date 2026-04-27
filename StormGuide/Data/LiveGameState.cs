@@ -785,12 +785,21 @@ internal static class LiveGameState
 
     // ---- Glade summary ----------------------------------------------------
 
+    public sealed record GladeRewardChase(
+        string Model,
+        float  Start,
+        float  End)
+    {
+        public float Duration => Math.Max(0f, End - Start);
+    }
+
     public sealed record GladeSummary(
         int Total,
         int Discovered,
         int Dangerous,
         int Forbidden,
-        int RewardChasesActive);
+        int RewardChasesActive,
+        IReadOnlyList<GladeRewardChase> Chases);
 
     /// <summary>
     /// Aggregate glade counts: total spawned, discovered, dangerous/forbidden
@@ -807,6 +816,7 @@ internal static class LiveGameState
             if (glades == null) return null;
             var total = 0; var discovered = 0; var dangerous = 0;
             var forbidden = 0; var chases = 0;
+            var chaseList = new List<GladeRewardChase>();
             foreach (var g in glades)
             {
                 if (g == null) continue;
@@ -814,9 +824,16 @@ internal static class LiveGameState
                 if (g.wasDiscovered) discovered++;
                 try { if (gs.IsDangerous(g)) dangerous++; } catch { }
                 try { if (gs.IsForbidden(g)) forbidden++; } catch { }
-                if (g.hasRewardChase) chases++;
+                if (g.hasRewardChase)
+                {
+                    chases++;
+                    chaseList.Add(new GladeRewardChase(
+                        Model: g.model ?? "glade",
+                        Start: g.rewardChaseStart,
+                        End:   g.rewardChaseEnd));
+                }
             }
-            return new GladeSummary(total, discovered, dangerous, forbidden, chases);
+            return new GladeSummary(total, discovered, dangerous, forbidden, chases, chaseList);
         }
         catch { return null; }
     }
