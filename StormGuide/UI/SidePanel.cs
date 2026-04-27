@@ -79,6 +79,12 @@ internal sealed class SidePanel : MonoBehaviour
     private string? _recipeInputFilter;
     private Vector2 _embarkScroll;
 
+    // Pinned (buildingModel, recipeModel) pairs, restored from config.
+    private readonly List<(string Building, string Recipe)> _pinned = new();
+
+    // Lazily-built chip style (smaller padding + lighter bg) used for tag pills.
+    private GUIStyle? _chipStyle;
+
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
 
@@ -119,6 +125,7 @@ internal sealed class SidePanel : MonoBehaviour
     // Time-pressure styles for failable orders.
     private GUIStyle? _warnStyle;
     private GUIStyle? _critStyle;
+    private GUIStyle? _okStyle;
 
     // Tab order used by Ctrl+1..9 shortcuts; matches Tab enum order.
     private static readonly Tab[] TabOrder = new[]
@@ -149,6 +156,18 @@ internal sealed class SidePanel : MonoBehaviour
             _buildingSearch = Config.LastBuildingSearch.Value;
         if (!string.IsNullOrEmpty(Config.LastGoodSearch.Value))
             _goodSearch = Config.LastGoodSearch.Value;
+
+        // Restore pins. Format: "buildingModel|recipeModel;buildingModel|recipeModel".
+        if (!string.IsNullOrEmpty(Config.PinnedRecipes.Value))
+        {
+            foreach (var entry in Config.PinnedRecipes.Value.Split(';'))
+            {
+                var split = entry.Split('|');
+                if (split.Length == 2 &&
+                    !string.IsNullOrEmpty(split[0]) && !string.IsNullOrEmpty(split[1]))
+                    _pinned.Add((split[0], split[1]));
+            }
+        }
 
         // Persisted "why × all" expansions become unbounded sentinels: the
         // rendering layer only checks Contains() so an empty marker keeps the
@@ -461,6 +480,7 @@ internal sealed class SidePanel : MonoBehaviour
         _homeScroll = GUILayout.BeginScrollView(_homeScroll, GUILayout.ExpandHeight(true));
         GUILayout.Label("Settlement at a glance", _h1Style);
 
+        DrawHomePinned();
         DrawHomeVillage();
         DrawHomeTrader();
         DrawHomeIdle();
@@ -471,6 +491,56 @@ internal sealed class SidePanel : MonoBehaviour
         DrawHomeCornerstones();
 
         GUILayout.EndScrollView();
+    }
+
+    private void DrawHomePinned()
+    {
+        if (_pinned.Count == 0) return;
+
+        GUILayout.Space(4);
+        GUILayout.Label($"☆ Pinned recipes — {_pinned.Count}", _bodyStyle);
+        var stale = new List<(string, string)>();
+        foreach (var (bldg, recipe) in _pinned)
+        {
+            if (!Catalog.Buildings.TryGetValue(bldg, out var b) ||
+                !Catalog.Recipes.TryGetValue(recipe, out var r))
+            {
+                stale.Add((bldg, recipe));
+                continue;
+            }
+            var perMin = r.ProductionTime > 0
+                ? (60.0 * r.ProducedAmount) / r.ProductionTime
+                : 0;
+            var stock = LiveGameState.IsReady ? LiveGameState.StockpileOf(r.ProducedGood) : 0;
+            var stockTag = LiveGameState.IsReady ? $" · stock {stock}" : "";
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button(
+                    new GUIContent($"   {b.DisplayName} → {r.DisplayName}: {perMin:0.##}/min{stockTag}",
+                                   "Open in Building tab"),
+                    _tabStyle))
+            {
+                _selectedBuilding = bldg;
+                _activeTab = Tab.Building;
+            }
+            if (GUILayout.Button(new GUIContent("unpin", "Remove from Home"),
+                                 _tabStyle, GUILayout.Width(60)))
+            {
+                stale.Add((bldg, recipe));
+            }
+            GUILayout.EndHorizontal();
+        }
+        if (stale.Count > 0)
+        {
+            foreach (var s in stale) _pinned.RemoveAll(x => x == s);
+            SavePins();
+        }
+    }
+
+    /// <summary>Persist <see cref="_pinned"/> back to <see cref="PluginConfig.PinnedRecipes"/>.</summary>
+    private void SavePins()
+    {
+        Config.PinnedRecipes.Value = string.Join(";",
+            _pinned.Select(p => p.Building + "|" + p.Recipe));
     }
 
     private void DrawHomeNeeds()
@@ -588,6 +658,18 @@ internal sealed class SidePanel : MonoBehaviour
                     _activeTab    = Tab.Good;
                 }
             }
+            // Combined revenue across both traders' top-3 desires — a quick
+            // "how much trade is on the table this rotation" headline.
+            var nextDesires = _nextDesiresCache?.Get()
+                              ?? (nxt is null
+                                  ? Array.Empty<LiveGameState.TraderDesire>()
+                                  : LiveGameState.RankTraderDesires(nxt, Catalog, isCurrent: false));
+            var revenue = desires.Take(3).Sum(d => d.TotalValue)
+                        + nextDesires.Take(3).Sum(d => d.TotalValue);
+            if (revenue > 0f)
+                GUILayout.Label(
+                    $"   potential trade revenue (top-3 each): {revenue:0.##}",
+                    _mutedStyle);
         }
         if (nxt is not null)
         {
@@ -781,13 +863,25 @@ internal sealed class SidePanel : MonoBehaviour
                          // Tag chips reuse the same search field, so match
                          // against tag names too — a one-click filter.
                          || b.Tags.Any(t => t.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0))
-                .OrderBy(b => b.DisplayName, StringComparer.OrdinalIgnoreCase)
+                // Group by Kind so the Building list mirrors the Good tab's
+                // category-grouped rendering. Kind is the natural high-level
+                // bucket (Workshop/Service/Cornerstone/etc).
+                .OrderBy(b => b.Kind.ToString(), StringComparer.OrdinalIgnoreCase)
+                .ThenBy(b => b.DisplayName, StringComparer.OrdinalIgnoreCase)
                 .ToList();
             _cachedBuildingQuery = cacheKey;
         }
 
+        string? lastKind = null;
         foreach (var b in _cachedBuildingMatches)
         {
+            var kind = b.Kind.ToString();
+            if (kind != lastKind)
+            {
+                GUILayout.Space(4);
+                GUILayout.Label(kind, _mutedStyle);
+                lastKind = kind;
+            }
             var label = b.DisplayName;
             var style = (_selectedBuilding == b.Name) ? _tabActiveStyle : _tabStyle;
             if (GUILayout.Button(label, style)) _selectedBuilding = b.Name;
@@ -856,7 +950,7 @@ internal sealed class SidePanel : MonoBehaviour
         }
 
         // Building tag chips — click to drop the tag into the search box and
-        // re-filter the list.
+        // re-filter the list. Pill-styled to read as labels rather than buttons.
         if (vm.Building.Tags.Count > 0)
         {
             GUILayout.BeginHorizontal();
@@ -864,7 +958,7 @@ internal sealed class SidePanel : MonoBehaviour
             foreach (var tag in vm.Building.Tags)
             {
                 if (GUILayout.Button(new GUIContent(tag, $"Filter list by tag '{tag}'"),
-                                     _tabStyle))
+                                     _chipStyle ?? _tabStyle))
                 {
                     _buildingSearch = tag;
                     _cachedBuildingQuery = null; // force refilter
@@ -977,10 +1071,24 @@ internal sealed class SidePanel : MonoBehaviour
 
         var key = rk.Recipe.Name;
         var expanded = _expandedRecipes.Contains(key);
+        GUILayout.BeginHorizontal();
         if (GUILayout.Button(expanded ? "▾ why" : "▸ why", _tabStyle, GUILayout.Width(70)))
         {
             if (expanded) _expandedRecipes.Remove(key); else _expandedRecipes.Add(key);
         }
+        // Pin / unpin the (selected building, this recipe) pair to Home.
+        var pinKey = (_selectedBuilding ?? "", rk.Recipe.Name);
+        var pinned = _selectedBuilding != null && _pinned.Contains(pinKey);
+        if (_selectedBuilding != null &&
+            GUILayout.Button(
+                new GUIContent(pinned ? "★ pinned" : "☆ pin",
+                               pinned ? "Unpin from Home" : "Pin to Home"),
+                _tabStyle, GUILayout.Width(80)))
+        {
+            if (pinned) _pinned.Remove(pinKey); else _pinned.Add(pinKey);
+            SavePins();
+        }
+        GUILayout.EndHorizontal();
         if (expanded)
         {
             foreach (var c in rk.Throughput.Components)
@@ -1262,6 +1370,44 @@ internal sealed class SidePanel : MonoBehaviour
         }
         if (desires.Count > max)
             GUILayout.Label($"   … and {desires.Count - max} more", _mutedStyle);
+    }
+
+    /// <summary>
+    /// Best-effort ETA hint for "produce N goodX" objectives. Looks for a
+    /// catalog good display name as a substring of the objective description
+    /// and joins it with the live net flow. Skips if no good is referenced or
+    /// if the settlement isn't producing the good fast enough to estimate.
+    /// </summary>
+    private void DrawObjectiveEta(LiveGameState.OrderObjective ob)
+    {
+        if (ob.Completed) return;
+        if (string.IsNullOrEmpty(ob.Description) || !LiveGameState.IsReady) return;
+        var match = ProgressRegex.Match(ob.Description);
+        if (!match.Success) return;
+        if (!int.TryParse(match.Groups[1].Value, out var have)) return;
+        if (!int.TryParse(match.Groups[2].Value, out var need)) return;
+        if (need <= have) return;
+
+        // Find the first catalog good display name that occurs in the desc.
+        // Order by length descending so "Pickled Goods" beats "Goods".
+        StormGuide.Domain.GoodInfo? matched = null;
+        foreach (var gi in Catalog.Goods.Values
+                     .OrderByDescending(g => g.DisplayName.Length))
+        {
+            if (string.IsNullOrEmpty(gi.DisplayName)) continue;
+            if (ob.Description.IndexOf(gi.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                matched = gi;
+                break;
+            }
+        }
+        if (matched is null) return;
+
+        var net = LiveGameState.FlowFor(matched.Name, Catalog).Net;
+        if (net <= 1e-6) return;   // not producing or breaking even
+        var minutes = (need - have) / net;
+        if (minutes <= 0 || minutes > 999) return;
+        GUILayout.Label($"      ETA at current burn: ~{minutes:0.#} min", _mutedStyle);
     }
 
     /// <summary>
@@ -1594,11 +1740,17 @@ internal sealed class SidePanel : MonoBehaviour
 
         if (o.Objectives.Count > 0)
         {
+            // Headline: when every objective is completed, surface a green
+            // "ready to deliver" line so the player can immediately spot orders
+            // that just need a click in the in-game popup.
+            if (o.Objectives.All(x => x.Completed))
+                GUILayout.Label("   ✓ ready to deliver", _okStyle ?? _mutedStyle);
             foreach (var ob in o.Objectives)
             {
                 var prefix = ob.Completed ? "   ✓ " : "   · ";
                 GUILayout.Label(prefix + ob.Description, _mutedStyle);
                 DrawObjectiveProgress(ob);
+                DrawObjectiveEta(ob);
             }
         }
         if (o.Rewards.Count > 0)
@@ -1830,11 +1982,24 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(
                 "   reward chases expire if untouched — prioritise scouting/clearing.",
                 _mutedStyle);
+            var now = LiveGameState.GameTimeNow();
             foreach (var c in summary.Chases.Take(8))
             {
-                GUILayout.Label(
-                    $"   · {c.Model}  —  window {c.Start:0.#}…{c.End:0.#}s ({c.Duration:0.#}s)",
-                    _mutedStyle);
+                if (now is float t && c.End > t)
+                {
+                    var remaining = c.End - t;
+                    var mins = Mathf.Max(0, Mathf.FloorToInt(remaining / 60f));
+                    var secs = Mathf.Max(0, Mathf.FloorToInt(remaining % 60f));
+                    GUILayout.Label(
+                        $"   · {c.Model}  —  {mins}:{secs:00} left ({c.Duration:0.#}s window)",
+                        _mutedStyle);
+                }
+                else
+                {
+                    GUILayout.Label(
+                        $"   · {c.Model}  —  window {c.Start:0.#}…{c.End:0.#}s ({c.Duration:0.#}s)",
+                        _mutedStyle);
+                }
             }
             if (summary.Chases.Count > 8)
                 GUILayout.Label($"   … and {summary.Chases.Count - 8} more", _mutedStyle);
@@ -1989,6 +2154,11 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.BeginHorizontal();
         var marker = o.IsTopRanked && Config.ShowRecommendations.Value ? "★" : $"#{o.Rank}";
         GUILayout.Label(marker, _badgeStyle, GUILayout.Width(24));
+        // Cornerstone option icon — best-effort. Effect.Icon is a Sprite that
+        // sits inside an atlas; we slice via DrawTextureWithTexCoords so the
+        // panel only paints the relevant sub-rect. Falls through silently if
+        // the sprite/texture aren't available.
+        DrawCornerstoneIcon(o.EffectId);
         GUILayout.BeginVertical();
         GUILayout.BeginHorizontal();
         // Tooltip: full effect description on hover.
@@ -2007,6 +2177,35 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndVertical();
         GUILayout.EndHorizontal();
         GUILayout.Space(4);
+    }
+
+    /// <summary>
+    /// Paints the cornerstone effect's sprite icon inside a fixed 22×22 box
+    /// next to the marker. Resolves the live <c>EffectModel</c> at draw time
+    /// since icons aren't in our static catalog. Safe-guarded; failures show
+    /// no icon but preserve layout via a reserved <see cref="GUILayout.Space"/>.
+    /// </summary>
+    private void DrawCornerstoneIcon(string effectId)
+    {
+        const float size = 22f;
+        var slot = GUILayoutUtility.GetRect(size, size, GUILayout.Width(size));
+        try
+        {
+            var ms = LiveGameState.Services?.GameModelService;
+            var eff = ms?.GetEffect(effectId);
+            UnityEngine.Sprite? icon = null;
+            try { icon = (UnityEngine.Sprite?)eff?.GetType().GetProperty("Icon")?.GetValue(eff); }
+            catch { }
+            if (icon == null) return;
+            var tex = icon.texture;
+            if (tex == null) return;
+            var r = icon.textureRect;
+            // Convert atlas pixel rect to normalised UV coords.
+            var uv = new Rect(r.x / tex.width, r.y / tex.height,
+                              r.width / tex.width, r.height / tex.height);
+            GUI.DrawTextureWithTexCoords(slot, tex, uv, alphaBlend: true);
+        }
+        catch { /* swallow — icons are decorative. */ }
     }
 
     private void DrawFooter()
@@ -2051,5 +2250,16 @@ internal sealed class SidePanel : MonoBehaviour
         _warnStyle.normal.textColor = new Color(0.95f, 0.80f, 0.30f, 1f);   // amber
         _critStyle = new GUIStyle(_mutedStyle) { fontStyle = FontStyle.Bold };
         _critStyle.normal.textColor = new Color(0.95f, 0.40f, 0.40f, 1f);   // red
+        _okStyle = new GUIStyle(_mutedStyle) { fontStyle = FontStyle.Bold };
+        _okStyle.normal.textColor = new Color(0.45f, 0.85f, 0.55f, 1f);   // green
+        // Pill-style for tag chips: tighter padding + no wrap so chips read as
+        // labels rather than full-height buttons.
+        _chipStyle = new GUIStyle(_tabStyle)
+        {
+            fixedHeight = 0,
+            padding     = new RectOffset(6, 6, 2, 2),
+            margin      = new RectOffset(2, 2, 1, 1),
+            fontSize    = compact ? 10 : 11,
+        };
     }
 }

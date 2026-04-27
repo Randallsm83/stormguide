@@ -39,6 +39,7 @@ public sealed class PluginConfig
     public ConfigEntry<string>           LastSelectedRace { get; }
     public ConfigEntry<string>           LastBuildingSearch { get; }
     public ConfigEntry<string>           LastGoodSearch { get; }
+    public ConfigEntry<string>           PinnedRecipes { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -125,5 +126,7 @@ public sealed class PluginConfig
             "Last value of the Building tab search box. Persisted automatically.");
         LastGoodSearch       = cfg.Bind(SectionUI, "Last Good Search",       "",
             "Last value of the Good tab search box. Persisted automatically.");
+        PinnedRecipes        = cfg.Bind(SectionUI, "Pinned Recipes",         "",
+            "Semicolon-separated list of \"buildingModel|recipeModel\" pinned to the Home tab.");
     }
 }

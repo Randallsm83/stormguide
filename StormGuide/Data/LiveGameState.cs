@@ -279,6 +279,17 @@ internal static class LiveGameState
         return new SettlementAlerts(idleCount, racesBelow, risks);
     }
 
+    /// <summary>
+    /// Current in-game time as reported by <see cref="IGameTimeService.Time"/>.
+    /// This is the same clock that drives <c>GladeState.rewardChaseStart/End</c>,
+    /// so it can be used for countdowns. Null if unavailable.
+    /// </summary>
+    public static float? GameTimeNow()
+    {
+        try { return Services?.GameTimeService?.Time; }
+        catch { return null; }
+    }
+
     /// <summary>Travel progress (0..1) of the current main trader, or null if unavailable.</summary>
     public static float? CurrentTraderTravelProgress()
     {
