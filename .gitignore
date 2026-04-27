@@ -14,3 +14,6 @@ obj/
 
 # Decompiled game source (regenerate with `ilspycmd -p` against Assembly-CSharp.dll)
 research/AssemblyCSharp/
+
+tools/dist/
+

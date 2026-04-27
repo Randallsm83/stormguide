@@ -183,10 +183,11 @@ internal static class LiveGameState
     /// <summary>
     /// Single-pass aggregate of the most pressing live signals: idle
     /// workshops, races whose resolve is below their reputation target, and
-    /// goods whose stockpile would deplete in &lt; 5 minutes at the current
-    /// burn rate.
+    /// goods whose stockpile would deplete in &lt; <paramref name="thresholdMinutes"/>
+    /// at the current burn rate. Defaults to 5 minutes.
     /// </summary>
-    public static SettlementAlerts? AlertsFor(StormGuide.Domain.Catalog catalog)
+    public static SettlementAlerts? AlertsFor(
+        StormGuide.Domain.Catalog catalog, double thresholdMinutes = 5.0)
     {
         var services = Services;
         if (services is not { Loaded: true }) return null;
@@ -252,7 +253,7 @@ internal static class LiveGameState
             var stock = StockpileOf(name);
             if (stock <= 0) continue;
             var runwayMin = stock / -net;
-            if (runwayMin < 5.0)
+            if (runwayMin < thresholdMinutes)
                 risks.Add((name, runwayMin));
         }
         risks.Sort((a, b) => a.Runway.CompareTo(b.Runway));

@@ -42,6 +42,9 @@ public sealed class PluginConfig
     public ConfigEntry<string>           PinnedRecipes { get; }
     public ConfigEntry<bool>             CompactLists { get; }
     public ConfigEntry<string>           LastCatalogHash { get; }
+    public ConfigEntry<float>            GoodsAtRiskThresholdMinutes { get; }
+    public ConfigEntry<string>           RaceRatioTargets { get; }
+    public ConfigEntry<string>           CornerstonePickHistory { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -134,5 +137,11 @@ public sealed class PluginConfig
             "Use a tighter row height for the Building/Good list scrollers. Independent of Compact Mode.");
         LastCatalogHash      = cfg.Bind(SectionGeneral, "Last Catalog Hash", "",
             "SHA-1 of the embedded catalog last seen by this install. Used to detect catalog updates.");
+        GoodsAtRiskThresholdMinutes = cfg.Bind(SectionAdvice, "Goods At Risk Threshold (min)", 5f,
+            "Runway threshold below which a good is flagged as at-risk. Lower = sooner alerts.");
+        RaceRatioTargets     = cfg.Bind(SectionAdvice, "Race Ratio Targets",  "",
+            "Comma-separated 'race=pct' pairs (e.g. 'beaver=30,human=40'). Drift > 10% flags on Home.");
+        CornerstonePickHistory = cfg.Bind(SectionAdvice, "Cornerstone Pick History", "",
+            "Semicolon-separated cornerstone ids the player has picked across runs (rolling 50). Used as a tie-breaker by the synergy ranker.");
     }
 }

@@ -121,6 +121,22 @@ internal sealed class SidePanel : MonoBehaviour
     // Catalog-diff banner state. "" = no banner, otherwise a short message.
     private string _catalogDiffNotice = "";
 
+    // Session start (game-time) for the Diagnostics stats panel.
+    private float? _sessionStartTime;
+    private int _cornerstonesDraftedThisSession;
+
+    // Set of cornerstone ids already merged into the persistent pick history
+    // this session, so we don't double-record them on every Update tick.
+    private readonly HashSet<string> _cornerstonesAlreadyRecorded = new(StringComparer.Ordinal);
+
+    // Per-section frame-time samples for the live-debug overlay (Shift-held).
+    private readonly Dictionary<string, double> _sectionMs = new(StringComparer.Ordinal);
+    private System.Diagnostics.Stopwatch? _sectionWatch;
+
+    // Last good→displayName "missing translation" warning timestamp; suppresses
+    // log spam when the locale resolution is failing in bulk.
+    private bool _localeWarned;
+
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
 
@@ -215,7 +231,8 @@ internal sealed class SidePanel : MonoBehaviour
         // for these kinds of metrics, but it cuts redundant scans by ~30x at
         // the typical IMGUI redraw rate.
         _alertsCache  = new TtlCache<LiveGameState.SettlementAlerts?>(
-            () => LiveGameState.AlertsFor(Catalog), ttlSeconds: 0.5f);
+            () => LiveGameState.AlertsFor(Catalog,
+                Math.Max(1f, Config.GoodsAtRiskThresholdMinutes.Value)), ttlSeconds: 0.5f);
         _summaryCache = new TtlCache<StormGuide.Domain.VillageSummary?>(
             () => LiveGameState.VillageSummary(name =>
                 Catalog.Races.TryGetValue(name, out var r) ? r.DisplayName : name),
@@ -318,6 +335,47 @@ internal sealed class SidePanel : MonoBehaviour
         // Order completion lookback: detect orders that disappeared from
         // the active list since last tick and record their durations.
         TickOrderLookback();
+
+        // Capture session start once and merge new owned cornerstones into
+        // the rolling pick-history config so the synergy ranker can favour
+        // them on future drafts.
+        if (LiveGameState.IsReady && _sessionStartTime is null)
+            _sessionStartTime = LiveGameState.GameTimeNow();
+        if (LiveGameState.IsReady) TickCornerstoneHistory();
+    }
+
+    /// <summary>
+    /// Append any newly-owned cornerstones to the persistent pick-history
+    /// config (rolling 50). Used as a tiebreaker by the synergy ranker.
+    /// </summary>
+    private void TickCornerstoneHistory()
+    {
+        try
+        {
+            var owned = LiveGameState.OwnedCornerstones();
+            if (owned.Count == 0) return;
+            var history = (Config.CornerstonePickHistory.Value ?? "")
+                .Split(';').Where(s => !string.IsNullOrEmpty(s)).ToList();
+            var changed = false;
+            foreach (var oc in owned)
+            {
+                if (string.IsNullOrEmpty(oc.Id)) continue;
+                if (_cornerstonesAlreadyRecorded.Contains(oc.Id)) continue;
+                _cornerstonesAlreadyRecorded.Add(oc.Id);
+                if (!history.Contains(oc.Id))
+                {
+                    history.Add(oc.Id);
+                    _cornerstonesDraftedThisSession++;
+                    changed = true;
+                }
+            }
+            if (changed)
+            {
+                while (history.Count > 50) history.RemoveAt(0);
+                Config.CornerstonePickHistory.Value = string.Join(";", history);
+            }
+        }
+        catch { }
     }
 
     /// <summary>
@@ -409,6 +467,25 @@ internal sealed class SidePanel : MonoBehaviour
 
     private void DrawWindow(int _)
     {
+        // Reset section timings each frame; populated by Section() helper.
+        _sectionMs.Clear();
+        try { DrawWindowInner(); }
+        catch (Exception ex)
+        {
+            // Last-resort safety net: an unhandled exception in OnGUI would
+            // tear down the window, so we trap it, log it, and write a small
+            // crash dump next to the BepInEx config for later review.
+            try { StormGuidePlugin.Log.LogError("StormGuide GUI exception: " + ex); } catch { }
+            WriteCrashDump(ex);
+        }
+        // Live-debug overlay: hold either Shift while the panel is up to see
+        // per-section ms breakdown rendered in the corner.
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            DrawDebugOverlay();
+    }
+
+    private void DrawWindowInner()
+    {
         DrawTitleControls();
         DrawStormHeader();
         DrawTabs();
@@ -417,16 +494,16 @@ internal sealed class SidePanel : MonoBehaviour
 
         switch (_activeTab)
         {
-            case Tab.Home:        DrawHomeTab();        break;
-            case Tab.Building:    DrawBuildingTab();    break;
-            case Tab.Good:        DrawGoodTab();        break;
-            case Tab.Villagers:   DrawVillagersTab();   break;
-            case Tab.Orders:      DrawOrdersTab();      break;
-            case Tab.Glades:      DrawGladesTab();      break;
-            case Tab.Draft:       DrawDraftTab();       break;
-            case Tab.Settings:    DrawSettingsTab();    break;
-            case Tab.Diagnostics: DrawDiagnosticsTab(); break;
-            case Tab.Embark:      DrawEmbarkTab();      break;
+            case Tab.Home:        Section("Home",        DrawHomeTab);        break;
+            case Tab.Building:    Section("Building",    DrawBuildingTab);    break;
+            case Tab.Good:        Section("Good",        DrawGoodTab);        break;
+            case Tab.Villagers:   Section("Villagers",   DrawVillagersTab);   break;
+            case Tab.Orders:      Section("Orders",      DrawOrdersTab);      break;
+            case Tab.Glades:      Section("Glades",      DrawGladesTab);      break;
+            case Tab.Draft:       Section("Draft",       DrawDraftTab);       break;
+            case Tab.Settings:    Section("Settings",    DrawSettingsTab);    break;
+            case Tab.Diagnostics: Section("Diagnostics", DrawDiagnosticsTab); break;
+            case Tab.Embark:      Section("Embark",      DrawEmbarkTab);      break;
         }
 
         GUILayout.FlexibleSpace();
@@ -609,7 +686,73 @@ internal sealed class SidePanel : MonoBehaviour
     private void DrawTab(Tab tab, string label)
     {
         var style = (_activeTab == tab) ? _tabActiveStyle : _tabStyle;
-        if (GUILayout.Button(label, style)) _activeTab = tab;
+        // Append a Ctrl+N shortcut hint so power users discover the bindings.
+        var idx = Array.IndexOf(TabOrder, tab);
+        var hint = idx >= 0 && idx < 9 ? $" \u00b7{idx + 1}" : "";
+        if (GUILayout.Button(
+                new GUIContent(label + hint,
+                    idx >= 0 && idx < 9 ? $"Ctrl+{idx + 1}" : null),
+                style))
+            _activeTab = tab;
+    }
+
+    /// <summary>
+    /// Wraps a draw action in a stopwatch so the live-debug overlay can
+    /// surface per-section frame cost when the user holds Shift.
+    /// </summary>
+    private void Section(string name, Action draw)
+    {
+        _sectionWatch ??= new System.Diagnostics.Stopwatch();
+        _sectionWatch.Restart();
+        try { draw(); }
+        finally
+        {
+            _sectionWatch.Stop();
+            _sectionMs[name] = _sectionWatch.Elapsed.TotalMilliseconds;
+        }
+    }
+
+    /// <summary>
+    /// Renders per-section ms timings in the bottom-right of the panel while
+    /// Shift is held. Strictly diagnostic; no behavioural impact.
+    /// </summary>
+    private void DrawDebugOverlay()
+    {
+        if (_sectionMs.Count == 0) return;
+        var sb = new System.Text.StringBuilder("debug:\n");
+        foreach (var kv in _sectionMs)
+            sb.Append(kv.Key).Append(": ").Append(kv.Value.ToString("0.0")).Append("ms\n");
+        var rect = new Rect(_rect.width - 140, _rect.height - 90, 132, 80);
+        GUI.Label(rect, sb.ToString(), _mutedStyle);
+    }
+
+    /// <summary>
+    /// Writes a small crash report (last log lines + exception) next to the
+    /// BepInEx config. Best-effort; failures here are deliberately silent.
+    /// </summary>
+    private void WriteCrashDump(Exception ex)
+    {
+        try
+        {
+            var dir = BepInEx.Paths.ConfigPath ?? "";
+            if (string.IsNullOrEmpty(dir)) return;
+            var path = System.IO.Path.Combine(dir,
+                $"stormguide-crash-{DateTime.UtcNow:yyyyMMdd-HHmmss}.txt");
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"StormGuide crash @ {DateTime.UtcNow:O}");
+            sb.AppendLine("---- exception ----");
+            sb.AppendLine(ex.ToString());
+            var tail = StormGuidePlugin.LogTail?.Snapshot();
+            if (tail != null)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"---- last {tail.Count} log lines ----");
+                foreach (var e in tail)
+                    sb.AppendLine($"{e.UtcAt:O} [{e.Level}] {e.Message}");
+            }
+            System.IO.File.WriteAllText(path, sb.ToString());
+        }
+        catch { /* swallow — dumps are best-effort */ }
     }
 
     private void DrawHomeTab()
@@ -646,8 +789,25 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Space(4);
         GUILayout.Label($"☆ Pinned recipes — {_pinned.Count}", _bodyStyle);
         var stale = new List<(string, string)>();
-        foreach (var (bldg, recipe) in _pinned)
+        // Group pins by their building's catalog Kind so long pin lists get
+        // visual chapter breaks (Workshops vs Services vs Farms etc).
+        string? lastGroup = null;
+        foreach (var (bldg, recipe) in _pinned
+            .OrderBy(p =>
+                Catalog.Buildings.TryGetValue(p.Building, out var bi)
+                    ? bi.Kind.ToString()
+                    : "",
+                StringComparer.OrdinalIgnoreCase))
         {
+            // Emit a category header before the first pin of each group.
+            var group = Catalog.Buildings.TryGetValue(bldg, out var bgi)
+                ? bgi.Kind.ToString() : "(other)";
+            if (group != lastGroup)
+            {
+                GUILayout.Space(2);
+                GUILayout.Label($"   · {group}", _mutedStyle);
+                lastGroup = group;
+            }
             if (!Catalog.Buildings.TryGetValue(bldg, out var b) ||
                 !Catalog.Recipes.TryGetValue(recipe, out var r))
             {
@@ -683,6 +843,21 @@ internal sealed class SidePanel : MonoBehaviour
                     { draining = true; break; }
                 }
             }
+            // Cross-recipe upstream rollup (1 level): for each input, find
+            // the catalog's primary producer. Surface as a small “needs:”
+            // line so the player sees the full pipeline at a glance.
+            var upstream = r.RequiredGoods
+                .SelectMany(slot => slot.Options)
+                .Select(opt => Catalog.Recipes.Values
+                    .Where(rr => string.Equals(rr.ProducedGood, opt.Good, StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(rr => rr.ProductionTime > 0
+                        ? (60.0 * rr.ProducedAmount) / rr.ProductionTime : 0)
+                    .Select(rr => rr.DisplayName)
+                    .FirstOrDefault())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(3)
+                .ToList();
             var prefix = draining ? "⚠ " : "   ";
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(
@@ -724,6 +899,10 @@ internal sealed class SidePanel : MonoBehaviour
                 stale.Add((bldg, recipe));
             }
             GUILayout.EndHorizontal();
+            if (upstream.Count > 0)
+                GUILayout.Label(
+                    "     needs: " + string.Join(" → ", upstream),
+                    _mutedStyle);
         }
         if (stale.Count > 0)
         {
@@ -851,6 +1030,43 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label(line, _mutedStyle);
         if (below > 0)
             GUILayout.Label($"⚠ {below} race{(below == 1 ? "" : "s")} below target resolve", _mutedStyle);
+        DrawRaceRatioDrift(summary);
+    }
+
+    /// <summary>
+    /// Compares the live race ratio to the user's configured targets (e.g.
+    /// "beaver=30,human=40"). Any race more than 10 percentage points off
+    /// target is surfaced as a drift warning.
+    /// </summary>
+    private void DrawRaceRatioDrift(StormGuide.Domain.VillageSummary summary)
+    {
+        var raw = (Config.RaceRatioTargets.Value ?? "").Trim();
+        if (raw.Length == 0 || summary.TotalVillagers == 0) return;
+        var targets = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in raw.Split(','))
+        {
+            var kv = pair.Split('=');
+            if (kv.Length != 2) continue;
+            if (double.TryParse(kv[1].Trim(), System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out var pct))
+                targets[kv[0].Trim()] = pct;
+        }
+        if (targets.Count == 0) return;
+        foreach (var p in summary.Races)
+        {
+            if (p.Alive == 0) continue;
+            // Match against either model name or display name so users can
+            // spell it however they prefer in the config.
+            double tgt = 0;
+            if (!targets.TryGetValue(p.Race, out tgt) &&
+                !targets.TryGetValue(p.DisplayName, out tgt)) continue;
+            var actual = 100.0 * p.Alive / Math.Max(1, summary.TotalVillagers);
+            var drift = actual - tgt;
+            if (Math.Abs(drift) < 10) continue;
+            GUILayout.Label(
+                $"   ratio drift: {p.DisplayName} {actual:0.#}% vs target {tgt:0.#}% ({drift:+0.#;-0.#}pp)",
+                _warnStyle ?? _mutedStyle);
+        }
     }
 
     private void DrawHomeTrader()
@@ -1234,6 +1450,11 @@ internal sealed class SidePanel : MonoBehaviour
             _cachedBuildingQuery = cacheKey;
         }
 
+        // Pre-compute Kind→count for the section headers.
+        var kindCounts = _cachedBuildingMatches
+            .GroupBy(b => b.Kind.ToString(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+
         string? lastKind = null;
         foreach (var b in _cachedBuildingMatches)
         {
@@ -1241,7 +1462,8 @@ internal sealed class SidePanel : MonoBehaviour
             if (kind != lastKind)
             {
                 GUILayout.Space(4);
-                GUILayout.Label(kind, _mutedStyle);
+                var count = kindCounts.TryGetValue(kind, out var n) ? n : 0;
+                GUILayout.Label($"{kind} · {count}", _mutedStyle);
                 lastKind = kind;
             }
             var label = b.DisplayName;
@@ -2525,6 +2747,29 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndHorizontal();
 
         GUILayout.Space(8);
+        DrawSettingHeader("Risk thresholds");
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("   goods runway minutes:", _mutedStyle, GUILayout.Width(180));
+        var thr = Config.GoodsAtRiskThresholdMinutes.Value;
+        var text = GUILayout.TextField(thr.ToString("0.#"), GUILayout.Width(60));
+        if (float.TryParse(text, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out var nv) &&
+            Math.Abs(nv - thr) > 0.01f)
+        {
+            Config.GoodsAtRiskThresholdMinutes.Value = Mathf.Clamp(nv, 1f, 60f);
+        }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("   race ratio targets:", _mutedStyle, GUILayout.Width(180));
+        Config.RaceRatioTargets.Value = GUILayout.TextField(
+            Config.RaceRatioTargets.Value ?? "", GUILayout.Width(220));
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        GUILayout.Label("   format: race=pct,race=pct — e.g. beaver=30,human=40",
+            _mutedStyle);
+
+        GUILayout.Space(8);
         DrawSettingHeader("Config sync");
         GUILayout.BeginHorizontal();
         if (GUILayout.Button(new GUIContent("export to clipboard",
@@ -2863,6 +3108,9 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.EndHorizontal();
         }
 
+        // Session stats: settlement age + counters tracked across the session.
+        DrawSessionStats();
+
         var snapshot = tail.Snapshot();
         GUILayout.BeginHorizontal();
         GUILayout.Label($"   {snapshot.Count} captured plugin log line(s).", _mutedStyle);
@@ -2903,6 +3151,37 @@ internal sealed class SidePanel : MonoBehaviour
                 style);
         }
         GUILayout.EndScrollView();
+    }
+
+    /// <summary>
+    /// Settlement age + per-session counters (orders completed, cornerstones
+    /// drafted) surfaced under Diagnostics. Useful at-a-glance snapshot for
+    /// performance reviews and bug reports.
+    /// </summary>
+    private void DrawSessionStats()
+    {
+        if (!LiveGameState.IsReady) return;
+        var now = LiveGameState.GameTimeNow();
+        if (now is null || _sessionStartTime is null) return;
+        var ageMin = (now.Value - _sessionStartTime.Value) / 60f;
+        GUILayout.Space(4);
+        GUILayout.Label("Session stats", _bodyStyle);
+        GUILayout.Label(
+            $"   age: {ageMin:0.#} min · orders completed: {_completedDurations.Count} · cornerstones drafted: {_cornerstonesDraftedThisSession}",
+            _mutedStyle);
+        // Locale fallback notice: if any catalog DisplayName is empty, hint
+        // once that we'll show model names instead.
+        if (!_localeWarned)
+        {
+            var missing = Catalog.Goods.Values.Count(g => string.IsNullOrWhiteSpace(g.DisplayName));
+            if (missing > 0)
+            {
+                GUILayout.Label(
+                    $"   ℹ {missing} good(s) have no localised display name; falling back to model ids.",
+                    _mutedStyle);
+                _localeWarned = true;
+            }
+        }
     }
 
     private void DrawDraftTab()

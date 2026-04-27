@@ -55,13 +55,30 @@ public static class CornerstoneDraftProvider
 
         var modelService = services.GameModelService;
         var ownedTagCounts = StormGuide.Data.LiveGameState.OwnedCornerstoneUsabilityTags();
+        // Cross-run pick history: read once and turn into a HashSet for O(1)
+        // membership checks during scoring.
+        var pickHistory = ReadPickHistory();
         var options = new List<(EffectModel? effect, string id, Score score, List<string> newTags, int hits)>(pick.options.Count);
         foreach (var id in pick.options)
         {
             EffectModel? eff = null;
             try { eff = modelService?.GetEffect(id); } catch { }
             var (newTags, hits) = ComputeDiff(eff, tagCounts, ownedTagCounts);
-            options.Add((eff, id, ScoreOption(eff, id, tagCounts, totalBuildings, ownedTagCounts), newTags, hits));
+            var score = ScoreOption(eff, id, tagCounts, totalBuildings, ownedTagCounts);
+            // Tiebreaker bonus: small score nudge for cornerstones the player
+            // has historically picked. Doesn't override real synergy, but
+            // lifts familiar choices when the math is otherwise tied.
+            if (pickHistory.Contains(id))
+            {
+                var bonus = 0.25;
+                score = new Score(score.Value + bonus,
+                    score.Components
+                        .Concat(new[] { new ScoreComponent(
+                            "familiar pick", bonus, "present in cross-run pick history") })
+                        .ToList(),
+                    score.Unit);
+            }
+            options.Add((eff, id, score, newTags, hits));
         }
 
         var sorted = options
@@ -165,6 +182,27 @@ public static class CornerstoneDraftProvider
         if (eff == null) return "";
         try { return eff.Description ?? ""; }
         catch { return ""; }
+    }
+
+    /// <summary>
+    /// Reads the cross-run pick history from the BepInEx config file directly
+    /// (so the provider stays decoupled from the SidePanel instance). The
+    /// PluginConfig instance is owned by the plugin singleton; we look it up
+    /// via reflection to avoid tightening the dependency graph.
+    /// </summary>
+    private static HashSet<string> ReadPickHistory()
+    {
+        var set = new HashSet<string>(StringComparer.Ordinal);
+        try
+        {
+            var cfg = StormGuidePlugin.Cfg;
+            if (cfg is null) return set;
+            foreach (var s in (cfg.CornerstonePickHistory.Value ?? "")
+                         .Split(';'))
+                if (!string.IsNullOrEmpty(s)) set.Add(s);
+        }
+        catch { }
+        return set;
     }
 
     /// <summary>
