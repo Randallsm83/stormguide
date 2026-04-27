@@ -78,4 +78,24 @@
     <Message Text="StormGuide deployed to $(PluginDeployPath)" Importance="high" />
   </Target>
 
+  <!--
+    Smoke target: structural sanity over the embedded catalog files. Runs after
+    Build so callers can simply do `dotnet build /t:Build;Smoke`. Each check
+    fails fast with a useful message; CI can wire this in without an external
+    runner. Extend by adding more <Error/> guards.
+  -->
+  <Target Name="Smoke" DependsOnTargets="Build">
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\Resources\catalog\buildings.json')"
+           Text="Smoke: Resources\catalog\buildings.json missing." />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\Resources\catalog\goods.json')"
+           Text="Smoke: Resources\catalog\goods.json missing." />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\Resources\catalog\recipes.json')"
+           Text="Smoke: Resources\catalog\recipes.json missing." />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\Resources\catalog\races.json')"
+           Text="Smoke: Resources\catalog\races.json missing." />
+    <Error Condition="!Exists('$(TargetPath)')"
+           Text="Smoke: built assembly $(TargetPath) is missing." />
+    <Message Text="StormGuide smoke checks passed." Importance="high" />
+  </Target>
+
 </Project>

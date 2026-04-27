@@ -40,6 +40,7 @@ public sealed class PluginConfig
     public ConfigEntry<string>           LastBuildingSearch { get; }
     public ConfigEntry<string>           LastGoodSearch { get; }
     public ConfigEntry<string>           PinnedRecipes { get; }
+    public ConfigEntry<bool>             CompactLists { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -128,5 +129,7 @@ public sealed class PluginConfig
             "Last value of the Good tab search box. Persisted automatically.");
         PinnedRecipes        = cfg.Bind(SectionUI, "Pinned Recipes",         "",
             "Semicolon-separated list of \"buildingModel|recipeModel\" pinned to the Home tab.");
+        CompactLists         = cfg.Bind(SectionUI, "Compact Lists",          false,
+            "Use a tighter row height for the Building/Good list scrollers. Independent of Compact Mode.");
     }
 }

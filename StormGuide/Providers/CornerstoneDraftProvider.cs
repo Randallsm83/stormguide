@@ -55,12 +55,13 @@ public static class CornerstoneDraftProvider
 
         var modelService = services.GameModelService;
         var ownedTagCounts = StormGuide.Data.LiveGameState.OwnedCornerstoneUsabilityTags();
-        var options = new List<(EffectModel? effect, string id, Score score)>(pick.options.Count);
+        var options = new List<(EffectModel? effect, string id, Score score, List<string> newTags, int hits)>(pick.options.Count);
         foreach (var id in pick.options)
         {
             EffectModel? eff = null;
             try { eff = modelService?.GetEffect(id); } catch { }
-            options.Add((eff, id, ScoreOption(eff, id, tagCounts, totalBuildings, ownedTagCounts)));
+            var (newTags, hits) = ComputeDiff(eff, tagCounts, ownedTagCounts);
+            options.Add((eff, id, ScoreOption(eff, id, tagCounts, totalBuildings, ownedTagCounts), newTags, hits));
         }
 
         var sorted = options
@@ -71,12 +72,16 @@ public static class CornerstoneDraftProvider
         var rank = 0; var lastValue = double.NaN;
         for (var i = 0; i < sorted.Count; i++)
         {
-            var (eff, id, score) = sorted[i];
+            var (eff, id, score, newTags, hits) = sorted[i];
             if (i == 0 || Math.Abs(score.Value - lastValue) > 1e-9) rank = i + 1;
             lastValue = score.Value;
             var name = eff?.DisplayName ?? id;
             var desc = SafeDescription(eff);
-            built.Add(new CornerstoneOption(id, name, desc, score, rank, IsTopRanked: rank == 1));
+            built.Add(new CornerstoneOption(
+                id, name, desc, score, rank,
+                IsTopRanked: rank == 1,
+                NewlyTargetedTags: newTags,
+                AffectedBuildings: hits));
         }
 
         return new DraftViewModel(built, IsActive: true, Owned: owned);
@@ -160,5 +165,29 @@ public static class CornerstoneDraftProvider
         if (eff == null) return "";
         try { return eff.Description ?? ""; }
         catch { return ""; }
+    }
+
+    /// <summary>
+    /// Diff: returns (tags this option introduces that no owned cornerstone
+    /// already touches, total currently-built buildings affected by any tag
+    /// this option targets). Empty/0 if the option declares no usability tags.
+    /// </summary>
+    private static (List<string> NewTags, int AffectedBuildings) ComputeDiff(
+        EffectModel? eff,
+        Dictionary<string, int> tagCounts,
+        IReadOnlyDictionary<string, int> ownedTagCounts)
+    {
+        var newTags = new List<string>();
+        var affected = 0;
+        ModelTag[]? usability = null;
+        try { usability = eff?.usabilityTags; } catch { }
+        if (usability == null) return (newTags, 0);
+        foreach (var t in usability)
+        {
+            if (t == null || string.IsNullOrEmpty(t.Name)) continue;
+            if (tagCounts.TryGetValue(t.Name, out var c)) affected += c;
+            if (!ownedTagCounts.ContainsKey(t.Name)) newTags.Add(t.Name);
+        }
+        return (newTags, affected);
     }
 }

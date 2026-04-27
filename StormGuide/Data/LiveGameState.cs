@@ -871,6 +871,92 @@ internal static class LiveGameState
 
     // ---- Helper: usability tags from owned cornerstones -------------------
 
+    // ---- Hearth fuel runway ----------------------------------------------
+
+    public sealed record FuelRunway(
+        int Stockpile,                       // total units of all fuel goods
+        IReadOnlyList<(string Good, int Stock)> ByGood,
+        // Estimated rate at which fuel is consumed (per minute). Heuristic
+        // when no live HearthService.fuelRate is exposed; ~6/min is the
+        // typical clear-weather hearth rate (1 unit / 10s).
+        double EstimatedBurnPerMinute,
+        double RunwayMinutes,
+        bool   IsLiveBurnRate);              // true when sourced from live service
+
+    /// <summary>
+    /// Aggregates fuel-good stockpile and a best-effort burn-rate estimate.
+    /// Returns null if the catalog isn't loaded or the storage service is gone.
+    /// </summary>
+    public static FuelRunway? FuelRunwayFor(StormGuide.Domain.Catalog catalog)
+    {
+        if (catalog.IsEmpty) return null;
+        if (Storage == null) return null;
+        var byGood = new List<(string, int)>();
+        var total  = 0;
+        try
+        {
+            foreach (var gi in catalog.Goods.Values)
+            {
+                if (!gi.CanBeBurned) continue;
+                var s = StockpileOf(gi.Name);
+                if (s <= 0) continue;
+                total += s;
+                byGood.Add((gi.DisplayName, s));
+            }
+        }
+        catch { }
+        byGood.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+
+        // Try the live hearth service via reflection. The base game's
+        // HearthService doesn't expose a public per-minute rate but most
+        // hearths burn 1 fuel / 10s in clear weather; storms ~3x that.
+        double burnPerMin = 6.0;
+        var isLive = false;
+        try
+        {
+            var hs = Services?.GetType().GetProperty("HearthService")?.GetValue(Services);
+            var rate = hs?.GetType().GetProperty("FuelPerSecond")?.GetValue(hs);
+            if (rate is float f and > 0f) { burnPerMin = f * 60.0; isLive = true; }
+        }
+        catch { }
+        var runway = burnPerMin > 0 ? total / burnPerMin : 0;
+        return new FuelRunway(total, byGood, burnPerMin, runway, isLive);
+    }
+
+    /// <summary>
+    /// Best-effort ETA in minutes for a single objective using the live
+    /// settlement net flow for whichever catalog good the description names.
+    /// Returns null when the objective is already complete, the regex doesn't
+    /// match, no good is referenced, or the settlement isn't producing it.
+    /// </summary>
+    public static double? ObjectiveEtaMinutes(
+        OrderObjective ob, StormGuide.Domain.Catalog catalog)
+    {
+        if (ob.Completed) return null;
+        if (string.IsNullOrEmpty(ob.Description) || !IsReady) return null;
+        var match = System.Text.RegularExpressions.Regex.Match(
+            ob.Description, @"(\d+)\s*/\s*(\d+)");
+        if (!match.Success) return null;
+        if (!int.TryParse(match.Groups[1].Value, out var have)) return null;
+        if (!int.TryParse(match.Groups[2].Value, out var need)) return null;
+        if (need <= have) return null;
+
+        StormGuide.Domain.GoodInfo? matched = null;
+        foreach (var gi in catalog.Goods.Values
+                     .OrderByDescending(g => g.DisplayName.Length))
+        {
+            if (string.IsNullOrEmpty(gi.DisplayName)) continue;
+            if (ob.Description.IndexOf(gi.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            { matched = gi; break; }
+        }
+        if (matched is null) return null;
+        var net = FlowFor(matched.Name, catalog).Net;
+        if (net <= 1e-6) return null;
+        var minutes = (need - have) / net;
+        if (minutes <= 0 || minutes > 9999) return null;
+        return minutes;
+    }
+
     /// <summary>
     /// Tag-name → owned-cornerstone count, joining each currently-active
     /// cornerstone's usabilityTags. Used by the cornerstone synergy ranker to

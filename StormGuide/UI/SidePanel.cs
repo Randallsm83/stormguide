@@ -84,6 +84,10 @@ internal sealed class SidePanel : MonoBehaviour
 
     // Lazily-built chip style (smaller padding + lighter bg) used for tag pills.
     private GUIStyle? _chipStyle;
+    // Compact list-button style (only used when CompactLists is enabled).
+    private GUIStyle? _listButtonStyle;
+    // Tracks last applied compact-lists state so EnsureStyles can rebuild on flip.
+    private bool? _lastCompactListsApplied;
 
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
@@ -481,6 +485,7 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label("Settlement at a glance", _h1Style);
 
         DrawHomePinned();
+        DrawHomeFuel();
         DrawHomeVillage();
         DrawHomeTrader();
         DrawHomeIdle();
@@ -513,11 +518,25 @@ internal sealed class SidePanel : MonoBehaviour
                 : 0;
             var stock = LiveGameState.IsReady ? LiveGameState.StockpileOf(r.ProducedGood) : 0;
             var stockTag = LiveGameState.IsReady ? $" · stock {stock}" : "";
+            // Inputs draining tag: any input good with net flow < 0 across
+            // the settlement gets a ⚠ prefix so the row reads as at-risk.
+            var draining = false;
+            if (LiveGameState.IsReady)
+            {
+                foreach (var slot in r.RequiredGoods)
+                foreach (var opt in slot.Options)
+                {
+                    if (LiveGameState.FlowFor(opt.Good, Catalog).Net < -1e-6)
+                    { draining = true; break; }
+                }
+            }
+            var prefix = draining ? "⚠ " : "   ";
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(
-                    new GUIContent($"   {b.DisplayName} → {r.DisplayName}: {perMin:0.##}/min{stockTag}",
-                                   "Open in Building tab"),
-                    _tabStyle))
+                    new GUIContent($"{prefix}{b.DisplayName} → {r.DisplayName}: {perMin:0.##}/min{stockTag}",
+                                   draining ? "At least one input is draining — open in Building tab"
+                                            : "Open in Building tab"),
+                    draining ? (_warnStyle ?? _tabStyle) : _tabStyle))
             {
                 _selectedBuilding = bldg;
                 _activeTab = Tab.Building;
@@ -534,6 +553,30 @@ internal sealed class SidePanel : MonoBehaviour
             foreach (var s in stale) _pinned.RemoveAll(x => x == s);
             SavePins();
         }
+    }
+
+    /// <summary>
+    /// Hearth fuel runway: total burnable stockpile + estimated minutes left.
+    /// Burn rate is sourced live when the game exposes it; otherwise we use a
+    /// 6-units/min heuristic and tag the row as "est.".
+    /// </summary>
+    private void DrawHomeFuel()
+    {
+        var fr = LiveGameState.FuelRunwayFor(Catalog);
+        if (fr is null || fr.Stockpile == 0) return;
+
+        GUILayout.Space(6);
+        var srcTag = fr.IsLiveBurnRate ? "live" : "est.";
+        GUILayout.Label(
+            $"● Fuel — {fr.Stockpile} units · ~{fr.RunwayMinutes:0.#} min runway ({srcTag} {fr.EstimatedBurnPerMinute:0.#}/min)",
+            fr.RunwayMinutes < 5 ? (_critStyle ?? _bodyStyle)
+            : fr.RunwayMinutes < 15 ? (_warnStyle ?? _bodyStyle)
+            : _bodyStyle);
+        // Top-3 contributing fuel goods so the player can see what to refill.
+        foreach (var (good, n) in fr.ByGood.Take(3))
+            GUILayout.Label($"   {good}: {n}", _mutedStyle);
+        if (fr.ByGood.Count > 3)
+            GUILayout.Label($"   … and {fr.ByGood.Count - 3} more", _mutedStyle);
     }
 
     /// <summary>Persist <see cref="_pinned"/> back to <see cref="PluginConfig.PinnedRecipes"/>.</summary>
@@ -743,6 +786,19 @@ internal sealed class SidePanel : MonoBehaviour
         var picked  = orders.Count(o => o.Picked);
         var tracked = orders.Count(o => o.Tracked);
         var critical = orders.Count(o => o.ShouldBeFailable && o.TimeLeft > 0f && o.TimeLeft < 60f);
+        // ETA-based "won't finish in time" count: any failable order whose
+        // worst-case objective ETA exceeds remaining time.
+        var late = 0;
+        foreach (var o in orders)
+        {
+            if (!o.ShouldBeFailable || o.TimeLeft <= 0f) continue;
+            var minutesLeft = o.TimeLeft / 60.0;
+            foreach (var ob in o.Objectives)
+            {
+                var eta = LiveGameState.ObjectiveEtaMinutes(ob, Catalog);
+                if (eta is double m && m > minutesLeft) { late++; break; }
+            }
+        }
 
         GUILayout.Space(6);
         GUILayout.BeginHorizontal();
@@ -761,6 +817,10 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(
                 $"   ⚠ {critical} order{(critical == 1 ? "" : "s")} under 1 min from failure",
                 _mutedStyle);
+        if (late > 0)
+            GUILayout.Label(
+                $"   ⚠ {late} order{(late == 1 ? "" : "s")} won't finish in time at current burn",
+                _warnStyle ?? _mutedStyle);
     }
 
     private void DrawHomeGlades()
@@ -883,7 +943,9 @@ internal sealed class SidePanel : MonoBehaviour
                 lastKind = kind;
             }
             var label = b.DisplayName;
-            var style = (_selectedBuilding == b.Name) ? _tabActiveStyle : _tabStyle;
+            var style = (_selectedBuilding == b.Name)
+                ? _tabActiveStyle
+                : (_listButtonStyle ?? _tabStyle);
             if (GUILayout.Button(label, style)) _selectedBuilding = b.Name;
         }
         GUILayout.EndScrollView();
@@ -930,9 +992,18 @@ internal sealed class SidePanel : MonoBehaviour
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label("   uses:", _mutedStyle, GUILayout.Width(46));
+            var prevColor = GUI.color;
             foreach (var good in inputs)
             {
                 var disp = Catalog.Goods.TryGetValue(good, out var gi) ? gi.DisplayName : good;
+                // Tint chip by net flow: red < 0, green > 0, neutral otherwise.
+                if (LiveGameState.IsReady)
+                {
+                    var net = LiveGameState.FlowFor(good, Catalog).Net;
+                    if      (net < -1e-6) GUI.color = new Color(1.0f, 0.65f, 0.65f, 1f);
+                    else if (net >  1e-6) GUI.color = new Color(0.70f, 1.0f, 0.75f, 1f);
+                    else                  GUI.color = prevColor;
+                }
                 var label = string.Equals(_recipeInputFilter, good, StringComparison.OrdinalIgnoreCase)
                     ? $"✓ {disp}"
                     : disp;
@@ -945,6 +1016,7 @@ internal sealed class SidePanel : MonoBehaviour
                         : good;
                 }
             }
+            GUI.color = prevColor;
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
         }
@@ -1156,7 +1228,9 @@ internal sealed class SidePanel : MonoBehaviour
                 GUILayout.Label(string.IsNullOrEmpty(g.Category) ? "(uncategorized)" : g.Category, _mutedStyle);
                 lastCategory = g.Category;
             }
-            var style = (_selectedGood == g.Name) ? _tabActiveStyle : _tabStyle;
+            var style = (_selectedGood == g.Name)
+                ? _tabActiveStyle
+                : (_listButtonStyle ?? _tabStyle);
             if (GUILayout.Button(g.DisplayName, style)) _selectedGood = g.Name;
         }
         GUILayout.EndScrollView();
@@ -1320,6 +1394,21 @@ internal sealed class SidePanel : MonoBehaviour
                 GUILayout.Label(
                     $"   live price: sells for {sell:0.##} · buys at {buy:0.##}",
                     _mutedStyle);
+            // Affordability: total currency from selling all top-3 desires,
+            // and how many units of the selected good you could buy with it.
+            var topDesires = _currentDesiresCache?.Get();
+            if (topDesires is { Count: > 0 } && buy > 0)
+            {
+                var pot = topDesires.Take(3).Sum(d => d.TotalValue);
+                if (pot > 0)
+                {
+                    var affordable = (int)Math.Floor(pot / buy);
+                    if (affordable > 0)
+                        GUILayout.Label(
+                            $"   affordability: ~{pot:0.##} currency → {affordable} × {_selectedGood} @ {buy:0.##}/u",
+                            _mutedStyle);
+                }
+            }
         }
 
         // Travel progress for the current (en-route) trader.
@@ -1644,7 +1733,20 @@ internal sealed class SidePanel : MonoBehaviour
 
         if (r.TopEffects.Count > 0)
         {
-            GUILayout.Space(4);
+            // Net trajectory: sum of positive vs negative TotalImpact across
+            // visible effects. Useful at-a-glance signal for whether the race
+            // is climbing or sliding regardless of the absolute current value.
+            var pos = r.TopEffects.Where(e => e.TotalImpact > 0).Sum(e => e.TotalImpact);
+            var neg = r.TopEffects.Where(e => e.TotalImpact < 0).Sum(e => e.TotalImpact);
+            var net = pos + neg;
+            var arrow = net > 0 ? "↑" : (net < 0 ? "↓" : "≡");
+            var trajStyle = net > 0 ? (_okStyle ?? _bodyStyle)
+                          : net < 0 ? (_critStyle ?? _bodyStyle)
+                          : _bodyStyle;
+            GUILayout.Label(
+                $"   trajectory: {arrow} net {(net >= 0 ? "+" : "")}{net} (+{pos} / {neg})",
+                trajStyle);
+            GUILayout.Space(2);
             GUILayout.Label("Top resolve contributors", _bodyStyle);
             foreach (var e in r.TopEffects)
             {
@@ -1985,14 +2087,18 @@ internal sealed class SidePanel : MonoBehaviour
             var now = LiveGameState.GameTimeNow();
             foreach (var c in summary.Chases.Take(8))
             {
-                if (now is float t && c.End > t)
+                if (now is float t && c.End > t && c.Duration > 0f)
                 {
                     var remaining = c.End - t;
                     var mins = Mathf.Max(0, Mathf.FloorToInt(remaining / 60f));
                     var secs = Mathf.Max(0, Mathf.FloorToInt(remaining % 60f));
+                    var pct = Mathf.Clamp01((t - c.Start) / c.Duration) * 100f;
+                    var rowStyle = remaining < 60f ? (_critStyle ?? _mutedStyle)
+                                 : remaining < 180f ? (_warnStyle ?? _mutedStyle)
+                                 : _mutedStyle;
                     GUILayout.Label(
-                        $"   · {c.Model}  —  {mins}:{secs:00} left ({c.Duration:0.#}s window)",
-                        _mutedStyle);
+                        $"   · {c.Model}  —  {mins}:{secs:00} left ({pct:0}% elapsed of {c.Duration:0.#}s window)",
+                        rowStyle);
                 }
                 else
                 {
@@ -2057,19 +2163,44 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label("Embark planner", _h1Style);
         _embarkScroll = GUILayout.BeginScrollView(_embarkScroll, GUILayout.ExpandHeight(true));
         GUILayout.Label(
-            "Pre-settlement helper. Scaffolding only — the catalog/cornerstone/seal joins live in the meta layer (MetaController) which we haven't mapped yet.",
+            "Pre-settlement helper sourced from the static catalog. Per-biome ranking and the cornerstone deck composition still need a MetaController join.",
             _mutedStyle);
         GUILayout.Space(6);
         GUILayout.Label($"Catalog ready: {(Catalog.IsEmpty ? "no" : "yes")}.", _bodyStyle);
-        if (!Catalog.IsEmpty)
+        if (Catalog.IsEmpty)
         {
-            GUILayout.Label(
-                $"   {Catalog.Races.Count} races · {Catalog.Buildings.Count} buildings · {Catalog.Goods.Count} goods",
-                _mutedStyle);
+            GUILayout.EndScrollView();
+            return;
         }
+        GUILayout.Label(
+            $"   {Catalog.Races.Count} races · {Catalog.Buildings.Count} buildings · {Catalog.Goods.Count} goods",
+            _mutedStyle);
+
+        // Race picker reference: resolve range + needs at a glance.
+        GUILayout.Space(6);
+        GUILayout.Label($"Races — ranked by min resolve", _bodyStyle);
+        foreach (var race in Catalog.Races.Values
+                     .OrderBy(r => r.MinResolve)
+                     .ThenBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase))
+        {
+            var needs = race.Needs.Count == 0
+                ? "(no needs)"
+                : string.Join(", ", race.Needs.Select(n =>
+                    Catalog.Goods.TryGetValue(n, out var gi) ? gi.DisplayName : n));
+            if (GUILayout.Button(
+                    new GUIContent(
+                        $"   {race.DisplayName}: resolve {race.MinResolve}–{race.MaxResolve} · needs {needs}",
+                        "Open in Villagers tab"),
+                    _tabStyle))
+            {
+                _selectedRace = race.Name;
+                _activeTab = Tab.Villagers;
+            }
+        }
+
         GUILayout.Space(6);
         GUILayout.Label(
-            "Planned: rank race picks against current biome, surface the cornerstone deck composition, and pre-flag goods you'll need (resolve incentives, hearth fuel coverage, food variety).",
+            "Tip: races with overlapping needs (e.g. fuel + porridge) are easier to keep above target resolve early; combine with cornerstones that target their preferred building tags.",
             _mutedStyle);
         GUILayout.EndScrollView();
     }
@@ -2088,6 +2219,18 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.BeginHorizontal();
         GUILayout.Label($"   {snapshot.Count} captured plugin log line(s).", _mutedStyle);
         GUILayout.FlexibleSpace();
+        if (GUILayout.Button(new GUIContent("copy", "Copy all captured lines to clipboard"),
+                             _tabStyle, GUILayout.Width(60)))
+        {
+            try
+            {
+                var sb = new System.Text.StringBuilder();
+                foreach (var e in snapshot)
+                    sb.AppendLine($"{e.UtcAt:O} [{e.Level}] {e.Message}");
+                GUIUtility.systemCopyBuffer = sb.ToString();
+            }
+            catch { /* clipboard sometimes unavailable in fullscreen; swallow */ }
+        }
         if (GUILayout.Button("clear", _tabStyle, GUILayout.Width(70)))
             tail.Clear();
         GUILayout.EndHorizontal();
@@ -2132,6 +2275,25 @@ internal sealed class SidePanel : MonoBehaviour
         DrawOwnedCornerstones(vm.Owned);
     }
 
+    /// <summary>Renders the cornerstone diff line under each option.</summary>
+    private void DrawCornerstoneDiff(CornerstoneOption o)
+    {
+        if (o.AffectedBuildings == 0 &&
+            (o.NewlyTargetedTags is null || o.NewlyTargetedTags.Count == 0)) return;
+        var parts = new List<string>();
+        if (o.AffectedBuildings > 0)
+            parts.Add($"affects {o.AffectedBuildings} built building{(o.AffectedBuildings == 1 ? "" : "s")}");
+        if (o.NewlyTargetedTags is { Count: > 0 } nt)
+        {
+            var max = Math.Min(3, nt.Count);
+            var sample = string.Join(", ", nt.Take(max));
+            parts.Add(nt.Count > max
+                ? $"+{nt.Count} new tag(s) ({sample}…)"
+                : $"+{nt.Count} new tag(s) ({sample})");
+        }
+        GUILayout.Label("   delta: " + string.Join(" · ", parts), _mutedStyle);
+    }
+
     private void DrawOwnedCornerstones(IReadOnlyList<OwnedCornerstoneInfo> owned)
     {
         if (owned.Count == 0) return;
@@ -2168,6 +2330,7 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndHorizontal();
         if (!string.IsNullOrEmpty(o.Description))
             GUILayout.Label(o.Description, _mutedStyle);
+        DrawCornerstoneDiff(o);
         foreach (var c in o.Synergy.Components)
         {
             var line = $"   {c.Label}: {c.Value:0.##}";
@@ -2220,10 +2383,15 @@ internal sealed class SidePanel : MonoBehaviour
 
     private void EnsureStyles()
     {
-        var compact = Config.CompactMode.Value;
-        // Rebuild styles when compact mode flips so font sizes can change live.
-        if (_windowStyle != null && _lastCompactApplied == compact) return;
+        var compact      = Config.CompactMode.Value;
+        var compactLists = Config.CompactLists.Value;
+        // Rebuild styles when either compact toggle flips so fonts/heights
+        // can change live.
+        if (_windowStyle != null &&
+            _lastCompactApplied == compact &&
+            _lastCompactListsApplied == compactLists) return;
         _lastCompactApplied = compact;
+        _lastCompactListsApplied = compactLists;
 
         var body  = compact ? 11 : 12;
         var muted = compact ? 10 : 11;
@@ -2261,5 +2429,17 @@ internal sealed class SidePanel : MonoBehaviour
             margin      = new RectOffset(2, 2, 1, 1),
             fontSize    = compact ? 10 : 11,
         };
+        // Compact list-button: shorter rows for the Building/Good list scrollers.
+        // Falls back to the regular tab style when the toggle is off so callers
+        // can pick a style without branching every frame.
+        _listButtonStyle = compactLists
+            ? new GUIStyle(_tabStyle)
+              {
+                  fixedHeight = compact ? 16 : 18,
+                  padding     = new RectOffset(6, 6, 1, 1),
+                  margin      = new RectOffset(2, 2, 0, 0),
+                  fontSize    = compact ? 10 : 11,
+              }
+            : _tabStyle;
     }
 }
