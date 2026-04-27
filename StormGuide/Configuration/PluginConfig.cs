@@ -49,6 +49,7 @@ public sealed class PluginConfig
     public ConfigEntry<string>           MarkedStoppedRecipes { get; }
     public ConfigEntry<string>           MarkedPriorityRecipes { get; }
     public ConfigEntry<string>           PinnedChaseModel { get; }
+    public ConfigEntry<string>           TraderVisitArchive { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -155,5 +156,7 @@ public sealed class PluginConfig
             "Comma-separated recipe model names the player has flagged as haul-priority (UI-only marker).");
         PinnedChaseModel = cfg.Bind(SectionUI, "Pinned Chase Model", "",
             "Model name of a glade reward chase pinned to Home. Empty = none.");
+        TraderVisitArchive = cfg.Bind(SectionUI, "Trader Visit Archive", "",
+            "Semicolon-separated archive of past trader visits. Format: 'trader|good=val,good=val,good=val;...'. Rolling 20 entries.");
     }
 }

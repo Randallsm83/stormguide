@@ -185,6 +185,24 @@ internal sealed class SidePanel : MonoBehaviour
     private readonly HashSet<string> _orderTierFilter =
         new(StringComparer.OrdinalIgnoreCase);
 
+    // Trader visit archive: tracks the last visit transition so we can
+    // snapshot top-3 desires when a visit ends and append to config.
+    private bool    _lastVisitWasInVillage;
+    private string? _lastVisitTraderName;
+
+    // Per-objective progress samples keyed by "orderId:objIndex".
+    private readonly Dictionary<string, Queue<(float Time, int Have)>>
+        _objectiveSamples = new(StringComparer.Ordinal);
+    private float _lastObjectiveSampleTime;
+
+    // Resolved chase log (session-local) + last-seen models for diffing.
+    private readonly List<(string Model, float Time)> _resolvedChases = new();
+    private HashSet<string>? _lastSeenChaseModels;
+
+    // Resolve effect filter (Villagers tab) and Good-tab what-if slider.
+    private string _resolveEffectFilter = "";
+    private float  _runwayWhatIf = 1f;
+
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
 
@@ -402,6 +420,130 @@ internal sealed class SidePanel : MonoBehaviour
         if (LiveGameState.IsReady) TickCyclesSamples();
         if (LiveGameState.IsReady) TickTraderTravel();
         if (LiveGameState.IsReady) TickPinnedFlows();
+        if (LiveGameState.IsReady) TickObjectiveProgress();
+        if (LiveGameState.IsReady) TickTraderVisitArchive();
+        if (LiveGameState.IsReady) TickResolvedChases();
+    }
+
+    /// <summary>
+    /// Sample current "have" amounts for every active order objective at
+    /// ~5s intervals. Keyed by <c>orderId:objIndex</c>; capped at 60 samples
+    /// per objective. Used by the inline progress sparkline rendered under
+    /// each objective in the Orders tab.
+    /// </summary>
+    private void TickObjectiveProgress()
+    {
+        var now = LiveGameState.GameTimeNow() ?? Time.unscaledTime;
+        if (now - _lastObjectiveSampleTime < 5f) return;
+        _lastObjectiveSampleTime = now;
+        try
+        {
+            var orders = LiveGameState.ActiveOrders();
+            foreach (var o in orders)
+            {
+                for (var i = 0; i < o.Objectives.Count; i++)
+                {
+                    var ob = o.Objectives[i];
+                    if (string.IsNullOrEmpty(ob.Description)) continue;
+                    var m = ProgressRegex.Match(ob.Description);
+                    if (!m.Success) continue;
+                    if (!int.TryParse(m.Groups[1].Value, out var have)) continue;
+                    var key = $"{o.Id}:{i}";
+                    if (!_objectiveSamples.TryGetValue(key, out var q))
+                        _objectiveSamples[key] = q = new Queue<(float, int)>(64);
+                    q.Enqueue((now, have));
+                    while (q.Count > 60) q.Dequeue();
+                }
+            }
+        }
+        catch { }
+    }
+
+    /// <summary>
+    /// Detects when the current trader's visit ends (transition out of
+    /// village or trader change) and snapshots the top-3 desires from the
+    /// cache to <see cref="PluginConfig.TraderVisitArchive"/>. Rolling 20.
+    /// </summary>
+    private void TickTraderVisitArchive()
+    {
+        try
+        {
+            var cur = LiveGameState.CurrentTrader();
+            var inVillage = cur?.IsInVillage ?? false;
+            var name = cur?.DisplayName ?? "";
+            if (_lastVisitWasInVillage &&
+                (!inVillage || name != _lastVisitTraderName) &&
+                !string.IsNullOrEmpty(_lastVisitTraderName))
+            {
+                var desires = _currentDesiresCache?.Get();
+                if (desires is { Count: > 0 })
+                {
+                    var top3 = desires.Take(3)
+                        .Select(d => $"{d.Good}={d.TotalValue:0.##}")
+                        .ToList();
+                    var entry = $"{_lastVisitTraderName}|{string.Join(",", top3)}";
+                    var existing = (Config.TraderVisitArchive.Value ?? "")
+                        .Split(';').Where(s => !string.IsNullOrEmpty(s)).ToList();
+                    existing.Add(entry);
+                    while (existing.Count > 20) existing.RemoveAt(0);
+                    Config.TraderVisitArchive.Value = string.Join(";", existing);
+                }
+            }
+            _lastVisitWasInVillage = inVillage;
+            if (inVillage) _lastVisitTraderName = name;
+        }
+        catch { }
+    }
+
+    /// <summary>
+    /// Diffs the active glade reward-chase set against the last seen models;
+    /// any chase that disappeared is appended to a session-local resolved log
+    /// (capped 30) so the Glades tab can show "recently completed" entries.
+    /// </summary>
+    private void TickResolvedChases()
+    {
+        try
+        {
+            var summary = LiveGameState.GladeSummaryFor();
+            if (summary is null) return;
+            var current = new HashSet<string>(
+                summary.Chases.Select(c => c.Model),
+                StringComparer.Ordinal);
+            if (_lastSeenChaseModels != null)
+            {
+                var now = LiveGameState.GameTimeNow() ?? Time.unscaledTime;
+                foreach (var prev in _lastSeenChaseModels)
+                {
+                    if (current.Contains(prev)) continue;
+                    _resolvedChases.Add((prev, now));
+                    while (_resolvedChases.Count > 30) _resolvedChases.RemoveAt(0);
+                }
+            }
+            _lastSeenChaseModels = current;
+        }
+        catch { }
+    }
+
+    /// <summary>
+    /// Counts BepInEx warning/error log lines emitted in the last
+    /// <paramref name="seconds"/>. Used by the tab strip alert chip and
+    /// Diagnostics live indicator.
+    /// </summary>
+    private (int Warn, int Err) RecentLogCounts(double seconds)
+    {
+        var tail = StormGuidePlugin.LogTail;
+        if (tail is null) return (0, 0);
+        var snap = tail.Snapshot();
+        var cutoff = DateTime.UtcNow.AddSeconds(-seconds);
+        var warn = 0; var err = 0;
+        foreach (var e in snap)
+        {
+            if (e.UtcAt < cutoff) continue;
+            if (e.Level == BepInEx.Logging.LogLevel.Warning) warn++;
+            else if (e.Level == BepInEx.Logging.LogLevel.Error ||
+                     e.Level == BepInEx.Logging.LogLevel.Fatal) err++;
+        }
+        return (warn, err);
     }
 
     /// <summary>
@@ -822,6 +964,24 @@ internal sealed class SidePanel : MonoBehaviour
         if (Config.ShowSettingsTab.Value)  DrawTab(Tab.Settings,  "⚙");
         if (Config.ShowDiagnosticsTab.Value) DrawTab(Tab.Diagnostics, "⚙?");
         if (Config.ShowEmbarkTab.Value)    DrawTab(Tab.Embark,    "Embark");
+        // Warn/err alert chip: surfaces a single jump-to-Diagnostics chip
+        // when the plugin has emitted warnings or errors in the last 60s.
+        // Lives at the right edge so the tab strip itself stays uncluttered.
+        var (warn60, err60) = RecentLogCounts(60);
+        if ((warn60 > 0 || err60 > 0) && Config.ShowDiagnosticsTab.Value)
+        {
+            GUILayout.FlexibleSpace();
+            var label = err60 > 0
+                ? $"\u26a0 {err60} err" + (warn60 > 0 ? $" / {warn60} warn" : "")
+                : $"\u26a0 {warn60} warn";
+            var style = err60 > 0 ? (_critStyle ?? _tabStyle)
+                                  : (_warnStyle ?? _tabStyle);
+            if (GUILayout.Button(
+                    new GUIContent(label,
+                        "Recent plugin warnings/errors — click to open Diagnostics"),
+                    style, GUILayout.Width(120)))
+                _activeTab = Tab.Diagnostics;
+        }
         GUILayout.EndHorizontal();
 
         // Reroute to the first visible tab if the active one is hidden.
@@ -947,6 +1107,7 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label("Settlement at a glance", _h1Style);
 
         DrawHomePinned();
+        DrawHomeMarkedRecipes();
         DrawHomeFuel();
         DrawHomeVillage();
         DrawHomeTrader();
@@ -1156,6 +1317,51 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label($"   … and {fr.ByGood.Count - 3} more", _mutedStyle);
     }
 
+    /// <summary>
+    /// Renders a compact list of recipes flagged ⛔ stopped or \u2605 priority
+    /// directly on the Home tab. Each row jumps to the recipe's owning building
+    /// when clicked so the markers double as a quick-access queue. Skipped
+    /// when no markers are set.
+    /// </summary>
+    private void DrawHomeMarkedRecipes()
+    {
+        if (_markedStopped.Count == 0 && _markedPriority.Count == 0) return;
+        GUILayout.Space(4);
+        GUILayout.Label(
+            $"\u26a1 Marked recipes \u2014 {_markedPriority.Count} priority \u00b7 {_markedStopped.Count} stopped",
+            _bodyStyle);
+        // Find a building hosting each marked recipe so the row can navigate.
+        // Recipe -> first matching building name from the catalog.
+        string? FirstBuildingFor(string recipeName) => Catalog.Buildings.Values
+            .FirstOrDefault(b => b.Recipes.Contains(recipeName))?.Name;
+        foreach (var recipe in _markedPriority.Take(4))
+        {
+            if (!Catalog.Recipes.TryGetValue(recipe, out var r)) continue;
+            var b = FirstBuildingFor(recipe);
+            var label = $"   \u2605 {r.DisplayName}" + (b is null ? "" : $" (in {Catalog.Buildings[b].DisplayName})");
+            if (GUILayout.Button(new GUIContent(label, "Open this recipe's building"),
+                                 _okStyle ?? _tabStyle))
+            {
+                if (b is not null) { _selectedBuilding = b; _activeTab = Tab.Building; }
+            }
+        }
+        foreach (var recipe in _markedStopped.Take(4))
+        {
+            if (!Catalog.Recipes.TryGetValue(recipe, out var r)) continue;
+            var b = FirstBuildingFor(recipe);
+            var label = $"   \u26d4 {r.DisplayName}" + (b is null ? "" : $" (in {Catalog.Buildings[b].DisplayName})");
+            if (GUILayout.Button(new GUIContent(label, "Open this recipe's building"),
+                                 _critStyle ?? _tabStyle))
+            {
+                if (b is not null) { _selectedBuilding = b; _activeTab = Tab.Building; }
+            }
+        }
+        if (_markedPriority.Count + _markedStopped.Count > 8)
+            GUILayout.Label(
+                $"   \u2026 and {_markedPriority.Count + _markedStopped.Count - 8} more",
+                _mutedStyle);
+    }
+
     /// <summary>Persist <see cref="_pinned"/> back to <see cref="PluginConfig.PinnedRecipes"/>.</summary>
     private void SavePins()
     {
@@ -1363,6 +1569,55 @@ internal sealed class SidePanel : MonoBehaviour
         // currency cost vs current pot from selling top-3 desires.
         if (cur is not null && cur.IsInVillage && cur.Sells.Count > 0)
             DrawTraderBuyList(cur);
+        // Recent trader visit archive: rolling tail of the last few visits
+        // captured by TickTraderVisitArchive. Provides a "what did the last
+        // few traders want?" snapshot that's visible even when no trader is
+        // currently in the village.
+        DrawTraderVisitArchive();
+    }
+
+    /// <summary>
+    /// Renders the rolling trader-visit archive (top-3 desires per recent
+    /// visit). Snapshot is captured on visit-end by
+    /// <see cref="TickTraderVisitArchive"/> and persisted to
+    /// <see cref="PluginConfig.TraderVisitArchive"/>. Skipped when empty.
+    /// </summary>
+    private void DrawTraderVisitArchive()
+    {
+        var raw = Config.TraderVisitArchive.Value ?? "";
+        if (string.IsNullOrEmpty(raw)) return;
+        var entries = raw.Split(';').Where(s => !string.IsNullOrEmpty(s)).ToList();
+        if (entries.Count == 0) return;
+        GUILayout.Space(4);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(
+            $"   \u00b7 recent visits ({entries.Count})\u2009\u2014 top desires",
+            _mutedStyle);
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button(new GUIContent("clear", "Clear the trader visit archive"),
+                             _tabStyle, GUILayout.Width(60)))
+            Config.TraderVisitArchive.Value = "";
+        GUILayout.EndHorizontal();
+        // Show only the last 3 entries (newest at the bottom of the archive).
+        var tail = entries.Skip(Math.Max(0, entries.Count - 3)).ToList();
+        foreach (var entry in tail)
+        {
+            var bar = entry.IndexOf('|');
+            if (bar <= 0) continue;
+            var trader = entry.Substring(0, bar);
+            var goodsCsv = entry.Substring(bar + 1);
+            // Resolve good display names for the comma-separated good=val pairs.
+            var pretty = string.Join(", ", goodsCsv.Split(',').Select(p =>
+            {
+                var eq = p.IndexOf('=');
+                if (eq <= 0) return p;
+                var goodKey = p.Substring(0, eq);
+                var disp = Catalog.Goods.TryGetValue(goodKey, out var gi)
+                    ? gi.DisplayName : goodKey;
+                return disp + "=" + p.Substring(eq + 1);
+            }));
+            GUILayout.Label($"      {trader}: {pretty}", _mutedStyle);
+        }
     }
 
     /// <summary>
@@ -1611,7 +1866,12 @@ internal sealed class SidePanel : MonoBehaviour
     private void DrawFlowSparkline(string good)
     {
         if (!_flowSamples.TryGetValue(good, out var q) || q.Count < 2) return;
-        var rect = GUILayoutUtility.GetRect(60, 14, GUILayout.Width(60));
+        // Compact mode trims sparkline height so dense panels (Home pin list,
+        // at-risk goods) fit more rows on small displays.
+        var compact = Config.CompactMode.Value;
+        var height = compact ? 9 : 14;
+        var width  = compact ? 48 : 60;
+        var rect = GUILayoutUtility.GetRect(width, height, GUILayout.Width(width));
         GUI.Box(rect, GUIContent.none);
         var samples = q.ToArray();
         var max = 0.001;
@@ -2097,8 +2357,27 @@ internal sealed class SidePanel : MonoBehaviour
 
         GUILayout.Space(4);
         GUILayout.BeginHorizontal();
-        GUILayout.Label($"{vm.Recipes.Count} recipes — sorted by throughput", _bodyStyle);
+        GUILayout.Label($"{vm.Recipes.Count} recipes \u2014 sorted by throughput", _bodyStyle);
         GUILayout.FlexibleSpace();
+        // One-tap "pin the top recipe" button: surfaces the highest-throughput
+        // recipe (vm.Recipes is already sorted by throughput) so the player
+        // doesn't have to scroll to find it. Hidden once it's already pinned.
+        if (vm.Recipes.Count > 0)
+        {
+            var topRecipe = vm.Recipes[0].Recipe;
+            var topKey = (_selectedBuilding!, topRecipe.Name);
+            if (!_pinned.Contains(topKey))
+            {
+                if (GUILayout.Button(
+                        new GUIContent("\u2606 pin top",
+                            $"Pin {topRecipe.DisplayName} to Home"),
+                        _tabStyle, GUILayout.Width(90)))
+                {
+                    _pinned.Add(topKey);
+                    SavePins();
+                }
+            }
+        }
         DrawWhyAllButton(_expandedRecipes, vm.Recipes.Select(r => r.Recipe.Name), Config.WhyAllRecipes);
         GUILayout.EndHorizontal();
 
@@ -2499,8 +2778,31 @@ internal sealed class SidePanel : MonoBehaviour
             if (f.RunwaySeconds is double rs)
             {
                 var minutes = rs / 60.0;
-                var prefix = minutes < 1 ? "⚠ " : "";
+                var prefix = minutes < 1 ? "\u26a0 " : "";
                 GUILayout.Label($"{prefix}runway at current burn: {minutes:0.##} min", _mutedStyle);
+                // What-if slider: scale the current consumption rate by
+                // _runwayWhatIf (0.5x .. 2.0x) and show the projected runway.
+                // Useful for quickly sanity-checking "if I doubled this burn\u2026".
+                GUILayout.BeginHorizontal();
+                GUILayout.Label($"   what-if burn \u00d7{_runwayWhatIf:0.##}",
+                    _mutedStyle, GUILayout.Width(160));
+                _runwayWhatIf = GUILayout.HorizontalSlider(_runwayWhatIf, 0.5f, 2.0f,
+                    GUILayout.Width(140));
+                if (GUILayout.Button("\u21ba", _tabStyle, GUILayout.Width(28)))
+                    _runwayWhatIf = 1f;
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                if (Math.Abs(_runwayWhatIf - 1f) > 0.01f && f.Net < 0)
+                {
+                    var scaledNet = f.Net * _runwayWhatIf;
+                    if (scaledNet < 0 && f.Stockpile > 0)
+                    {
+                        var projMin = (f.Stockpile / -scaledNet);
+                        GUILayout.Label(
+                            $"   what-if runway: {projMin:0.##} min @ \u00d7{_runwayWhatIf:0.##} burn",
+                            projMin < 1 ? (_critStyle ?? _mutedStyle) : _mutedStyle);
+                    }
+                }
             }
             if (f.Contributions.Count > 0 &&
                 GUILayout.Button(_flowExpanded ? "▾ flow breakdown" : "▸ flow breakdown",
@@ -2841,6 +3143,38 @@ internal sealed class SidePanel : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Inline sparkline of recent "have" amounts for an order objective using
+    /// the rolling samples captured by <see cref="TickObjectiveProgress"/>.
+    /// Renders only when at least two samples exist; respects compact mode.
+    /// </summary>
+    private void DrawObjectiveSparkline(int orderId, int objectiveIndex)
+    {
+        var key = $"{orderId}:{objectiveIndex}";
+        if (!_objectiveSamples.TryGetValue(key, out var q) || q.Count < 2) return;
+        var compact = Config.CompactMode.Value;
+        var height = compact ? 8 : 12;
+        var width  = compact ? 60 : 80;
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(28);
+        var rect = GUILayoutUtility.GetRect(width, height, GUILayout.Width(width));
+        var samples = q.Select(t => (float)t.Have).ToArray();
+        GUI.Box(rect, new GUIContent("",
+            $"objective progress samples: min {samples.Min()} \u00b7 max {samples.Max()} \u00b7 last {samples[samples.Length - 1]} \u00b7 {samples.Length} pts"));
+        var min = samples.Min();
+        var max = Math.Max(min + 0.001f, samples.Max());
+        for (var i = 1; i < samples.Length; i++)
+        {
+            var x0 = rect.x + rect.width * (i - 1) / (float)(samples.Length - 1);
+            var x1 = rect.x + rect.width *  i      / (float)(samples.Length - 1);
+            var y0 = rect.y + rect.height * (1f - (samples[i - 1] - min) / (max - min));
+            var y1 = rect.y + rect.height * (1f - (samples[i]     - min) / (max - min));
+            DrawSegment(x0, y0, x1, y1, new Color(0.55f, 0.85f, 1f, 0.85f));
+        }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+    }
+
     /// <summary>Coloured pill style by order tier name.</summary>
     private GUIStyle TierBadgeStyle(string tier)
     {
@@ -3053,7 +3387,11 @@ internal sealed class SidePanel : MonoBehaviour
     {
         if (!_resolveSamples.TryGetValue(raceName, out var q) || q.Count < 2) return;
         var samples = q.ToArray();
-        var rect = GUILayoutUtility.GetRect(80, 14, GUILayout.Width(80));
+        // Compact mode shrinks sparkline footprint so it fits the title row.
+        var compact = Config.CompactMode.Value;
+        var height = compact ? 9 : 14;
+        var width  = compact ? 60 : 80;
+        var rect = GUILayoutUtility.GetRect(width, height, GUILayout.Width(width));
         // Tooltip: hovering the sparkline shows the rolling min/max/last so
         // the player can read exact numbers without expanding the panel.
         GUI.Box(rect, new GUIContent("",
@@ -3119,12 +3457,33 @@ internal sealed class SidePanel : MonoBehaviour
                 $"   trajectory: {arrow} net {(net >= 0 ? "+" : "")}{net} (+{pos} / {neg})",
                 trajStyle);
             GUILayout.Space(2);
+            GUILayout.BeginHorizontal();
             GUILayout.Label("Top resolve contributors", _bodyStyle);
-            foreach (var e in r.TopEffects)
+            GUILayout.FlexibleSpace();
+            // Effect filter: free-text substring match against the effect
+            // name. Useful for narrowing down a long contributor list to a
+            // theme (e.g. "hostility", "food", "hearth").
+            GUILayout.Label("filter:", _mutedStyle, GUILayout.Width(50));
+            _resolveEffectFilter = GUILayout.TextField(
+                _resolveEffectFilter ?? "", GUILayout.Width(120));
+            if (!string.IsNullOrEmpty(_resolveEffectFilter) &&
+                GUILayout.Button("\u2715", _tabStyle, GUILayout.Width(24)))
+                _resolveEffectFilter = "";
+            GUILayout.EndHorizontal();
+            var filteredEffects = string.IsNullOrEmpty(_resolveEffectFilter)
+                ? r.TopEffects
+                : r.TopEffects.Where(e =>
+                    (e.Name ?? "").IndexOf(_resolveEffectFilter,
+                        StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            if (filteredEffects.Count == 0 && !string.IsNullOrEmpty(_resolveEffectFilter))
+                GUILayout.Label(
+                    $"   (no contributors match '{_resolveEffectFilter}')",
+                    _mutedStyle);
+            foreach (var e in filteredEffects)
             {
                 var sign = e.TotalImpact >= 0 ? "+" : "";
                 var line = e.Stacks > 1
-                    ? $"   {e.Name}: {sign}{e.TotalImpact}  ({e.Stacks} × {e.ResolvePerStack})"
+                    ? $"   {e.Name}: {sign}{e.TotalImpact}  ({e.Stacks} \u00d7 {e.ResolvePerStack})"
                     : $"   {e.Name}: {sign}{e.TotalImpact}";
                 GUILayout.Label(line, _mutedStyle);
             }
@@ -3295,11 +3654,13 @@ internal sealed class SidePanel : MonoBehaviour
             // that just need a click in the in-game popup.
             if (o.Objectives.All(x => x.Completed))
                 GUILayout.Label("   ✓ ready to deliver", _okStyle ?? _mutedStyle);
-            foreach (var ob in o.Objectives)
+            for (var oi = 0; oi < o.Objectives.Count; oi++)
             {
-                var prefix = ob.Completed ? "   ✓ " : "   · ";
+                var ob = o.Objectives[oi];
+                var prefix = ob.Completed ? "   \u2713 " : "   \u00b7 ";
                 GUILayout.Label(prefix + ob.Description, _mutedStyle);
                 DrawObjectiveProgress(ob);
+                DrawObjectiveSparkline(o.Id, oi);
                 DrawObjectiveEta(ob);
                 if (o.Tracked && o.ShouldBeFailable && !ob.Completed)
                     DrawObjectivePlanOfAttack(ob);
@@ -3894,6 +4255,33 @@ internal sealed class SidePanel : MonoBehaviour
                 _mutedStyle);
         }
 
+        // Resolved-chase log: the session-local list of chase models that
+        // disappeared from the active set (i.e. completed or expired). Acts
+        // as a chronological record so the player can see what they've
+        // closed out this run.
+        if (_resolvedChases.Count > 0)
+        {
+            GUILayout.Space(6);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"Resolved chases \u2014 {_resolvedChases.Count} this session",
+                _bodyStyle);
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(new GUIContent("clear", "Clear the in-memory log"),
+                                 _tabStyle, GUILayout.Width(60)))
+                _resolvedChases.Clear();
+            GUILayout.EndHorizontal();
+            // Newest first; cap the rendered tail at 10.
+            for (var i = _resolvedChases.Count - 1;
+                 i >= Math.Max(0, _resolvedChases.Count - 10); i--)
+            {
+                var (model, t) = _resolvedChases[i];
+                var mins = Mathf.Max(0, Mathf.FloorToInt(t / 60f));
+                var secs = Mathf.Max(0, Mathf.FloorToInt(t % 60f));
+                GUILayout.Label($"   \u00b7 {model} \u2014 closed @ {mins}:{secs:00}",
+                    _mutedStyle);
+            }
+        }
+
         GUILayout.Space(6);
         GUILayout.Label(
             "Tip: dangerous and forbidden glades carry stronger rewards but spawn worse forest mysteries. The game spawns event decisions when scouts enter; this tab will surface those once a settlement provides them.",
@@ -3944,8 +4332,26 @@ internal sealed class SidePanel : MonoBehaviour
             return;
         }
         GUILayout.Label(
-            $"   {Catalog.Races.Count} races · {Catalog.Buildings.Count} buildings · {Catalog.Goods.Count} goods",
+            $"   {Catalog.Races.Count} races \u00b7 {Catalog.Buildings.Count} buildings \u00b7 {Catalog.Goods.Count} goods",
             _mutedStyle);
+
+        // Live weather/season hint so the player can frame the embark
+        // recommendations against the current phase. Only renders if the
+        // game has been entered and the weather service is available.
+        if (LiveGameState.IsReady)
+        {
+            var weather = LiveGameState.Weather();
+            if (weather is not null && !string.IsNullOrEmpty(weather.PhaseName))
+            {
+                var label = weather.PhaseName.ToLowerInvariant();
+                var hint = label.Contains("storm")    ? "storms hit fuel and food hard \u2014 prioritise storage and shelter races"
+                         : label.Contains("drizzle")  ? "drizzle is moderate \u2014 a balanced race mix performs well"
+                         : label.Contains("clear")    ? "clearance phase \u2014 push expansion + glade scouting now"
+                         : "weather phase noted; no specific tip";
+                GUILayout.Label($"   \u26c5 current phase: {label} \u2014 {hint}",
+                    _mutedStyle);
+            }
+        }
 
         // Race picker reference: resolve range + needs at a glance.
         GUILayout.Space(6);
@@ -4062,6 +4468,7 @@ internal sealed class SidePanel : MonoBehaviour
         DrawSessionStats();
         DrawPerfHistory();
         DrawCrashDumpsList();
+        DrawSnapshotButton();
 
         var snapshot = tail.Snapshot();
         GUILayout.BeginHorizontal();
@@ -4138,6 +4545,72 @@ internal sealed class SidePanel : MonoBehaviour
         var idx = Math.Min(arr.Length - 1,
             (int)Math.Floor((arr.Length - 1) * p));
         return arr[idx];
+    }
+
+    /// <summary>
+    /// One-click "save snapshot": writes a text dump of the current panel
+    /// state \u2014 settlement age, pin list, marker sets, last log lines, recent
+    /// trader visits \u2014 to <c>stormguide-snapshot-*.txt</c> next to the
+    /// BepInEx config. Used for bug reports and self-archival.
+    /// </summary>
+    private void DrawSnapshotButton()
+    {
+        GUILayout.Space(4);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Snapshot", _bodyStyle);
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button(new GUIContent("save snapshot",
+                "Write a state dump next to the BepInEx config"),
+                _tabStyle, GUILayout.Width(140)))
+        {
+            try
+            {
+                var dir = BepInEx.Paths.ConfigPath ?? "";
+                if (!string.IsNullOrEmpty(dir))
+                {
+                    var path = System.IO.Path.Combine(dir,
+                        $"stormguide-snapshot-{DateTime.UtcNow:yyyyMMdd-HHmmss}.txt");
+                    var sb = new System.Text.StringBuilder();
+                    sb.AppendLine($"StormGuide snapshot @ {DateTime.UtcNow:O}");
+                    sb.AppendLine($"plugin v{StormGuidePlugin.PluginVersion}");
+                    sb.AppendLine($"catalog: {Catalog.GameVersion}");
+                    sb.AppendLine($"active tab: {_activeTab}");
+                    sb.AppendLine($"selected: building={_selectedBuilding ?? "-"} good={_selectedGood ?? "-"} race={_selectedRace ?? "-"}");
+                    if (_sessionStartTime is float ss && LiveGameState.GameTimeNow() is float now)
+                        sb.AppendLine($"session age: {(now - ss) / 60f:0.#} min");
+                    sb.AppendLine();
+                    sb.AppendLine($"---- pinned recipes ({_pinned.Count}) ----");
+                    foreach (var (b, r) in _pinned) sb.AppendLine($"  {b}|{r}");
+                    sb.AppendLine();
+                    sb.AppendLine($"---- marked priority ({_markedPriority.Count}) ----");
+                    foreach (var r in _markedPriority) sb.AppendLine("  " + r);
+                    sb.AppendLine();
+                    sb.AppendLine($"---- marked stopped ({_markedStopped.Count}) ----");
+                    foreach (var r in _markedStopped) sb.AppendLine("  " + r);
+                    sb.AppendLine();
+                    sb.AppendLine("---- trader visit archive ----");
+                    sb.AppendLine(Config.TraderVisitArchive.Value ?? "");
+                    sb.AppendLine();
+                    sb.AppendLine($"---- resolved chases ({_resolvedChases.Count}) ----");
+                    foreach (var (m, t) in _resolvedChases) sb.AppendLine($"  {m} @ {t:0.#}s");
+                    sb.AppendLine();
+                    var tail = StormGuidePlugin.LogTail?.Snapshot();
+                    if (tail != null)
+                    {
+                        sb.AppendLine($"---- last {tail.Count} log lines ----");
+                        foreach (var e in tail)
+                            sb.AppendLine($"{e.UtcAt:O} [{e.Level}] {e.Message}");
+                    }
+                    System.IO.File.WriteAllText(path, sb.ToString());
+                    _catalogReloadStatus = "snapshot saved: " + System.IO.Path.GetFileName(path);
+                }
+            }
+            catch (Exception ex) { _catalogReloadStatus = "snapshot error: " + ex.Message; }
+        }
+        GUILayout.EndHorizontal();
+        if (!string.IsNullOrEmpty(_catalogReloadStatus) &&
+            _catalogReloadStatus.StartsWith("snapshot", StringComparison.Ordinal))
+            GUILayout.Label("   " + _catalogReloadStatus, _mutedStyle);
     }
 
     /// <summary>
@@ -4369,6 +4842,7 @@ internal sealed class SidePanel : MonoBehaviour
         DrawCornerstoneDiff(o);
         DrawCornerstoneBlocksOwned(o);
         DrawCornerstoneAffected(o);
+        DrawCornerstoneSkipCost(o, all);
         foreach (var c in o.Synergy.Components)
         {
             var line = $"   {c.Label}: {c.Value:0.##}";
@@ -4379,6 +4853,39 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndVertical();
         GUILayout.EndHorizontal();
         GUILayout.Space(4);
+    }
+
+    /// <summary>
+    /// One-line "skip cost" estimator: how much synergy + how many unique
+    /// tags the player would lose by skipping this option, expressed against
+    /// the average of the other options. Helps the player size up the
+    /// opportunity cost without expanding the compare panel.
+    /// </summary>
+    private void DrawCornerstoneSkipCost(
+        CornerstoneOption o, IReadOnlyList<CornerstoneOption> all)
+    {
+        if (all.Count <= 1) return;
+        var others = all.Where(x => x.EffectId != o.EffectId).ToList();
+        if (others.Count == 0) return;
+        var avgScore = others.Average(x => x.Synergy.Value);
+        var dScore = o.Synergy.Value - avgScore;
+        var ourTags = o.NewlyTargetedTags ?? Array.Empty<string>();
+        var otherTagPool = new HashSet<string>(
+            others.SelectMany(x => x.NewlyTargetedTags ?? Array.Empty<string>()),
+            StringComparer.OrdinalIgnoreCase);
+        var uniqueLost = ourTags
+            .Where(t => !otherTagPool.Contains(t))
+            .ToList();
+        // Skip when this option is materially worse (negative cost) AND has no
+        // unique tag advantage \u2014 nothing to warn about.
+        if (dScore <= 0 && uniqueLost.Count == 0) return;
+        var parts = new List<string>();
+        if (dScore > 0) parts.Add($"\u2212{dScore:0.##} synergy vs avg");
+        if (uniqueLost.Count > 0)
+            parts.Add($"loses {uniqueLost.Count} unique tag(s): {string.Join(", ", uniqueLost.Take(3))}");
+        GUILayout.Label(
+            "   skip cost: " + string.Join(" \u00b7 ", parts),
+            _warnStyle ?? _mutedStyle);
     }
 
     /// <summary>
