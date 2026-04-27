@@ -684,6 +684,82 @@ internal static class LiveGameState
         return list;
     }
 
+    public sealed record OrderPickOption(
+        string SetIndexLabel,                  // "set 0", "set 1", …
+        bool   Failed,                         // already picked or otherwise locked
+        IReadOnlyList<OrderRewardEntry> Rewards,
+        double RewardScore,
+        IReadOnlyList<string> RewardCategories,
+        bool   IsTopRanked);                   // best non-failed pick by RewardScore
+
+    /// <summary>
+    /// Resolves the pick options the player can choose between for an unpicked
+    /// order. Each option's rewards are categorised and scored using the same
+    /// <see cref="CategoriseRewardEffect"/> heuristics as the order itself, and
+    /// the highest-scored non-failed option is flagged <c>IsTopRanked</c>.
+    /// </summary>
+    public static IReadOnlyList<OrderPickOption> PickOptionsFor(int orderId)
+    {
+        var list = new List<OrderPickOption>();
+        try
+        {
+            var os = Services?.OrdersService;
+            if (os?.Orders == null) return list;
+            Eremite.Model.Orders.OrderState? state = null;
+            foreach (var o in os.Orders) if (o != null && o.id == orderId) { state = o; break; }
+            if (state?.picks == null || state.picks.Count == 0) return list;
+            var ms = Services?.GameModelService;
+
+            // First pass: build entries.
+            var working = new List<(int idx, bool failed, List<OrderRewardEntry> r, double s, HashSet<string> cats)>(state.picks.Count);
+            for (var i = 0; i < state.picks.Count; i++)
+            {
+                var p = state.picks[i];
+                var rewards = new List<OrderRewardEntry>();
+                var cats = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                double score = 0;
+                if (p?.rewards != null)
+                {
+                    foreach (var rid in p.rewards)
+                    {
+                        if (string.IsNullOrEmpty(rid)) continue;
+                        Eremite.Model.EffectModel? eff = null;
+                        string? rname = null;
+                        try { eff = ms?.GetEffect(rid); } catch { }
+                        try { rname = eff?.DisplayName; } catch { }
+                        var (category, weight) = CategoriseRewardEffect(eff);
+                        score += weight;
+                        cats.Add(category);
+                        rewards.Add(new OrderRewardEntry(
+                            Id:          rid,
+                            DisplayName: string.IsNullOrEmpty(rname) ? rid : rname!,
+                            Category:    category,
+                            Weight:      weight));
+                    }
+                }
+                working.Add((i, p?.failed ?? false, rewards, score, cats));
+            }
+
+            // Top rank: highest score among non-failed picks.
+            var topScore = working.Where(w => !w.failed).Select(w => w.s)
+                                  .DefaultIfEmpty(double.NaN).Max();
+            foreach (var w in working)
+            {
+                var isTop = !w.failed && !double.IsNaN(topScore) &&
+                            Math.Abs(w.s - topScore) < 1e-9;
+                list.Add(new OrderPickOption(
+                    SetIndexLabel:    $"set {w.idx}",
+                    Failed:           w.failed,
+                    Rewards:          w.r,
+                    RewardScore:      w.s,
+                    RewardCategories: w.cats.ToList(),
+                    IsTopRanked:      isTop));
+            }
+        }
+        catch { }
+        return list;
+    }
+
     /// <summary>
     /// Categorises a reward effect by typename heuristics into a coarse bucket
     /// and assigns a synergy weight. Reputation/cornerstone are valued highest
@@ -743,6 +819,26 @@ internal static class LiveGameState
             return new GladeSummary(total, discovered, dangerous, forbidden, chases);
         }
         catch { return null; }
+    }
+
+    // ---- Embedded docs ----------------------------------------------------
+
+    /// <summary>
+    /// Reads a top-level doc embedded into the plugin assembly (README.md /
+    /// AGENTS.md). Returns an empty string if the resource is missing.
+    /// </summary>
+    public static string ReadEmbeddedDoc(string fileName)
+    {
+        try
+        {
+            var asm = typeof(LiveGameState).Assembly;
+            using var stream = asm.GetManifestResourceStream(
+                "StormGuide.Resources.docs." + fileName);
+            if (stream == null) return "";
+            using var reader = new System.IO.StreamReader(stream);
+            return reader.ReadToEnd();
+        }
+        catch { return ""; }
     }
 
     // ---- Helper: usability tags from owned cornerstones -------------------

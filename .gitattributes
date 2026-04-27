@@ -1,0 +1,16 @@
+* text=auto eol=lf
+*.cs        text eol=lf diff=csharp
+*.csproj    text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.yml       text eol=lf
+*.props     text eol=lf
+*.config    text eol=lf
+*.slnx      text eol=lf
+*.editorconfig text eol=lf
+
+# Binary
+*.dll       binary
+*.png       binary
+*.jpg       binary
+*.ico       binary

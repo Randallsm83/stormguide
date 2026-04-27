@@ -26,12 +26,17 @@ public sealed class PluginConfig
     public ConfigEntry<bool>             ShowGladesTab { get; }
     public ConfigEntry<bool>             ShowDraftTab { get; }
     public ConfigEntry<bool>             ShowSettingsTab { get; }
+    public ConfigEntry<bool>             ShowDiagnosticsTab { get; }
     public ConfigEntry<bool>             HideEmptyRecipeBuildings { get; }
+    public ConfigEntry<bool>             WhyAllRecipes { get; }
+    public ConfigEntry<bool>             WhyAllProducers { get; }
 
     public ConfigEntry<string>           ActiveTab { get; }
     public ConfigEntry<string>           LastSelectedBuilding { get; }
     public ConfigEntry<string>           LastSelectedGood { get; }
     public ConfigEntry<string>           LastSelectedRace { get; }
+    public ConfigEntry<string>           LastBuildingSearch { get; }
+    public ConfigEntry<string>           LastGoodSearch { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -91,9 +96,16 @@ public sealed class PluginConfig
         ShowGladesTab    = cfg.Bind(SectionUI, "Tab · Glades",    true, "Show the Glades tab (forest exploration summary).");
         ShowDraftTab     = cfg.Bind(SectionUI, "Tab · Draft",     true, "Show the Cornerstone Draft tab.");
         ShowSettingsTab  = cfg.Bind(SectionUI, "Tab · Settings",  true, "Show the in-panel Settings tab.");
+        ShowDiagnosticsTab = cfg.Bind(SectionUI, "Tab · Diagnostics", false,
+            "Show the in-panel Diagnostics tab (recent plugin log lines).");
 
         HideEmptyRecipeBuildings = cfg.Bind(SectionUI, "Hide empty-recipe buildings", true,
             "Hide buildings that have no recipes from the Building tab list.");
+
+        WhyAllRecipes   = cfg.Bind(SectionUI, "Expand all recipe reasoning",   false,
+            "Persistent state for the Building tab “why × all” toggle.");
+        WhyAllProducers = cfg.Bind(SectionUI, "Expand all producer reasoning", false,
+            "Persistent state for the Good tab “why × all” toggle.");
 
         ActiveTab            = cfg.Bind(SectionUI, "Active Tab",            "Home",
             "Last-active tab. Persisted automatically.");
@@ -103,5 +115,9 @@ public sealed class PluginConfig
             "Last-selected good model name. Persisted automatically.");
         LastSelectedRace     = cfg.Bind(SectionUI, "Last Selected Race",     "",
             "Last-selected race model name. Persisted automatically.");
+        LastBuildingSearch   = cfg.Bind(SectionUI, "Last Building Search",   "",
+            "Last value of the Building tab search box. Persisted automatically.");
+        LastGoodSearch       = cfg.Bind(SectionUI, "Last Good Search",       "",
+            "Last value of the Good tab search box. Persisted automatically.");
     }
 }

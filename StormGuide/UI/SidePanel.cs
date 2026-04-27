@@ -69,7 +69,7 @@ internal sealed class SidePanel : MonoBehaviour
     private TtlCache<StormGuide.Domain.VillageSummary?>? _summaryCache;
     private TtlCache<IReadOnlyList<LiveGameState.OwnedCornerstone>>? _ownedCache;
 
-    public enum Tab { Home, Building, Good, Villagers, Orders, Glades, Draft, Settings }
+    public enum Tab { Home, Building, Good, Villagers, Orders, Glades, Draft, Settings, Diagnostics }
 
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
@@ -78,6 +78,46 @@ internal sealed class SidePanel : MonoBehaviour
     private Vector2 _ordersScroll;
     private Vector2 _gladesScroll;
     private Vector2 _settingsScroll;
+
+    // ---- Settings interaction ---------------------------------------------
+    private bool   _rebindingHotkey;
+    private string _docView = "";       // "", "README.md", "AGENTS.md"
+    private Vector2 _docScroll;
+    private string _catalogReloadStatus = "";
+
+    // ---- Diagnostics tab state -------------------------------------------
+    private Vector2 _diagScroll;
+
+    // ---- Cached match lists (recomputed only when search text changes) ---
+    private string?              _cachedBuildingQuery;
+    private List<BuildingInfo>?  _cachedBuildingMatches;
+    private string?              _cachedGoodQuery;
+    private List<GoodInfo>?      _cachedGoodMatches;
+
+    // ---- Producer filter chips (Good tab) -------------------------------
+    private bool _filterFuelOnly;
+    private bool _filterEatableOnly;
+    private bool _filterDrainingOnly;
+
+    // ---- Trader desires hot-cache (recomputed at most every 0.5s) -------
+    private TtlCache<IReadOnlyList<LiveGameState.TraderDesire>>? _currentDesiresCache;
+    private TtlCache<IReadOnlyList<LiveGameState.TraderDesire>>? _nextDesiresCache;
+
+    // Compiled regex for objective progress ("5 / 10" inside rich text).
+    private static readonly System.Text.RegularExpressions.Regex ProgressRegex =
+        new(@"(\d+)\s*/\s*(\d+)",
+            System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    // Time-pressure styles for failable orders.
+    private GUIStyle? _warnStyle;
+    private GUIStyle? _critStyle;
+
+    // Tab order used by Ctrl+1..9 shortcuts; matches Tab enum order.
+    private static readonly Tab[] TabOrder = new[]
+    {
+        Tab.Home, Tab.Building, Tab.Good, Tab.Villagers,
+        Tab.Orders, Tab.Glades, Tab.Draft, Tab.Settings, Tab.Diagnostics,
+    };
 
     private void Start()
     {
@@ -97,6 +137,16 @@ internal sealed class SidePanel : MonoBehaviour
             _selectedGood = Config.LastSelectedGood.Value;
         if (!string.IsNullOrEmpty(Config.LastSelectedRace.Value))
             _selectedRace = Config.LastSelectedRace.Value;
+        if (!string.IsNullOrEmpty(Config.LastBuildingSearch.Value))
+            _buildingSearch = Config.LastBuildingSearch.Value;
+        if (!string.IsNullOrEmpty(Config.LastGoodSearch.Value))
+            _goodSearch = Config.LastGoodSearch.Value;
+
+        // Persisted "why × all" expansions become unbounded sentinels: the
+        // rendering layer only checks Contains() so an empty marker keeps the
+        // expansion visible until the user toggles back.
+        if (Config.WhyAllRecipes.Value)   _expandedRecipes.Add("__all");
+        if (Config.WhyAllProducers.Value) _expandedProducers.Add("__all");
 
         // Cache the slow aggregates: 0.5s is well below player perception
         // for these kinds of metrics, but it cuts redundant scans by ~30x at
@@ -109,14 +159,35 @@ internal sealed class SidePanel : MonoBehaviour
             ttlSeconds: 0.5f);
         _ownedCache   = new TtlCache<IReadOnlyList<LiveGameState.OwnedCornerstone>>(
             LiveGameState.OwnedCornerstones, ttlSeconds: 1.0f);
+        _currentDesiresCache = new TtlCache<IReadOnlyList<LiveGameState.TraderDesire>>(
+            () => LiveGameState.RankTraderDesires(
+                LiveGameState.CurrentTrader(), Catalog, isCurrent: true),
+            ttlSeconds: 0.5f);
+        _nextDesiresCache = new TtlCache<IReadOnlyList<LiveGameState.TraderDesire>>(
+            () => LiveGameState.RankTraderDesires(
+                LiveGameState.NextTrader(), Catalog, isCurrent: false),
+            ttlSeconds: 0.5f);
     }
 
     private void Update()
     {
-        if (Config.ToggleHotkey.Value.IsDown())
+        if (!_rebindingHotkey && Config.ToggleHotkey.Value.IsDown())
         {
             _visible = !_visible;
             StormGuidePlugin.Log.LogInfo($"StormGuide panel {(_visible ? "shown" : "hidden")}.");
+        }
+
+        // Ctrl+1..8 jumps to the corresponding visible tab.
+        if (_visible && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+        {
+            for (var i = 0; i < TabOrder.Length; i++)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha1 + i) && IsTabVisible(TabOrder[i]))
+                {
+                    _activeTab = TabOrder[i];
+                    break;
+                }
+            }
         }
 
         // Subscribe to in-game selection once GameController is ready.
@@ -178,6 +249,10 @@ internal sealed class SidePanel : MonoBehaviour
             Config.LastSelectedGood.Value = _selectedGood ?? "";
         if (Config.LastSelectedRace.Value != (_selectedRace ?? ""))
             Config.LastSelectedRace.Value = _selectedRace ?? "";
+        if (Config.LastBuildingSearch.Value != (_buildingSearch ?? ""))
+            Config.LastBuildingSearch.Value = _buildingSearch ?? "";
+        if (Config.LastGoodSearch.Value != (_goodSearch ?? ""))
+            Config.LastGoodSearch.Value = _goodSearch ?? "";
     }
 
     private void DrawWindow(int _)
@@ -189,14 +264,15 @@ internal sealed class SidePanel : MonoBehaviour
 
         switch (_activeTab)
         {
-            case Tab.Home:      DrawHomeTab();      break;
-            case Tab.Building:  DrawBuildingTab();  break;
-            case Tab.Good:      DrawGoodTab();      break;
-            case Tab.Villagers: DrawVillagersTab(); break;
-            case Tab.Orders:    DrawOrdersTab();    break;
-            case Tab.Glades:    DrawGladesTab();    break;
-            case Tab.Draft:     DrawDraftTab();     break;
-            case Tab.Settings:  DrawSettingsTab();  break;
+            case Tab.Home:        DrawHomeTab();        break;
+            case Tab.Building:    DrawBuildingTab();    break;
+            case Tab.Good:        DrawGoodTab();        break;
+            case Tab.Villagers:   DrawVillagersTab();   break;
+            case Tab.Orders:      DrawOrdersTab();      break;
+            case Tab.Glades:      DrawGladesTab();      break;
+            case Tab.Draft:       DrawDraftTab();       break;
+            case Tab.Settings:    DrawSettingsTab();    break;
+            case Tab.Diagnostics: DrawDiagnosticsTab(); break;
         }
 
         GUILayout.FlexibleSpace();
@@ -315,6 +391,7 @@ internal sealed class SidePanel : MonoBehaviour
         if (Config.ShowGladesTab.Value)    DrawTab(Tab.Glades,    "Glades");
         if (Config.ShowDraftTab.Value)     DrawTab(Tab.Draft,     "Draft");
         if (Config.ShowSettingsTab.Value)  DrawTab(Tab.Settings,  "⚙");
+        if (Config.ShowDiagnosticsTab.Value) DrawTab(Tab.Diagnostics, "⚙?");
         GUILayout.EndHorizontal();
 
         // Reroute to the first visible tab if the active one is hidden.
@@ -328,19 +405,21 @@ internal sealed class SidePanel : MonoBehaviour
             else if (Config.ShowGladesTab.Value)    _activeTab = Tab.Glades;
             else if (Config.ShowDraftTab.Value)     _activeTab = Tab.Draft;
             else if (Config.ShowSettingsTab.Value)  _activeTab = Tab.Settings;
+            else if (Config.ShowDiagnosticsTab.Value) _activeTab = Tab.Diagnostics;
         }
     }
 
     private bool IsTabVisible(Tab tab) => tab switch
     {
-        Tab.Home      => Config.ShowHomeTab.Value,
-        Tab.Building  => Config.ShowBuildingTab.Value,
-        Tab.Good      => Config.ShowGoodTab.Value,
-        Tab.Villagers => Config.ShowVillagersTab.Value,
-        Tab.Orders    => Config.ShowOrdersTab.Value,
-        Tab.Glades    => Config.ShowGladesTab.Value,
-        Tab.Draft     => Config.ShowDraftTab.Value,
-        Tab.Settings  => Config.ShowSettingsTab.Value,
+        Tab.Home        => Config.ShowHomeTab.Value,
+        Tab.Building    => Config.ShowBuildingTab.Value,
+        Tab.Good        => Config.ShowGoodTab.Value,
+        Tab.Villagers   => Config.ShowVillagersTab.Value,
+        Tab.Orders      => Config.ShowOrdersTab.Value,
+        Tab.Glades      => Config.ShowGladesTab.Value,
+        Tab.Draft       => Config.ShowDraftTab.Value,
+        Tab.Settings    => Config.ShowSettingsTab.Value,
+        Tab.Diagnostics => Config.ShowDiagnosticsTab.Value,
         _ => true
     };
 
@@ -366,11 +445,42 @@ internal sealed class SidePanel : MonoBehaviour
         DrawHomeTrader();
         DrawHomeIdle();
         DrawHomeRisks();
+        DrawHomeNeeds();
         DrawHomeOrders();
         DrawHomeGlades();
         DrawHomeCornerstones();
 
         GUILayout.EndScrollView();
+    }
+
+    private void DrawHomeNeeds()
+    {
+        var summary = _summaryCache?.Get();
+        if (summary is null || summary.Races.Count == 0) return;
+
+        // For each living race, list the catalog needs whose stockpile is 0.
+        var unmet = new List<string>();
+        foreach (var p in summary.Races)
+        {
+            if (p.Alive == 0) continue;
+            if (!Catalog.Races.TryGetValue(p.Race, out var info)) continue;
+            foreach (var need in info.Needs)
+            {
+                if (string.IsNullOrEmpty(need)) continue;
+                if (LiveGameState.StockpileOf(need) > 0) continue;
+                var disp = Catalog.Goods.TryGetValue(need, out var gi) ? gi.DisplayName : need;
+                unmet.Add($"{p.DisplayName}→{disp}");
+            }
+        }
+        if (unmet.Count == 0) return;
+
+        GUILayout.Space(6);
+        GUILayout.Label($"⚠ Race needs unmet — {unmet.Count}", _bodyStyle);
+        // Cap the list so the home tab doesn't unbounded-grow on starvation.
+        foreach (var line in unmet.Take(6))
+            GUILayout.Label($"   · {line}", _mutedStyle);
+        if (unmet.Count > 6)
+            GUILayout.Label($"   … and {unmet.Count - 6} more", _mutedStyle);
     }
 
     private void DrawHomeVillage()
@@ -443,6 +553,21 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(
                 $"   current: {disp} ({here}{extra}) · wants {cur.Buys.Count} · sells {cur.Sells.Count}",
                 _mutedStyle);
+
+            // Top trader desire (best total-value good to sell right now).
+            var desires = _currentDesiresCache?.Get()
+                          ?? LiveGameState.RankTraderDesires(cur, Catalog, isCurrent: true);
+            if (desires.Count > 0)
+            {
+                var d = desires[0];
+                var marker = Config.ShowRecommendations.Value ? "★" : "→";
+                var line = $"   {marker} sell {d.DisplayName}: {d.PricePerUnit:0.##}/u × {d.Stockpile} = {d.TotalValue:0.##}";
+                if (GUILayout.Button(new GUIContent(line, "Open this good"), _tabStyle))
+                {
+                    _selectedGood = d.Good;
+                    _activeTab    = Tab.Good;
+                }
+            }
         }
         if (nxt is not null)
         {
@@ -622,15 +747,26 @@ internal sealed class SidePanel : MonoBehaviour
         _buildingListScroll = GUILayout.BeginScrollView(_buildingListScroll,
             GUILayout.Width(160), GUILayout.ExpandHeight(true));
 
+        // Cached match list — only recompute when the query (or hide-empty
+        // filter) changes. Cuts per-frame LINQ allocations on long lists.
         var query = _buildingSearch?.Trim() ?? "";
-        var matches = Catalog.Buildings.Values
-            .Where(b => !Config.HideEmptyRecipeBuildings.Value || b.Recipes.Count > 0)
-            .Where(b => query.Length == 0
-                     || b.DisplayName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
-                     || b.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
-            .OrderBy(b => b.DisplayName, StringComparer.OrdinalIgnoreCase);
+        var cacheKey = (Config.HideEmptyRecipeBuildings.Value ? "H|" : "|") + query;
+        if (_cachedBuildingQuery != cacheKey || _cachedBuildingMatches is null)
+        {
+            _cachedBuildingMatches = Catalog.Buildings.Values
+                .Where(b => !Config.HideEmptyRecipeBuildings.Value || b.Recipes.Count > 0)
+                .Where(b => query.Length == 0
+                         || b.DisplayName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
+                         || b.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
+                         // Tag chips reuse the same search field, so match
+                         // against tag names too — a one-click filter.
+                         || b.Tags.Any(t => t.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0))
+                .OrderBy(b => b.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            _cachedBuildingQuery = cacheKey;
+        }
 
-        foreach (var b in matches)
+        foreach (var b in _cachedBuildingMatches)
         {
             var label = b.DisplayName;
             var style = (_selectedBuilding == b.Name) ? _tabActiveStyle : _tabStyle;
@@ -667,8 +803,26 @@ internal sealed class SidePanel : MonoBehaviour
         var vm = BuildingProvider.For(Catalog, _selectedBuilding!, stockLookup, workersLookup, flowLookup);
         GUILayout.Label(vm.Building.DisplayName, _h1Style);
         var meta = $"{vm.Building.Kind} · {vm.Building.Profession}";
-        if (vm.Building.Tags.Count > 0) meta += $" · tags: {string.Join(", ", vm.Building.Tags)}";
         GUILayout.Label(meta, _mutedStyle);
+
+        // Building tag chips — click to drop the tag into the search box and
+        // re-filter the list.
+        if (vm.Building.Tags.Count > 0)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("   tags:", _mutedStyle, GUILayout.Width(46));
+            foreach (var tag in vm.Building.Tags)
+            {
+                if (GUILayout.Button(new GUIContent(tag, $"Filter list by tag '{tag}'"),
+                                     _tabStyle))
+                {
+                    _buildingSearch = tag;
+                    _cachedBuildingQuery = null; // force refilter
+                }
+            }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+        }
         GUILayout.Label(vm.IsLive ? "● live settlement data" : "○ static catalog only", _mutedStyle);
         if (vm.Workers is { } w)
         {
@@ -683,7 +837,7 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.BeginHorizontal();
         GUILayout.Label($"{vm.Recipes.Count} recipes — sorted by throughput", _bodyStyle);
         GUILayout.FlexibleSpace();
-        DrawWhyAllButton(_expandedRecipes, vm.Recipes.Select(r => r.Recipe.Name));
+        DrawWhyAllButton(_expandedRecipes, vm.Recipes.Select(r => r.Recipe.Name), Config.WhyAllRecipes);
         GUILayout.EndHorizontal();
 
         _buildingDetailScroll = GUILayout.BeginScrollView(_buildingDetailScroll, GUILayout.ExpandHeight(true));
@@ -696,19 +850,26 @@ internal sealed class SidePanel : MonoBehaviour
     /// <summary>
     /// Renders a one-tap toggle that expands every "why" row in <paramref name="set"/>
     /// when collapsed, or clears them when any are expanded. Used to flip
-    /// reasoning rows on the Building/Good tabs without per-row clicks.
+    /// reasoning rows on the Building/Good tabs without per-row clicks. The
+    /// optional <paramref name="persisted"/> entry stores the on/off state
+    /// across sessions.
     /// </summary>
-    private void DrawWhyAllButton(HashSet<string> set, IEnumerable<string> keys)
+    private void DrawWhyAllButton(
+        HashSet<string> set,
+        IEnumerable<string> keys,
+        BepInEx.Configuration.ConfigEntry<bool>? persisted = null)
     {
         var keyList = keys.ToList();
         if (keyList.Count == 0) return;
-        var anyExpanded = keyList.Any(k => set.Contains(k));
+        var anyExpanded = keyList.Any(k => set.Contains(k))
+                       || (persisted?.Value ?? false);
         var label = anyExpanded ? "▾ why × all" : "▸ why × all";
         if (GUILayout.Button(new GUIContent(label, anyExpanded ? "Collapse all reasoning" : "Expand all reasoning"),
                              _tabStyle, GUILayout.Width(90)))
         {
             if (anyExpanded) set.Clear();
             else foreach (var k in keyList) set.Add(k);
+            if (persisted is not null) persisted.Value = !anyExpanded;
         }
     }
 
@@ -809,16 +970,21 @@ internal sealed class SidePanel : MonoBehaviour
         _goodListScroll = GUILayout.BeginScrollView(_goodListScroll,
             GUILayout.Width(180), GUILayout.ExpandHeight(true));
         var query = _goodSearch?.Trim() ?? "";
-        var matches = Catalog.Goods.Values
-            .Where(g => query.Length == 0
-                     || g.DisplayName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
-                     || g.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
-                     || g.Category.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
-            .OrderBy(g => g.Category, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(g => g.DisplayName, StringComparer.OrdinalIgnoreCase);
+        if (_cachedGoodQuery != query || _cachedGoodMatches is null)
+        {
+            _cachedGoodMatches = Catalog.Goods.Values
+                .Where(g => query.Length == 0
+                         || g.DisplayName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
+                         || g.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
+                         || g.Category.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                .OrderBy(g => g.Category, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(g => g.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            _cachedGoodQuery = query;
+        }
 
         string? lastCategory = null;
-        foreach (var g in matches)
+        foreach (var g in _cachedGoodMatches)
         {
             if (g.Category != lastCategory)
             {
@@ -903,9 +1069,33 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.BeginHorizontal();
         GUILayout.Label($"{vm.Producers.Count} production paths — sorted by cost", _bodyStyle);
         GUILayout.FlexibleSpace();
-        DrawWhyAllButton(_expandedProducers, vm.Producers.Select(p => "prod:" + p.Recipe.Name));
+        DrawWhyAllButton(_expandedProducers, vm.Producers.Select(p => "prod:" + p.Recipe.Name), Config.WhyAllProducers);
         GUILayout.EndHorizontal();
-        foreach (var p in vm.Producers) DrawProductionPath(p);
+
+        // Filter chips. None active = show everything.
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("   filters:", _mutedStyle, GUILayout.Width(64));
+        _filterFuelOnly     = GUILayout.Toggle(_filterFuelOnly,     " fuel");
+        _filterEatableOnly  = GUILayout.Toggle(_filterEatableOnly,  " eatable");
+        _filterDrainingOnly = GUILayout.Toggle(_filterDrainingOnly, " draining");
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+
+        var filtered = vm.Producers.Where(p =>
+        {
+            if (!_filterFuelOnly && !_filterEatableOnly && !_filterDrainingOnly) return true;
+            var output = p.Recipe.ProducedGood;
+            var info = Catalog.Goods.TryGetValue(output, out var gi) ? gi : null;
+            if (_filterFuelOnly    && info?.CanBeBurned != true) return false;
+            if (_filterEatableOnly && info?.IsEatable   != true) return false;
+            if (_filterDrainingOnly)
+            {
+                if (!LiveGameState.IsReady) return false;
+                if (LiveGameState.FlowFor(output, Catalog).Net >= -1e-6) return false;
+            }
+            return true;
+        });
+        foreach (var p in filtered) DrawProductionPath(p);
 
         // Consumers
         GUILayout.Space(6);
@@ -977,11 +1167,13 @@ internal sealed class SidePanel : MonoBehaviour
         }
 
         // Trader desires ranking (top picks by total settlement value).
-        var info = label == "Current"
-            ? LiveGameState.CurrentTrader()
-            : LiveGameState.NextTrader();
-        var desires = LiveGameState.RankTraderDesires(
-            info, Catalog, isCurrent: label == "Current");
+        // Reuse the TTL cache so all callers in this frame share one scan.
+        var desires = (label == "Current"
+            ? _currentDesiresCache?.Get()
+            : _nextDesiresCache?.Get())
+            ?? LiveGameState.RankTraderDesires(
+                label == "Current" ? LiveGameState.CurrentTrader() : LiveGameState.NextTrader(),
+                Catalog, isCurrent: label == "Current");
         DrawTraderDesires(desires, max: 5);
     }
 
@@ -993,7 +1185,10 @@ internal sealed class SidePanel : MonoBehaviour
         IReadOnlyList<LiveGameState.TraderDesire> desires, int max)
     {
         if (desires.Count == 0) return;
-        GUILayout.Label("   wants — ranked by total value (price × stockpile)", _mutedStyle);
+        var sumTopN = desires.Take(max).Sum(d => d.TotalValue);
+        GUILayout.Label(
+            $"   wants — ranked by total value (price × stockpile) · top {Math.Min(max, desires.Count)} = {sumTopN:0.##}",
+            _mutedStyle);
         for (var i = 0; i < desires.Count && i < max; i++)
         {
             var d = desires[i];
@@ -1008,6 +1203,45 @@ internal sealed class SidePanel : MonoBehaviour
         }
         if (desires.Count > max)
             GUILayout.Label($"   … and {desires.Count - max} more", _mutedStyle);
+    }
+
+    /// <summary>
+    /// Renders a thin progress bar for an objective when its description
+    /// contains an "X / Y" pattern. Uses the regex against the (possibly rich-
+    /// text) description because <see cref="LiveGameState.OrderObjective"/>
+    /// only carries the current amount, not the required count.
+    /// </summary>
+    private void DrawObjectiveProgress(LiveGameState.OrderObjective ob)
+    {
+        if (ob.Completed) return;
+        if (string.IsNullOrEmpty(ob.Description)) return;
+        var match = ProgressRegex.Match(ob.Description);
+        if (!match.Success) return;
+        if (!int.TryParse(match.Groups[1].Value, out var have)) return;
+        if (!int.TryParse(match.Groups[2].Value, out var need)) return;
+        if (need <= 0) return;
+
+        var t = Mathf.Clamp01((float)have / need);
+        var rect = GUILayoutUtility.GetRect(0, 6, GUILayout.ExpandWidth(true));
+        // Indent visually under the objective text.
+        rect.xMin += 28;
+        GUI.Box(rect, GUIContent.none);
+        var fill = new Rect(rect.x, rect.y, rect.width * t, rect.height);
+        GUI.DrawTexture(fill, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
+            new Color(0.45f, 0.85f, 0.55f, 0.7f), 0, 0);
+    }
+
+    /// <summary>Coloured pill style by order tier name.</summary>
+    private GUIStyle TierBadgeStyle(string tier)
+    {
+        var s = new GUIStyle(_mutedStyle!) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+        var t = tier.ToLowerInvariant();
+        // Cheap hash to colour: "bronze"=amber, "silver"=light, "gold"=yellow,
+        // anything else falls through as muted.
+        if (t.Contains("gold"))        s.normal.textColor = new Color(1.00f, 0.85f, 0.20f, 1f);
+        else if (t.Contains("silver")) s.normal.textColor = new Color(0.85f, 0.88f, 0.95f, 1f);
+        else if (t.Contains("bronze")) s.normal.textColor = new Color(0.85f, 0.55f, 0.30f, 1f);
+        return s;
     }
 
     private void DrawProductionPath(ProductionPath p)
@@ -1178,7 +1412,8 @@ internal sealed class SidePanel : MonoBehaviour
         var span = Math.Max(1, r.Max - r.Min);
         var curT = Mathf.Clamp01((r.Current - r.Min) / span);
         var tgtT = Mathf.Clamp01(((float)r.Target - r.Min) / span);
-        GUI.Box(barRect, GUIContent.none);
+        GUI.Box(barRect, new GUIContent("",
+            $"current {r.Current:0.0} · target {r.Target} · range {r.Min}–{r.Max}"));
         var fillRect = new Rect(barRect.x, barRect.y, barRect.width * curT, barRect.height);
         GUI.DrawTexture(fillRect, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
             r.Current >= r.Target ? new Color(0.45f, 0.85f, 0.55f, 0.7f) : new Color(0.85f, 0.55f, 0.45f, 0.7f),
@@ -1243,8 +1478,8 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.BeginHorizontal();
 
         // Status marker.
-        string marker = o.Tracked ? "◉" : (o.Picked ? "●" : "○");
-        GUILayout.Label(marker, _badgeStyle, GUILayout.Width(24));
+        string statusMarker = o.Tracked ? "◉" : (o.Picked ? "●" : "○");
+        GUILayout.Label(statusMarker, _badgeStyle, GUILayout.Width(24));
 
         GUILayout.BeginVertical();
         GUILayout.BeginHorizontal();
@@ -1254,20 +1489,35 @@ internal sealed class SidePanel : MonoBehaviour
         {
             var mins = Mathf.Max(0, Mathf.FloorToInt(o.TimeLeft / 60f));
             var secs = Mathf.Max(0, Mathf.FloorToInt(o.TimeLeft % 60f));
+            // Red under 1 min, yellow under 5 min, muted otherwise.
+            var style = o.TimeLeft < 60f ? _critStyle
+                       : o.TimeLeft < 300f ? _warnStyle
+                       : _mutedStyle;
             var prefix = o.TimeLeft < 60f ? "⚠ " : "";
-            GUILayout.Label($"{prefix}{mins}:{secs:00} left", _mutedStyle);
+            GUILayout.Label($"{prefix}{mins}:{secs:00} left", style);
         }
         GUILayout.EndHorizontal();
 
         var status = new List<string>();
-        if (!string.IsNullOrEmpty(o.Tier)) status.Add(o.Tier);
         if (o.Tracked) status.Add("tracked");
         else if (o.Picked) status.Add("picked");
         else status.Add("unpicked");
         if (o.RewardCategories.Count > 0)
             status.Add("value " + string.Join("+", o.RewardCategories));
+
+        // Tier badge gets its own coloured pill before the rest of the status.
+        GUILayout.BeginHorizontal();
+        if (!string.IsNullOrEmpty(o.Tier))
+        {
+            GUILayout.Label("   ", _mutedStyle, GUILayout.Width(24));
+            GUILayout.Label(o.Tier, TierBadgeStyle(o.Tier), GUILayout.Width(70));
+        }
         if (status.Count > 0)
-            GUILayout.Label("   " + string.Join(" · ", status), _mutedStyle);
+            GUILayout.Label(
+                (string.IsNullOrEmpty(o.Tier) ? "   " : " ") +
+                string.Join(" · ", status),
+                _mutedStyle);
+        GUILayout.EndHorizontal();
 
         if (o.Objectives.Count > 0)
         {
@@ -1275,6 +1525,7 @@ internal sealed class SidePanel : MonoBehaviour
             {
                 var prefix = ob.Completed ? "   ✓ " : "   · ";
                 GUILayout.Label(prefix + ob.Description, _mutedStyle);
+                DrawObjectiveProgress(ob);
             }
         }
         if (o.Rewards.Count > 0)
@@ -1283,6 +1534,53 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label(
                 $"   reward (score {o.RewardScore:0}): {rewardLine}",
                 _mutedStyle);
+        }
+
+        // For unpicked orders, show the pick options so the player can
+        // compare reward shapes without opening the popup.
+        if (!o.Picked)
+        {
+            var picks = LiveGameState.PickOptionsFor(o.Id);
+            if (picks.Count > 1)
+            {
+                // Categories shared by all non-failed picks; the diff per pick
+                // (categories unique to it) is the actual decision aid.
+                var live = picks.Where(p => !p.Failed).ToList();
+                var common = live.Count == 0
+                    ? new HashSet<string>()
+                    : new HashSet<string>(live[0].RewardCategories, StringComparer.OrdinalIgnoreCase);
+                for (var i = 1; i < live.Count; i++)
+                    common.IntersectWith(live[i].RewardCategories);
+
+                GUILayout.Label("   picks — ranked by reward score:", _mutedStyle);
+                foreach (var p in picks)
+                {
+                    var marker = p.Failed
+                        ? "✕"
+                        : (p.IsTopRanked && Config.ShowRecommendations.Value ? "★" : "·");
+                    var rewardNames = p.Rewards.Count == 0
+                        ? "(no rewards)"
+                        : string.Join(", ", p.Rewards.Select(r => r.DisplayName));
+                    var cats = p.RewardCategories.Count == 0 ? "" :
+                        $" [{string.Join("+", p.RewardCategories)}]";
+                    GUILayout.Label(
+                        $"      {marker} {p.SetIndexLabel} (score {p.RewardScore:0}){cats} → {rewardNames}",
+                        _mutedStyle);
+                    // Diff: categories in this pick that no other pick offers.
+                    if (!p.Failed && live.Count > 1)
+                    {
+                        var uniques = p.RewardCategories
+                            .Where(c => !common.Contains(c) &&
+                                live.Where(o2 => o2 != p)
+                                    .All(o2 => !o2.RewardCategories.Contains(c, StringComparer.OrdinalIgnoreCase)))
+                            .ToList();
+                        if (uniques.Count > 0)
+                            GUILayout.Label(
+                                $"         only here: {string.Join(", ", uniques)}",
+                                _mutedStyle);
+                    }
+                }
+            }
         }
 
         GUILayout.EndVertical();
@@ -1301,22 +1599,40 @@ internal sealed class SidePanel : MonoBehaviour
         DrawBoolSetting(Config.HideEmptyRecipeBuildings, "Hide empty-recipe buildings");
 
         DrawSettingHeader("Tabs");
-        DrawBoolSetting(Config.ShowHomeTab,      "Home tab");
-        DrawBoolSetting(Config.ShowBuildingTab,  "Building tab");
-        DrawBoolSetting(Config.ShowGoodTab,      "Good tab");
-        DrawBoolSetting(Config.ShowVillagersTab, "Villagers tab");
-        DrawBoolSetting(Config.ShowOrdersTab,    "Orders tab");
-        DrawBoolSetting(Config.ShowGladesTab,    "Glades tab");
-        DrawBoolSetting(Config.ShowDraftTab,     "Cornerstone Draft tab");
-        DrawBoolSetting(Config.ShowSettingsTab,  "Settings tab (this one)");
+        // Reflection-driven: any future ConfigEntry<bool> named Show*Tab is
+        // picked up automatically. Keeps Settings in sync with PluginConfig.
+        var tabToggles = typeof(PluginConfig)
+            .GetProperties()
+            .Where(p => p.Name.StartsWith("Show", StringComparison.Ordinal)
+                     && p.Name.EndsWith("Tab", StringComparison.Ordinal)
+                     && p.PropertyType == typeof(BepInEx.Configuration.ConfigEntry<bool>))
+            .OrderBy(p => p.Name, StringComparer.Ordinal);
+        foreach (var prop in tabToggles)
+        {
+            var entry = (BepInEx.Configuration.ConfigEntry<bool>?)prop.GetValue(Config);
+            if (entry is null) continue;
+            // Strip "Show" prefix and "Tab" suffix for the human-friendly label.
+            var human = prop.Name.Substring(4, prop.Name.Length - 7) + " tab";
+            DrawBoolSetting(entry, human);
+        }
 
         GUILayout.Space(8);
         DrawSettingHeader("Hotkey");
+        GUILayout.BeginHorizontal();
         GUILayout.Label(
-            $"   toggle: {Config.ToggleHotkey.Value}",
+            _rebindingHotkey
+                ? "   press a key… (Esc to cancel)"
+                : $"   toggle: {Config.ToggleHotkey.Value}",
             _mutedStyle);
-        GUILayout.Label(
-            "   change in BepInEx config (the in-panel rebinder is not yet wired).",
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button(_rebindingHotkey ? "cancel" : "rebind",
+                             _tabStyle, GUILayout.Width(70)))
+        {
+            _rebindingHotkey = !_rebindingHotkey;
+        }
+        GUILayout.EndHorizontal();
+        TryCaptureRebind();
+        GUILayout.Label("   Ctrl+1..8 also switches tabs while the panel is visible.",
             _mutedStyle);
 
         GUILayout.Space(8);
@@ -1326,8 +1642,70 @@ internal sealed class SidePanel : MonoBehaviour
             $"   {Catalog.Buildings.Count} buildings · {Catalog.Goods.Count} goods · {Catalog.Recipes.Count} recipes · {Catalog.Races.Count} races",
             _mutedStyle);
         GUILayout.Label($"   source: {src}", _mutedStyle);
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("reload catalog", _tabStyle, GUILayout.Width(140)))
+        {
+            try { StormGuidePlugin.ReloadCatalog(); _catalogReloadStatus = "reloaded."; }
+            catch (Exception ex) { _catalogReloadStatus = "error: " + ex.Message; }
+        }
+        if (!string.IsNullOrEmpty(_catalogReloadStatus))
+            GUILayout.Label("   " + _catalogReloadStatus, _mutedStyle);
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(8);
+        DrawSettingHeader("Docs");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button(_docView == "README.md" ? "▾ README" : "▸ README",
+                             _tabStyle, GUILayout.Width(110)))
+            _docView = _docView == "README.md" ? "" : "README.md";
+        if (GUILayout.Button(_docView == "AGENTS.md" ? "▾ AGENTS" : "▸ AGENTS",
+                             _tabStyle, GUILayout.Width(110)))
+            _docView = _docView == "AGENTS.md" ? "" : "AGENTS.md";
+        GUILayout.EndHorizontal();
+        if (!string.IsNullOrEmpty(_docView))
+        {
+            var text = LiveGameState.ReadEmbeddedDoc(_docView);
+            if (string.IsNullOrEmpty(text))
+                GUILayout.Label($"   {_docView}: not found in plugin resources.", _mutedStyle);
+            else
+            {
+                _docScroll = GUILayout.BeginScrollView(_docScroll,
+                    GUILayout.Height(180), GUILayout.ExpandWidth(true));
+                GUILayout.TextArea(text);
+                GUILayout.EndScrollView();
+            }
+        }
 
         GUILayout.EndScrollView();
+    }
+
+    /// <summary>
+    /// While in rebind mode, captures the next non-modifier KeyDown and writes
+    /// it back to the toggle hotkey. Esc cancels.
+    /// </summary>
+    private void TryCaptureRebind()
+    {
+        if (!_rebindingHotkey) return;
+        var ev = Event.current;
+        if (ev == null || ev.type != EventType.KeyDown) return;
+        var key = ev.keyCode;
+        if (key == KeyCode.None) return;
+        if (key == KeyCode.Escape) { _rebindingHotkey = false; ev.Use(); return; }
+        // Skip pure modifiers — wait for a real key.
+        if (key is KeyCode.LeftShift or KeyCode.RightShift or
+                  KeyCode.LeftControl or KeyCode.RightControl or
+                  KeyCode.LeftAlt or KeyCode.RightAlt or
+                  KeyCode.LeftCommand or KeyCode.RightCommand) return;
+
+        var modifiers = new List<KeyCode>();
+        if (ev.control) modifiers.Add(KeyCode.LeftControl);
+        if (ev.shift)   modifiers.Add(KeyCode.LeftShift);
+        if (ev.alt)     modifiers.Add(KeyCode.LeftAlt);
+        Config.ToggleHotkey.Value = new BepInEx.Configuration.KeyboardShortcut(
+            key, modifiers.ToArray());
+        StormGuidePlugin.Log.LogInfo($"StormGuide hotkey rebound to {Config.ToggleHotkey.Value}.");
+        _rebindingHotkey = false;
+        ev.Use();
     }
 
     private void DrawSettingHeader(string label)
@@ -1381,11 +1759,90 @@ internal sealed class SidePanel : MonoBehaviour
                 _mutedStyle);
         }
 
+        // Danger-level distribution: safe = total - dangerous - forbidden.
+        if (summary.Total > 0)
+        {
+            GUILayout.Space(6);
+            GUILayout.Label("Danger distribution", _bodyStyle);
+            var safe = Math.Max(0, summary.Total - summary.Dangerous - summary.Forbidden);
+            DrawDangerDistribution(safe, summary.Dangerous, summary.Forbidden);
+            GUILayout.Label(
+                $"   safe {safe} · dangerous {summary.Dangerous} · forbidden {summary.Forbidden}",
+                _mutedStyle);
+        }
+
         GUILayout.Space(6);
         GUILayout.Label(
             "Tip: dangerous and forbidden glades carry stronger rewards but spawn worse forest mysteries. The game spawns event decisions when scouts enter; this tab will surface those once a settlement provides them.",
             _mutedStyle);
 
+        GUILayout.EndScrollView();
+    }
+
+    private void DrawDangerDistribution(int safe, int dangerous, int forbidden)
+    {
+        var total = safe + dangerous + forbidden;
+        if (total <= 0) return;
+        var rect = GUILayoutUtility.GetRect(0, 10, GUILayout.ExpandWidth(true));
+        rect.xMin += 12; // light indent
+        var w     = rect.width;
+        var safeW = w * safe / total;
+        var dangW = w * dangerous / total;
+        var forbW = w - safeW - dangW;
+        var x     = rect.x;
+        if (safeW > 0)
+            GUI.DrawTexture(new Rect(x, rect.y, safeW, rect.height),
+                Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
+                new Color(0.45f, 0.85f, 0.55f, 0.7f), 0, 0);
+        x += safeW;
+        if (dangW > 0)
+            GUI.DrawTexture(new Rect(x, rect.y, dangW, rect.height),
+                Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
+                new Color(0.95f, 0.80f, 0.30f, 0.85f), 0, 0);
+        x += dangW;
+        if (forbW > 0)
+            GUI.DrawTexture(new Rect(x, rect.y, forbW, rect.height),
+                Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
+                new Color(0.95f, 0.40f, 0.40f, 0.85f), 0, 0);
+    }
+
+    private void DrawDiagnosticsTab()
+    {
+        GUILayout.Label("Diagnostics", _h1Style);
+        var tail = StormGuidePlugin.LogTail;
+        if (tail is null)
+        {
+            GUILayout.Label("   log capture is not initialised.", _mutedStyle);
+            return;
+        }
+
+        var snapshot = tail.Snapshot();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label($"   {snapshot.Count} captured plugin log line(s).", _mutedStyle);
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("clear", _tabStyle, GUILayout.Width(70)))
+            tail.Clear();
+        GUILayout.EndHorizontal();
+        GUILayout.Label(
+            "   Lives in memory only — the BepInEx log file (LogOutput.log) is the source of truth.",
+            _mutedStyle);
+
+        GUILayout.Space(4);
+        _diagScroll = GUILayout.BeginScrollView(_diagScroll, GUILayout.ExpandHeight(true));
+        // Newest first; capacity is ~200 so this is fine to render in one go.
+        for (var i = snapshot.Count - 1; i >= 0; i--)
+        {
+            var e = snapshot[i];
+            var style = e.Level switch
+            {
+                BepInEx.Logging.LogLevel.Error or BepInEx.Logging.LogLevel.Fatal => _critStyle,
+                BepInEx.Logging.LogLevel.Warning => _warnStyle,
+                _ => _mutedStyle,
+            };
+            GUILayout.Label(
+                $"{e.UtcAt:HH:mm:ss} [{e.Level}] {e.Message}",
+                style);
+        }
         GUILayout.EndScrollView();
     }
 
@@ -1474,5 +1931,9 @@ internal sealed class SidePanel : MonoBehaviour
         _tabActiveStyle.normal.background = _tabStyle.active.background;
         _tabActiveStyle.normal.textColor  = Color.white;
         _tabActiveStyle.fontStyle         = FontStyle.Bold;
+        _warnStyle = new GUIStyle(_mutedStyle) { fontStyle = FontStyle.Bold };
+        _warnStyle.normal.textColor = new Color(0.95f, 0.80f, 0.30f, 1f);   // amber
+        _critStyle = new GUIStyle(_mutedStyle) { fontStyle = FontStyle.Bold };
+        _critStyle.normal.textColor = new Color(0.95f, 0.40f, 0.40f, 1f);   // red
     }
 }

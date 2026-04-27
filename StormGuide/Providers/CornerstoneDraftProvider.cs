@@ -130,6 +130,25 @@ public static class CornerstoneDraftProvider
                 "untargeted", total, "effect does not declare usability tags"));
         }
 
+        // Resolve-shaped cornerstone effects (e.g. RaceResolveEffectEffectModel,
+        // GlobalResolveEffectEffectModel) get a flat bonus so they rank above
+        // tag-equivalent options that don't actually move the resolve needle.
+        // We can't statically pattern-match the family because the resolve
+        // sub-effects don't share a common base type, so the typename heuristic
+        // is the cheapest reliable signal.
+        if (eff != null)
+        {
+            var typeName = eff.GetType().Name;
+            if (typeName.IndexOf("Resolve", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                const double bonus = 1.0;
+                total += bonus;
+                components.Add(new ScoreComponent(
+                    "resolve-shaped effect", bonus,
+                    $"effect type {typeName}"));
+            }
+        }
+
         components.Add(new ScoreComponent(
             "total buildings", totalBuildings, "in current settlement"));
 
