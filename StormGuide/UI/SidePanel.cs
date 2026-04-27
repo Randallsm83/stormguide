@@ -4136,10 +4136,16 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Space(8);
         DrawSettingHeader("Docs");
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button(_docView == "README.md" ? "▾ README" : "▸ README",
+        if (GUILayout.Button(
+                new GUIContent(
+                    _docView == "USER_GUIDE.md" ? "\u25be USER GUIDE" : "\u25b8 USER GUIDE",
+                    "Workflow walkthrough of every tab"),
+                _tabStyle, GUILayout.Width(130)))
+            _docView = _docView == "USER_GUIDE.md" ? "" : "USER_GUIDE.md";
+        if (GUILayout.Button(_docView == "README.md" ? "\u25be README" : "\u25b8 README",
                              _tabStyle, GUILayout.Width(110)))
             _docView = _docView == "README.md" ? "" : "README.md";
-        if (GUILayout.Button(_docView == "AGENTS.md" ? "▾ AGENTS" : "▸ AGENTS",
+        if (GUILayout.Button(_docView == "AGENTS.md" ? "\u25be AGENTS" : "\u25b8 AGENTS",
                              _tabStyle, GUILayout.Width(110)))
             _docView = _docView == "AGENTS.md" ? "" : "AGENTS.md";
         GUILayout.EndHorizontal();

@@ -66,6 +66,7 @@
     <!-- Embed top-level docs so the Settings tab can render them offline. -->
     <EmbeddedResource Include="..\README.md" Link="Resources\docs\README.md" LogicalName="StormGuide.Resources.docs.README.md" />
     <EmbeddedResource Include="..\AGENTS.md" Link="Resources\docs\AGENTS.md" LogicalName="StormGuide.Resources.docs.AGENTS.md" />
+    <EmbeddedResource Include="..\docs\USER_GUIDE.md" Link="Resources\docs\USER_GUIDE.md" LogicalName="StormGuide.Resources.docs.USER_GUIDE.md" />
   </ItemGroup>
 
   <Target Name="Deploy" AfterTargets="Build">
