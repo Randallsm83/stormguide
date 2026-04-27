@@ -799,7 +799,8 @@ internal static class LiveGameState
     public sealed record GladeRewardChase(
         string Model,
         float  Start,
-        float  End)
+        float  End,
+        IReadOnlyList<string> Rewards)
     {
         public float Duration => Math.Max(0f, End - Start);
     }
@@ -838,10 +839,27 @@ internal static class LiveGameState
                 if (g.hasRewardChase)
                 {
                     chases++;
+                    // Best-effort: peek `rewards` (string[]) via reflection so
+                    // we can preview them without taking a hard dependency on
+                    // the field name surviving game updates.
+                    var rewards = new List<string>();
+                    try
+                    {
+                        var rf = g.GetType().GetField("rewards");
+                        if (rf?.GetValue(g) is System.Collections.IEnumerable raw)
+                        {
+                            foreach (var r in raw)
+                            {
+                                if (r is string s && !string.IsNullOrEmpty(s)) rewards.Add(s);
+                            }
+                        }
+                    }
+                    catch { }
                     chaseList.Add(new GladeRewardChase(
-                        Model: g.model ?? "glade",
-                        Start: g.rewardChaseStart,
-                        End:   g.rewardChaseEnd));
+                        Model:   g.model ?? "glade",
+                        Start:   g.rewardChaseStart,
+                        End:     g.rewardChaseEnd,
+                        Rewards: rewards));
                 }
             }
             return new GladeSummary(total, discovered, dangerous, forbidden, chases, chaseList);
@@ -921,6 +939,76 @@ internal static class LiveGameState
         catch { }
         var runway = burnPerMin > 0 ? total / burnPerMin : 0;
         return new FuelRunway(total, byGood, burnPerMin, runway, isLive);
+    }
+
+    // ---- Weather / storm phase ------------------------------------------
+
+    /// <summary>
+    /// Snapshot of the current weather phase. Reflection-driven because the
+    /// game's WeatherService internals aren't part of any documented contract
+    /// we depend on; prefer surfacing what we can find and degrade silently.
+    /// </summary>
+    public sealed record WeatherStatus(
+        string  PhaseName,           // "Clearance", "Drizzle", "Storm", or ""
+        float?  SecondsLeft);        // null if unknown
+
+    /// <summary>
+    /// Best-effort current weather phase + seconds-left. Probes the
+    /// <c>IGameServices.WeatherService</c> shape via reflection. Returns null
+    /// when the service can't be located.
+    /// </summary>
+    public static WeatherStatus? Weather()
+    {
+        try
+        {
+            var svc = Services?.GetType().GetProperty("WeatherService")?.GetValue(Services);
+            if (svc == null) return null;
+            var t = svc.GetType();
+            string phase = "";
+            // Common shapes: enum CurrentSeason, string CurrentPhase, etc.
+            foreach (var prop in new[] { "CurrentPhase", "CurrentSeason", "Season", "Phase" })
+            {
+                var p = t.GetProperty(prop);
+                if (p == null) continue;
+                var v = p.GetValue(svc);
+                if (v != null) { phase = v.ToString() ?? ""; break; }
+            }
+            float? secsLeft = null;
+            foreach (var prop in new[] { "SecondsToNextPhase", "TimeLeft", "PhaseTimeLeft", "SecondsLeft" })
+            {
+                var p = t.GetProperty(prop);
+                if (p == null) continue;
+                var v = p.GetValue(svc);
+                if (v is float f) { secsLeft = f; break; }
+            }
+            if (string.IsNullOrEmpty(phase) && secsLeft is null) return null;
+            return new WeatherStatus(phase, secsLeft);
+        }
+        catch { return null; }
+    }
+
+    /// <summary>
+    /// Toggle <c>OrderState.tracked</c> for an order id, defensively. Returns
+    /// true on success. Used by the in-panel order pin so the player doesn't
+    /// have to open the orders popup just to focus an order.
+    /// </summary>
+    public static bool SetOrderTracked(int orderId, bool tracked)
+    {
+        try
+        {
+            var os = Services?.OrdersService;
+            if (os?.Orders == null) return false;
+            foreach (var o in os.Orders)
+            {
+                if (o == null || o.id != orderId) continue;
+                // The field is public on OrderState; assignment is the
+                // simplest API and matches what the game's UI does.
+                o.tracked = tracked;
+                return true;
+            }
+        }
+        catch { }
+        return false;
     }
 
     /// <summary>

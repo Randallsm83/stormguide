@@ -89,6 +89,19 @@ internal sealed class SidePanel : MonoBehaviour
     // Tracks last applied compact-lists state so EnsureStyles can rebuild on flip.
     private bool? _lastCompactListsApplied;
 
+    // Rolling per-good net-flow samples (sparklines on the at-risk row).
+    // Keyed by good catalog name; each value is a small ring of recent values.
+    private readonly Dictionary<string, Queue<double>> _flowSamples = new(StringComparer.Ordinal);
+    private float _lastSampleTime;
+
+    // Recipe sort modes for the Building tab.
+    private enum RecipeSort { Throughput, Profitability, Availability }
+    private RecipeSort _recipeSort = RecipeSort.Throughput;
+
+    // Pinned-recipe forecast target: minutes to fill the produced good's
+    // stockpile to this many units at current net rate.
+    private const int PinForecastTarget = 50;
+
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
 
@@ -297,6 +310,7 @@ internal sealed class SidePanel : MonoBehaviour
     private void DrawWindow(int _)
     {
         DrawTitleControls();
+        DrawStormHeader();
         DrawTabs();
         DrawAlertsStrip();
         GUILayout.Space(6);
@@ -323,6 +337,32 @@ internal sealed class SidePanel : MonoBehaviour
         // Make the title bar (top 22 px) draggable, but exclude the right edge
         // where the reset button lives so clicks there don't initiate drag.
         GUI.DragWindow(new Rect(0, 0, _rect.width - 28, 22));
+    }
+
+    /// <summary>
+    /// Single-line storm/season header rendered above the tab strip. Uses the
+    /// best-effort <see cref="LiveGameState.Weather"/> probe and degrades to
+    /// nothing when the weather service can't be reached.
+    /// </summary>
+    private void DrawStormHeader()
+    {
+        if (!LiveGameState.IsReady) return;
+        var w = LiveGameState.Weather();
+        if (w is null) return;
+        var label = string.IsNullOrEmpty(w.PhaseName) ? "weather" : w.PhaseName.ToLowerInvariant();
+        if (w.SecondsLeft is float sl && sl > 0f)
+        {
+            var mins = Mathf.Max(0, Mathf.FloorToInt(sl / 60f));
+            var secs = Mathf.Max(0, Mathf.FloorToInt(sl % 60f));
+            var style = label.Contains("storm") ? (_critStyle ?? _bodyStyle)
+                      : label.Contains("drizzle") ? (_warnStyle ?? _bodyStyle)
+                      : _bodyStyle;
+            GUILayout.Label($"⛅ {label}: {mins}:{secs:00} until next phase", style);
+        }
+        else
+        {
+            GUILayout.Label($"⛅ {label}", _mutedStyle);
+        }
     }
 
     private void DrawAlertsStrip()
@@ -518,6 +558,18 @@ internal sealed class SidePanel : MonoBehaviour
                 : 0;
             var stock = LiveGameState.IsReady ? LiveGameState.StockpileOf(r.ProducedGood) : 0;
             var stockTag = LiveGameState.IsReady ? $" · stock {stock}" : "";
+            // ETA forecast: minutes to fill the produced good to a target.
+            string forecast = "";
+            if (LiveGameState.IsReady && stock < PinForecastTarget)
+            {
+                var net = LiveGameState.FlowFor(r.ProducedGood, Catalog).Net;
+                if (net > 1e-6)
+                {
+                    var min = (PinForecastTarget - stock) / net;
+                    if (min > 0 && min < 999) forecast = $" · → {PinForecastTarget} in ~{min:0.#}m";
+                }
+            }
+            stockTag += forecast;
             // Inputs draining tag: any input good with net flow < 0 across
             // the settlement gets a ⚠ prefix so the row reads as at-risk.
             var draining = false;
@@ -675,6 +727,7 @@ internal sealed class SidePanel : MonoBehaviour
 
         if (cur is not null)
         {
+            DrawTraderDesireHeatmap(cur);
             var disp  = string.IsNullOrEmpty(cur.DisplayName) ? "(unnamed)" : cur.DisplayName;
             var here  = cur.IsInVillage ? "in village" : "en route";
             var extra = "";
@@ -723,6 +776,32 @@ internal sealed class SidePanel : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Heatmap: one coloured square per good the current trader wants. Red =
+    /// no stockpile, amber = some, green = a meaningful pile. Quick eyeball
+    /// of "can I trade right now?".
+    /// </summary>
+    private void DrawTraderDesireHeatmap(LiveGameState.TraderInfo cur)
+    {
+        if (cur.Buys.Count == 0) return;
+        const float cell = 10f;
+        var goods = cur.Buys.Take(20).ToList();
+        var rect = GUILayoutUtility.GetRect(
+            (cell + 2) * goods.Count, cell + 4,
+            GUILayout.Width((cell + 2) * goods.Count));
+        rect.xMin += 4;
+        for (var i = 0; i < goods.Count; i++)
+        {
+            var stock = LiveGameState.StockpileOf(goods[i]);
+            var c = stock <= 0      ? new Color(0.95f, 0.45f, 0.45f, 0.85f)
+                  : stock < 20      ? new Color(0.95f, 0.80f, 0.30f, 0.85f)
+                                    : new Color(0.45f, 0.85f, 0.55f, 0.85f);
+            var box = new Rect(rect.x + i * (cell + 2), rect.y + 2, cell, cell);
+            GUI.DrawTexture(box, Texture2D.whiteTexture, ScaleMode.StretchToFill,
+                false, 0, c, 0, 0);
+        }
+    }
+
     private void DrawHomeIdle()
     {
         var idle = LiveGameState.IdleBuildings();
@@ -763,18 +842,73 @@ internal sealed class SidePanel : MonoBehaviour
         var alerts = _alertsCache?.Get();
         if (alerts is null || alerts.GoodsAtRisk.Count == 0) return;
 
+        // Sample net flows once a second so the sparkline doesn't churn.
+        SampleAtRiskFlows(alerts);
+
         GUILayout.Space(6);
         GUILayout.Label($"⚠ Goods at risk — {alerts.GoodsAtRisk.Count}", _bodyStyle);
         foreach (var g in alerts.GoodsAtRisk.Take(5))
         {
             var disp = Catalog.Goods.TryGetValue(g.Good, out var gi) ? gi.DisplayName : g.Good;
             var label = $"   {disp}  —  {g.RunwayMinutes:0.#} min runway";
+            GUILayout.BeginHorizontal();
             if (GUILayout.Button(new GUIContent(label, "Open in Good tab"), _tabStyle))
             {
                 _activeTab = Tab.Good;
                 _selectedGood = g.Good;
                 _flowExpanded = true;
             }
+            DrawFlowSparkline(g.Good);
+            GUILayout.EndHorizontal();
+        }
+    }
+
+    /// <summary>
+    /// Pushes a fresh net-flow sample for each at-risk good every ~1 second.
+    /// Bounded to 30 samples per good so the dictionary stays small.
+    /// </summary>
+    private void SampleAtRiskFlows(LiveGameState.SettlementAlerts alerts)
+    {
+        var now = LiveGameState.GameTimeNow() ?? Time.unscaledTime;
+        if (now - _lastSampleTime < 1f) return;
+        _lastSampleTime = now;
+        foreach (var g in alerts.GoodsAtRisk)
+        {
+            if (!_flowSamples.TryGetValue(g.Good, out var q))
+                _flowSamples[g.Good] = q = new Queue<double>(32);
+            q.Enqueue(LiveGameState.FlowFor(g.Good, Catalog).Net);
+            while (q.Count > 30) q.Dequeue();
+        }
+    }
+
+    /// <summary>
+    /// Renders a small inline sparkline of recent net-flow samples for the
+    /// given good. Shows nothing when we haven't collected enough data yet.
+    /// </summary>
+    private void DrawFlowSparkline(string good)
+    {
+        if (!_flowSamples.TryGetValue(good, out var q) || q.Count < 2) return;
+        var rect = GUILayoutUtility.GetRect(60, 14, GUILayout.Width(60));
+        GUI.Box(rect, GUIContent.none);
+        var samples = q.ToArray();
+        var max = 0.001;
+        for (var i = 0; i < samples.Length; i++) max = Math.Max(max, Math.Abs(samples[i]));
+        var w = rect.width / samples.Length;
+        for (var i = 0; i < samples.Length; i++)
+        {
+            var v = samples[i];
+            var hNorm = (float)Math.Min(1.0, Math.Abs(v) / max);
+            var bar = new Rect(
+                rect.x + i * w,
+                v >= 0 ? rect.y + rect.height * 0.5f - rect.height * 0.5f * hNorm
+                       : rect.y + rect.height * 0.5f,
+                Mathf.Max(1f, w - 1f),
+                rect.height * 0.5f * hNorm);
+            var color = v >= 0
+                ? new Color(0.45f, 0.85f, 0.55f, 0.8f)
+                : new Color(0.95f, 0.45f, 0.45f, 0.8f);
+            GUI.DrawTexture(bar, Texture2D.whiteTexture, ScaleMode.StretchToFill,
+                false, 0, color, 0, 0);
         }
     }
 
@@ -1056,17 +1190,84 @@ internal sealed class SidePanel : MonoBehaviour
         DrawWhyAllButton(_expandedRecipes, vm.Recipes.Select(r => r.Recipe.Name), Config.WhyAllRecipes);
         GUILayout.EndHorizontal();
 
+        // Recipe sort mode selector.
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("   sort:", _mutedStyle, GUILayout.Width(46));
+        DrawSortModeChip(RecipeSort.Throughput,    "throughput");
+        DrawSortModeChip(RecipeSort.Profitability, "profit");
+        DrawSortModeChip(RecipeSort.Availability,  "availability");
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+
         _buildingDetailScroll = GUILayout.BeginScrollView(_buildingDetailScroll, GUILayout.ExpandHeight(true));
         var visibleRecipes = string.IsNullOrEmpty(_recipeInputFilter)
-            ? vm.Recipes
+            ? vm.Recipes.AsEnumerable()
             : vm.Recipes.Where(r => r.Recipe.RequiredGoods.Any(s =>
                 s.Options.Any(o =>
-                    string.Equals(o.Good, _recipeInputFilter, StringComparison.OrdinalIgnoreCase))))
-                .ToList();
+                    string.Equals(o.Good, _recipeInputFilter, StringComparison.OrdinalIgnoreCase))));
+        visibleRecipes = _recipeSort switch
+        {
+            RecipeSort.Profitability => visibleRecipes.OrderByDescending(r => RecipeProfit(r.Recipe)),
+            RecipeSort.Availability  => visibleRecipes.OrderByDescending(r => MinInputStock(r.Recipe)),
+            _                        => visibleRecipes,    // already sorted by throughput
+        };
         foreach (var rk in visibleRecipes) DrawRecipeCard(rk);
         GUILayout.EndScrollView();
 
         GUILayout.EndVertical();
+    }
+
+    /// <summary>Renders a single sort-mode chip, marking the active one.</summary>
+    private void DrawSortModeChip(RecipeSort mode, string label)
+    {
+        var marker = _recipeSort == mode ? $"✓ {label}" : label;
+        if (GUILayout.Button(marker, _chipStyle ?? _tabStyle))
+            _recipeSort = mode;
+    }
+
+    /// <summary>
+    /// Cycle profit (in catalog trade-value units): output trade value minus
+    /// the cheapest input combination across each slot. Negative = loss-maker.
+    /// </summary>
+    private double RecipeProfit(RecipeInfo r)
+    {
+        double output = 0;
+        if (Catalog.Goods.TryGetValue(r.ProducedGood, out var og))
+            output = og.TradingBuyValue * r.ProducedAmount;
+        double inputs = 0;
+        foreach (var slot in r.RequiredGoods)
+        {
+            // Take the cheapest option in each slot — the worker's choice is
+            // free at the catalog level so we assume the optimal one.
+            double slotMin = double.PositiveInfinity;
+            foreach (var opt in slot.Options)
+            {
+                if (!Catalog.Goods.TryGetValue(opt.Good, out var gi)) continue;
+                slotMin = Math.Min(slotMin, gi.TradingBuyValue * opt.Amount);
+            }
+            if (!double.IsPositiveInfinity(slotMin)) inputs += slotMin;
+        }
+        return output - inputs;
+    }
+
+    /// <summary>
+    /// Worst-case input stockpile across the recipe's required goods. Used to
+    /// rank recipes whose ingredients you currently have plenty of.
+    /// </summary>
+    private int MinInputStock(RecipeInfo r)
+    {
+        if (r.RequiredGoods.Count == 0) return int.MaxValue;
+        var min = int.MaxValue;
+        foreach (var slot in r.RequiredGoods)
+        {
+            // Best stockpile within a slot wins (worker will pick that one).
+            var best = 0;
+            foreach (var opt in slot.Options)
+                best = Math.Max(best, LiveGameState.IsReady
+                    ? LiveGameState.StockpileOf(opt.Good) : 0);
+            min = Math.Min(min, best);
+        }
+        return min;
     }
 
     /// <summary>
@@ -1128,6 +1329,18 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label(rk.Throughput.Format("0.##"), _bodyStyle);
         GUILayout.EndHorizontal();
 
+        // Profitability chip per cycle. Positive = profitable in trade-value
+        // units, negative = loss-maker. Skip for recipes with no measurable
+        // value on either side.
+        var profit = RecipeProfit(rk.Recipe);
+        if (Math.Abs(profit) > 1e-6)
+        {
+            var sign = profit >= 0 ? "+" : "";
+            var pStyle = profit >= 0 ? (_okStyle ?? _mutedStyle)
+                       : (_critStyle ?? _mutedStyle);
+            GUILayout.Label($"   profit: {sign}{profit:0.##} /cycle", pStyle);
+        }
+
         GUILayout.Label(FormatRecipeInputs(rk.Recipe), _mutedStyle);
 
         if (rk.Inputs.Count > 0)
@@ -1150,14 +1363,14 @@ internal sealed class SidePanel : MonoBehaviour
         }
         // Pin / unpin the (selected building, this recipe) pair to Home.
         var pinKey = (_selectedBuilding ?? "", rk.Recipe.Name);
-        var pinned = _selectedBuilding != null && _pinned.Contains(pinKey);
+        var pinnedRecipe = _selectedBuilding != null && _pinned.Contains(pinKey);
         if (_selectedBuilding != null &&
             GUILayout.Button(
-                new GUIContent(pinned ? "★ pinned" : "☆ pin",
-                               pinned ? "Unpin from Home" : "Pin to Home"),
+                new GUIContent(pinnedRecipe ? "★ pinned" : "☆ pin",
+                               pinnedRecipe ? "Unpin from Home" : "Pin to Home"),
                 _tabStyle, GUILayout.Width(80)))
         {
-            if (pinned) _pinned.Remove(pinKey); else _pinned.Add(pinKey);
+            if (pinnedRecipe) _pinned.Remove(pinKey); else _pinned.Add(pinKey);
             SavePins();
         }
         GUILayout.EndHorizontal();
@@ -1674,6 +1887,32 @@ internal sealed class SidePanel : MonoBehaviour
             GUILayout.Label("Needs: " + string.Join(", ", vm.Race.Needs), _mutedStyle);
         if (!string.IsNullOrEmpty(vm.Note)) GUILayout.Label(vm.Note!, _mutedStyle);
 
+        // Dietary suggestion: list each need's stockpile (sorted), so the
+        // player can see at a glance what they still have to feed this race.
+        if (LiveGameState.IsReady && vm.Race.Needs.Count > 0)
+        {
+            var rows = vm.Race.Needs
+                .Where(n => !string.IsNullOrEmpty(n))
+                .Select(n =>
+                {
+                    var disp = Catalog.Goods.TryGetValue(n, out var gi) ? gi.DisplayName : n;
+                    return (Good: n, Display: disp, Stock: LiveGameState.StockpileOf(n));
+                })
+                .OrderByDescending(r => r.Stock)
+                .ToList();
+            if (rows.Count > 0)
+            {
+                GUILayout.Label("   needs supplied:", _mutedStyle);
+                foreach (var row in rows)
+                {
+                    var style = row.Stock <= 0 ? (_critStyle ?? _mutedStyle)
+                              : row.Stock < 10  ? (_warnStyle ?? _mutedStyle)
+                              : (_okStyle ?? _mutedStyle);
+                    GUILayout.Label($"      {row.Display}: {row.Stock} in stock", style);
+                }
+            }
+        }
+
         DrawResolveSnapshot(vm.Resolve);
 
         GUILayout.Space(6);
@@ -1840,6 +2079,34 @@ internal sealed class SidePanel : MonoBehaviour
                 _mutedStyle);
         GUILayout.EndHorizontal();
 
+        // Tracker pin: lets the player toggle OrderState.tracked from here.
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(24);
+        if (GUILayout.Button(
+                new GUIContent(o.Tracked ? "◉ untrack" : "○ track",
+                               o.Tracked ? "Untrack this order" : "Track this order"),
+                _tabStyle, GUILayout.Width(90)))
+        {
+            LiveGameState.SetOrderTracked(o.Id, !o.Tracked);
+        }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+
+        // Storm vs deadline: if the next storm phase will start before this
+        // failable order's deadline, the effective due-time is the storm.
+        if (o.ShouldBeFailable && o.TimeLeft > 0f)
+        {
+            var w = LiveGameState.Weather();
+            if (w?.SecondsLeft is float sl &&
+                sl > 0 && sl < o.TimeLeft &&
+                w.PhaseName.IndexOf("storm", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                GUILayout.Label(
+                    $"   ⚠ storm hits in {sl / 60f:0.#}m — effective deadline shrinks",
+                    _critStyle ?? _mutedStyle);
+            }
+        }
+
         if (o.Objectives.Count > 0)
         {
             // Headline: when every objective is completed, surface a green
@@ -1980,6 +2247,25 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndHorizontal();
 
         GUILayout.Space(8);
+        DrawSettingHeader("Config sync");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button(new GUIContent("export to clipboard",
+                "Copy current StormGuide config as JSON to the clipboard"),
+                _tabStyle, GUILayout.Width(160)))
+        {
+            try { GUIUtility.systemCopyBuffer = ExportConfigJson(); }
+            catch { }
+        }
+        if (GUILayout.Button(new GUIContent("import from clipboard",
+                "Apply JSON in the clipboard to the StormGuide config"),
+                _tabStyle, GUILayout.Width(170)))
+        {
+            try { ImportConfigJson(GUIUtility.systemCopyBuffer ?? ""); }
+            catch { }
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(8);
         DrawSettingHeader("Docs");
         GUILayout.BeginHorizontal();
         if (GUILayout.Button(_docView == "README.md" ? "▾ README" : "▸ README",
@@ -2049,6 +2335,68 @@ internal sealed class SidePanel : MonoBehaviour
         if (next != current) entry.Value = next;
     }
 
+    /// <summary>
+    /// Serialises a flat snapshot of the config's bool/string entries to a
+    /// minimal JSON object. Reflection-driven so new entries are picked up
+    /// without changes here. KeyboardShortcut/Vector2 are skipped because they
+    /// already round-trip through BepInEx's own .cfg file.
+    /// </summary>
+    private string ExportConfigJson()
+    {
+        var sb = new System.Text.StringBuilder("{");
+        var first = true;
+        foreach (var prop in typeof(PluginConfig).GetProperties()
+                     .OrderBy(p => p.Name, StringComparer.Ordinal))
+        {
+            var entry = prop.GetValue(Config);
+            if (entry == null) continue;
+            var et = entry.GetType();
+            if (!et.IsGenericType ||
+                et.GetGenericTypeDefinition() != typeof(BepInEx.Configuration.ConfigEntry<>))
+                continue;
+            var inner = et.GetGenericArguments()[0];
+            if (inner != typeof(bool) && inner != typeof(string)) continue;
+            var val = et.GetProperty("Value")?.GetValue(entry);
+            if (val is null) continue;
+            if (!first) sb.Append(',');
+            first = false;
+            sb.Append('"').Append(prop.Name).Append("\":");
+            if (val is bool b) sb.Append(b ? "true" : "false");
+            else sb.Append('"').Append((val.ToString() ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"")).Append('"');
+        }
+        sb.Append('}');
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Applies a previously-exported JSON object onto the config. Unknown keys
+    /// are silently ignored. Uses Newtonsoft.Json (already referenced) for
+    /// resilience against whitespace and quoting variations.
+    /// </summary>
+    private void ImportConfigJson(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return;
+        try
+        {
+            var obj = Newtonsoft.Json.Linq.JObject.Parse(json);
+            foreach (var prop in typeof(PluginConfig).GetProperties())
+            {
+                if (!obj.TryGetValue(prop.Name, out var token)) continue;
+                var entry = prop.GetValue(Config);
+                if (entry == null) continue;
+                var et = entry.GetType();
+                if (!et.IsGenericType ||
+                    et.GetGenericTypeDefinition() != typeof(BepInEx.Configuration.ConfigEntry<>))
+                    continue;
+                var inner = et.GetGenericArguments()[0];
+                var valueProp = et.GetProperty("Value");
+                if (inner == typeof(bool)) valueProp?.SetValue(entry, token.ToObject<bool>());
+                else if (inner == typeof(string)) valueProp?.SetValue(entry, token.ToObject<string>() ?? "");
+            }
+        }
+        catch { /* malformed JSON — ignore. */ }
+    }
+
     private void DrawGladesTab()
     {
         GUILayout.Label("Forest exploration", _h1Style);
@@ -2104,6 +2452,18 @@ internal sealed class SidePanel : MonoBehaviour
                 {
                     GUILayout.Label(
                         $"   · {c.Model}  —  window {c.Start:0.#}…{c.End:0.#}s ({c.Duration:0.#}s)",
+                        _mutedStyle);
+                }
+                // Reward preview — the chase carries one or more reward ids;
+                // resolve display names through catalog goods or model service.
+                if (c.Rewards.Count > 0)
+                {
+                    var sample = c.Rewards.Take(3)
+                        .Select(rid => Catalog.Goods.TryGetValue(rid, out var gi)
+                            ? gi.DisplayName : rid);
+                    var more = c.Rewards.Count > 3 ? $" (+{c.Rewards.Count - 3} more)" : "";
+                    GUILayout.Label(
+                        "        rewards: " + string.Join(", ", sample) + more,
                         _mutedStyle);
                 }
             }
@@ -2275,6 +2635,45 @@ internal sealed class SidePanel : MonoBehaviour
         DrawOwnedCornerstones(vm.Owned);
     }
 
+    /// <summary>
+    /// Heuristic anti-synergy hint: option's effect typename hints at a
+    /// negative modifier (Decrease/Negative/Penalty) AND we already own a
+    /// cornerstone targeting the same usability tag. We can't know
+    /// definitively without parsing every effect family, but this catches the
+    /// obvious self-stomping picks (e.g. a global penalty that erases a buff
+    /// you just took).
+    /// </summary>
+    private void DrawCornerstoneBlocksOwned(CornerstoneOption o)
+    {
+        try
+        {
+            var ms = LiveGameState.Services?.GameModelService;
+            var eff = ms?.GetEffect(o.EffectId);
+            if (eff is null) return;
+            var tn = eff.GetType().Name;
+            var negative = tn.IndexOf("Decrease", StringComparison.OrdinalIgnoreCase) >= 0
+                        || tn.IndexOf("Negative", StringComparison.OrdinalIgnoreCase) >= 0
+                        || tn.IndexOf("Penalty",  StringComparison.OrdinalIgnoreCase) >= 0;
+            if (!negative) return;
+            var owned = LiveGameState.OwnedCornerstoneUsabilityTags();
+            var hits = new List<string>();
+            try
+            {
+                foreach (var t in eff.usabilityTags ?? Array.Empty<Eremite.Model.ModelTag>())
+                {
+                    if (t == null || string.IsNullOrEmpty(t.Name)) continue;
+                    if (owned.ContainsKey(t.Name)) hits.Add(t.Name);
+                }
+            }
+            catch { }
+            if (hits.Count == 0) return;
+            GUILayout.Label(
+                $"   ⚠ may conflict with owned cornerstone(s) on tag(s): {string.Join(", ", hits)}",
+                _critStyle ?? _mutedStyle);
+        }
+        catch { /* swallow — advisory only. */ }
+    }
+
     /// <summary>Renders the cornerstone diff line under each option.</summary>
     private void DrawCornerstoneDiff(CornerstoneOption o)
     {
@@ -2331,6 +2730,7 @@ internal sealed class SidePanel : MonoBehaviour
         if (!string.IsNullOrEmpty(o.Description))
             GUILayout.Label(o.Description, _mutedStyle);
         DrawCornerstoneDiff(o);
+        DrawCornerstoneBlocksOwned(o);
         foreach (var c in o.Synergy.Components)
         {
             var line = $"   {c.Label}: {c.Value:0.##}";
