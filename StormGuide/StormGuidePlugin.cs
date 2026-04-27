@@ -65,7 +65,10 @@ public sealed class StormGuidePlugin : BaseUnityPlugin
 
         SpawnPanel();
 
-        Log.LogInfo($"{PluginName} loaded. Patches: {_harmony.GetPatchedMethods().Count()}.");
+        Log.LogInfo(
+            $"{PluginName} loaded. Patches: {_harmony.GetPatchedMethods().Count()}. " +
+            $"Toggle hotkey: {Cfg!.ToggleHotkey.Value} " +
+            $"(visible by default: {Cfg.VisibleByDefault.Value}).");
     }
 
     private void SpawnPanel()

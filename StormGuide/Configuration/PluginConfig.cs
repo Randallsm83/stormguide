@@ -79,7 +79,11 @@ public sealed class PluginConfig
 
         ToggleHotkey = cfg.Bind(
             SectionGeneral, "Toggle Hotkey",
-            new KeyboardShortcut(KeyCode.G),
+            // F8 chosen because vanilla AtS + the common mod set (More
+            // Hotkeys, TimerHUD, Workplace Overhaul, etc.) leave it free.
+            // 'G' was a poor default — colliding with vanilla bindings
+            // meant the panel never toggled.
+            new KeyboardShortcut(KeyCode.F8),
             "Key to show/hide the StormGuide side panel.");
 
         VisibleByDefault = cfg.Bind(
