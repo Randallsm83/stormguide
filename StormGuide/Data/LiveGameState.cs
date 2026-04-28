@@ -78,6 +78,31 @@ internal static class LiveGameState
         return null;
     }
 
+    /// <summary>
+    /// Count of every built building, grouped by catalog model name. Used by
+    /// the Villagers tab housing indicator (catalog-only Domain helper joins
+    /// the result against the race's preferred-housing need). Empty when the
+    /// game services aren't loaded.
+    /// </summary>
+    public static IReadOnlyDictionary<string, int> BuiltBuildingCounts()
+    {
+        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+        try
+        {
+            var bs = Services?.BuildingsService;
+            if (bs?.Buildings == null) return counts;
+            foreach (var kv in bs.Buildings)
+            {
+                var b = kv.Value;
+                if (b == null || string.IsNullOrEmpty(b.ModelName)) continue;
+                counts.TryGetValue(b.ModelName, out var n);
+                counts[b.ModelName] = n + 1;
+            }
+        }
+        catch { }
+        return counts;
+    }
+
     /// <summary>List of (modelName, displayName) for production buildings currently flagged idle.</summary>
     public static IReadOnlyList<(string ModelName, string DisplayName)> IdleBuildings()
     {

@@ -3853,6 +3853,14 @@ internal sealed class SidePanel : MonoBehaviour
             }
         }
 
+        // Housing match: join the race's preferred-housing need against
+        // the live built-building counts. Pure logic lives in
+        // <see cref="HousingMatch.Compute"/>; this site sources alive +
+        // homeless from the village summary cache and the count map from
+        // <see cref="LiveGameState.BuiltBuildingCounts"/>. Skipped when the
+        // game isn't ready or the helper returns Unknown with no homeless.
+        DrawRaceHousingIndicator(vm.Race);
+
         // Resolve forecast: rough "minutes until target" if current < target.
         // We don't know the game's exact climb rate so we use a coarse 1.0
         // resolve/min estimate, marked as approximate.
@@ -3936,6 +3944,69 @@ internal sealed class SidePanel : MonoBehaviour
         }
         GUILayout.EndScrollView();
         GUILayout.EndVertical();
+    }
+
+    /// <summary>
+    /// Renders the Villagers-tab housing indicator: one line summarising
+    /// whether the selected race has its preferred housing built, only
+    /// generic shelter, or no housing at all. Pulls live alive/homeless
+    /// from the cached <see cref="StormGuide.Domain.VillageSummary"/> and
+    /// the built-building counts from <see cref="LiveGameState.BuiltBuildingCounts"/>.
+    /// Skipped when the game isn't ready or there's nothing meaningful to
+    /// say (Unknown level + no homeless).
+    /// </summary>
+    private void DrawRaceHousingIndicator(RaceInfo race)
+    {
+        if (!LiveGameState.IsReady) return;
+        var summary = _summaryCache?.Get();
+        var presence = summary?.Races.FirstOrDefault(r =>
+            string.Equals(r.Race, race.Name, StringComparison.Ordinal));
+        var alive    = presence?.Alive    ?? 0;
+        var homeless = presence?.Homeless ?? 0;
+        var counts   = LiveGameState.BuiltBuildingCounts();
+        var match    = HousingMatch.Compute(race.Needs, Catalog, counts, homeless, alive);
+        if (match.Level == HousingMatchLevel.Unknown && match.Homeless == 0) return;
+
+        string text;
+        GUIStyle? style;
+        switch (match.Level)
+        {
+            case HousingMatchLevel.Preferred:
+            {
+                var name = match.PreferredHouseDisplayName ?? "preferred housing";
+                text = $"   \u2713 housing: {match.PreferredCount} {name} built";
+                if (match.ShelterCount > 0) text += $" \u00b7 +{match.ShelterCount} shelter";
+                if (match.Homeless > 0)     text += $" \u00b7 \u26a0 {match.Homeless} homeless";
+                style = match.Homeless > 0 ? (_warnStyle ?? _mutedStyle) : (_okStyle ?? _mutedStyle);
+                break;
+            }
+            case HousingMatchLevel.ShelterOnly:
+            {
+                var name = match.PreferredHouseDisplayName ?? "race-specific housing";
+                text = $"   \u26a0 housing: shelter only ({match.ShelterCount}) \u00b7 no {name} built";
+                if (match.Homeless > 0) text += $" \u00b7 {match.Homeless} homeless";
+                style = _warnStyle ?? _mutedStyle;
+                break;
+            }
+            case HousingMatchLevel.NoHousing:
+            {
+                var name = match.PreferredHouseDisplayName ?? "housing";
+                text = match.Homeless > 0
+                    ? $"   \u2716 housing: none built \u00b7 {match.Homeless} homeless ({name} needed)"
+                    : $"   \u2716 housing: none built ({name} needed)";
+                style = _critStyle ?? _mutedStyle;
+                break;
+            }
+            default:
+            {
+                // Unknown but Homeless > 0 \u2014 still surface the count so the
+                // player has a hint without inventing a level.
+                text = $"   housing: {match.Homeless} homeless";
+                style = _warnStyle ?? _mutedStyle;
+                break;
+            }
+        }
+        GUILayout.Label(text, style);
     }
 
     /// <summary>
