@@ -1,0 +1,106 @@
+# StormGuide Release
+#
+# Triggered by pushing a `v*` tag. Extracts the matching section from
+# CHANGELOG.md, creates a GitHub Release with those notes, and prints the
+# instructions to finish the upload.
+#
+# We deliberately do NOT build the plugin DLL or the Thunderstore zip on the
+# runner: GitHub-hosted Windows runners don't have Against the Storm or the
+# ATS_API plugin installed, so the references in StormGuide.csproj cannot
+# resolve. The release artifact is built and uploaded from a workstation:
+#
+#   pwsh tools/Pack.ps1 -Publish
+#
+# Pack.ps1 detects the existing release for the matching tag and uploads the
+# zip with `gh release upload --clobber`. After that, the same zip is uploaded
+# to thunderstore.io/c/against-the-storm/ by hand.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version from tag
+        id: ver
+        shell: pwsh
+        run: |
+          $tag = '${{ github.ref_name }}'
+          if ($tag -notmatch '^v\d+\.\d+\.\d+$') {
+            Write-Host "::error::Tag '$tag' is not v<semver>; aborting."
+            exit 1
+          }
+          $version = $tag -replace '^v',''
+          "tag=$tag"           | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "version=$version"   | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "ok   tag=$tag  version=$version"
+
+      - name: Extract release notes from CHANGELOG.md
+        id: notes
+        shell: pwsh
+        run: |
+          $version = '${{ steps.ver.outputs.version }}'
+          if (-not (Test-Path CHANGELOG.md)) {
+            Write-Host "::warning::CHANGELOG.md missing; using placeholder notes."
+            "StormGuide $version`n`nSee commit log for details." | Set-Content release-notes.md -Encoding UTF8
+            return
+          }
+          $changelog = Get-Content CHANGELOG.md -Raw
+          $escaped = [regex]::Escape($version)
+          $pattern = "(?ms)^## \[$escaped\][^\n]*\r?\n(.+?)(?=^## \[|\z)"
+          $m = [regex]::Match($changelog, $pattern)
+          if (-not $m.Success) {
+            Write-Host "::warning::No CHANGELOG entry for $version; using placeholder."
+            "StormGuide $version`n`nSee commit log for details." | Set-Content release-notes.md -Encoding UTF8
+            return
+          }
+          $body = $m.Groups[1].Value.Trim()
+          # Strip the bottom comparison-link block if it leaked into the section.
+          $body = ($body -split '(?m)^\[' | Select-Object -First 1).TrimEnd()
+          Set-Content -Path release-notes.md -Value $body -Encoding UTF8
+          Write-Host "ok   release-notes.md ($([System.IO.File]::ReadAllBytes('release-notes.md').Length) bytes)"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $tag = '${{ steps.ver.outputs.tag }}'
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "release $tag already exists; updating notes."
+            gh release edit $tag --notes-file release-notes.md
+          } else {
+            gh release create $tag --title $tag --notes-file release-notes.md
+          }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::gh release command exited with $LASTEXITCODE."
+            exit 1
+          }
+
+      - name: Print upload instructions
+        shell: pwsh
+        run: |
+          $version = '${{ steps.ver.outputs.version }}'
+          $tag     = '${{ steps.ver.outputs.tag }}'
+          Write-Host ""
+          Write-Host "::notice::Release $tag created with notes from CHANGELOG.md."
+          Write-Host "::notice::Build + upload the Thunderstore zip from a workstation:"
+          Write-Host "::notice::  pwsh tools/Pack.ps1 -Version $version -Publish"
+          Write-Host "::notice::Then upload the same zip to thunderstore.io/c/against-the-storm/"

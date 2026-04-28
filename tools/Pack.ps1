@@ -48,13 +48,13 @@ $pluginDir = Join-Path $staging 'plugins\StormGuide'
 New-Item -ItemType Directory -Path $pluginDir | Out-Null
 Copy-Item $dll $pluginDir
 
-$manifest = [ordered]@{
-    name           = 'StormGuide'
-    version_number = $Version
-    website_url    = 'https://github.com/example/stormguide'
-    description    = 'Decision-time game guide overlay for Against the Storm.'
-    dependencies   = @('BepInEx-BepInExPack-5.4.2100')
-}
+# Manifest template is the source of truth (committed at tools/manifest.template.json).
+# Pack just substitutes version_number so a single template flows through CI, releases,
+# and the eventual Thunderstore upload.
+$templatePath = Join-Path $PSScriptRoot 'manifest.template.json'
+if (-not (Test-Path $templatePath)) { throw "manifest template not found: $templatePath" }
+$manifest = Get-Content $templatePath -Raw | ConvertFrom-Json
+$manifest.version_number = $Version
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path (Join-Path $staging 'manifest.json') -Encoding UTF8
 
 # icon.png: copy if present, otherwise emit a 1x1 transparent placeholder.

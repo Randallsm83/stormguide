@@ -1,0 +1,9 @@
+{
+  "name": "StormGuide",
+  "version_number": "0.0.0",
+  "website_url": "https://github.com/Randallsm83/stormguide",
+  "description": "Decision-time game guide overlay for Against the Storm.",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2100"
+  ]
+}

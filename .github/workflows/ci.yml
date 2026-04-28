@@ -1,0 +1,103 @@
+# StormGuide CI
+#
+# Important constraint: GitHub-hosted runners do not have Against the Storm or
+# the ATS_API plugin installed, so `Assembly-CSharp.dll` / `UniRx.dll` /
+# `Sirenix.*` / `API.dll` cannot resolve. That means we cannot `dotnet build
+# StormGuide/StormGuide.csproj` here. The MSBuild Smoke target depends on Build
+# and inherits the same blocker.
+#
+# What we DO validate is everything reachable without the game:
+#   - the embedded trimmed catalog JSON parses
+#   - the Thunderstore manifest template parses and has the required keys
+#   - tools/CatalogTrim builds (net10.0, pure C#, no game refs)
+#   - tools/*.ps1 are syntactically valid
+#
+# When Phase B lands and `tests/StormGuide.Tests/` exists (Domain-only), this
+# workflow gains a `dotnet test` step against that project.
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate (no-game-refs paths)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Validate catalog JSON
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem 'StormGuide/Resources/catalog/*.json'
+          if ($files.Count -eq 0) { Write-Error 'No catalog JSON files found.'; exit 1 }
+          $bad = 0
+          foreach ($f in $files) {
+            try {
+              Get-Content -Raw -Path $f.FullName | ConvertFrom-Json | Out-Null
+              Write-Host "ok   $($f.Name)"
+            } catch {
+              Write-Host "::error file=$($f.FullName)::Invalid JSON: $_"
+              $bad++
+            }
+          }
+          if ($bad -gt 0) { exit 1 }
+
+      - name: Validate manifest template
+        shell: pwsh
+        run: |
+          $path = 'tools/manifest.template.json'
+          if (-not (Test-Path $path)) { Write-Error "Missing $path"; exit 1 }
+          $m = Get-Content -Raw $path | ConvertFrom-Json
+          $required = @('name','version_number','website_url','description','dependencies')
+          $missing = $required | Where-Object { -not $m.PSObject.Properties.Name.Contains($_) }
+          if ($missing) {
+            Write-Host "::error file=$path::Missing keys: $($missing -join ', ')"
+            exit 1
+          }
+          if ($m.website_url -match 'example\.com|github\.com/example/') {
+            Write-Host "::error file=$path::website_url is still a placeholder ($($m.website_url))."
+            exit 1
+          }
+          Write-Host "ok   manifest template ($($m.name) keys: $($m.PSObject.Properties.Name -join ', '))"
+
+      - name: Build tools/CatalogTrim (no game refs)
+        run: dotnet build tools/CatalogTrim/CatalogTrim.csproj -c Release -nologo
+
+      - name: PowerShell syntax check (tools/*.ps1)
+        shell: pwsh
+        run: |
+          $bad = 0
+          foreach ($f in Get-ChildItem tools/*.ps1) {
+            $errors = $null
+            $tokens = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              $f.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors -and $errors.Count -gt 0) {
+              foreach ($e in $errors) {
+                Write-Host "::error file=$($f.FullName),line=$($e.Extent.StartLineNumber)::$($e.Message)"
+              }
+              $bad++
+            } else {
+              Write-Host "ok   $($f.Name)"
+            }
+          }
+          if ($bad -gt 0) { exit 1 }
