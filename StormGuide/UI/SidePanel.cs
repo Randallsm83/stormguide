@@ -1705,6 +1705,12 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndHorizontal();
         if (!sectionExpanded) return;
 
+        // Trader timeline strip: a single mini-bar showing current trader's
+        // travel \u2192 visit lifecycle with a "now" marker, plus a dim slot
+        // for the next trader. Always rendered when at least one trader is
+        // known so the player has a glanceable rotation indicator.
+        DrawHomeTraderTimeline(cur, nxt);
+
         if (cur is not null)
         {
             DrawTraderDesireHeatmap(cur);
@@ -1881,6 +1887,131 @@ internal sealed class SidePanel : MonoBehaviour
                 $"   list cost: {totalCost:0.##} · pot (top-3 sells): {pot:0.##} · {afford} ({diff:+0.##;-0.##;0})",
                 pot >= totalCost ? (_okStyle ?? _mutedStyle)
                                  : (_critStyle ?? _mutedStyle));
+        }
+    }
+
+    /// <summary>
+    /// Renders the Home trader timeline strip: a horizontal mini-bar split
+    /// into three zones \u2014 current trader's travel section, current
+    /// trader's visit window (the active "buy/sell" period), and a dim slot
+    /// for the next trader. A 3px "now" marker shows where we are in the
+    /// current trader's cycle: positioned by travel-progress when en-route,
+    /// or centered in the visit window once arrived.
+    ///
+    /// Visit-duration timing isn't exposed by the game, so the visit zone is
+    /// a fixed proportional width \u2014 it's a glanceable indicator, not a
+    /// quantitative scale. Travel progress is exact (from
+    /// <see cref="LiveGameState.CurrentTraderTravelProgress"/>).
+    ///
+    /// Renders nothing when both <paramref name="cur"/> and
+    /// <paramref name="nxt"/> are null; callers gate this themselves so the
+    /// helper stays simple.
+    /// </summary>
+    private void DrawHomeTraderTimeline(
+        LiveGameState.TraderInfo? cur, LiveGameState.TraderInfo? nxt)
+    {
+        if (cur is null && nxt is null) return;
+
+        // Header line above the bar, naming the current + next trader and the
+        // current trader's status. Lets a player read the strip without
+        // hovering the segments.
+        var curName = cur is null
+            ? "(no trader)"
+            : (string.IsNullOrEmpty(cur.DisplayName) ? "(unnamed)" : cur.DisplayName);
+        var nxtName = nxt is null
+            ? ""
+            : (string.IsNullOrEmpty(nxt.DisplayName) ? "(unnamed)" : nxt.DisplayName);
+        string curStatus;
+        if (cur is null)
+        {
+            curStatus = "";
+        }
+        else if (cur.IsInVillage)
+        {
+            curStatus = "in village";
+        }
+        else
+        {
+            var prog = LiveGameState.CurrentTraderTravelProgress();
+            curStatus = prog is float pf
+                ? $"en route \u00b7 {pf * 100f:0}%"
+                : "en route";
+        }
+        var nxtTail = string.IsNullOrEmpty(nxtName) ? "" : $"  \u2192  next: {nxtName}";
+        var statusTail = string.IsNullOrEmpty(curStatus) ? "" : $" ({curStatus})";
+        GUILayout.Label($"   {curName}{statusTail}{nxtTail}", _mutedStyle);
+
+        // The bar: three coloured segments + small gap + now marker.
+        var rect = GUILayoutUtility.GetRect(0, 14, GUILayout.ExpandWidth(true));
+        rect.xMin += 12; rect.xMax -= 12;
+        var w = rect.width;
+        // Proportional widths: current trader takes 60% (35% travel + 25%
+        // visit window), gap 5%, next trader 35% travel. The next trader has
+        // no visit-window segment because we'd need its arrival timing to
+        // make that meaningful.
+        var curTravelW = w * 0.35f;
+        var curVisitW  = w * 0.25f;
+        var gapW       = w * 0.05f;
+        var nxtTravelW = w * 0.35f;
+        var x = rect.x;
+
+        // Current travel zone (sky blue; dimmed once trader has arrived).
+        if (cur is not null)
+        {
+            var travelTint = cur.IsInVillage
+                ? new Color(0.55f, 0.75f, 0.95f, 0.30f)
+                : new Color(0.55f, 0.75f, 0.95f, 0.85f);
+            GUI.DrawTexture(
+                new Rect(x, rect.y, curTravelW, rect.height),
+                Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
+                travelTint, 0, 0);
+            // Current visit window (green). Solid when in village, dim when
+            // not yet arrived \u2014 reads as "the upcoming buy/sell window".
+            var visitTint = cur.IsInVillage
+                ? new Color(0.45f, 0.85f, 0.55f, 0.85f)
+                : new Color(0.45f, 0.85f, 0.55f, 0.30f);
+            GUI.DrawTexture(
+                new Rect(x + curTravelW, rect.y, curVisitW, rect.height),
+                Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
+                visitTint, 0, 0);
+            // Hover tooltips on the segments. GUI.Box with an empty label
+            // attaches the tooltip to the rect without re-drawing the fill.
+            GUI.Box(new Rect(x, rect.y, curTravelW, rect.height),
+                new GUIContent("", "current trader travel"));
+            GUI.Box(new Rect(x + curTravelW, rect.y, curVisitW, rect.height),
+                new GUIContent("", "buy/sell window when in village"));
+        }
+
+        // Next trader slot (always dim \u2014 timing unknown).
+        var nxtX = x + curTravelW + curVisitW + gapW;
+        if (nxt is not null)
+        {
+            GUI.DrawTexture(
+                new Rect(nxtX, rect.y, nxtTravelW, rect.height),
+                Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0,
+                new Color(0.55f, 0.75f, 0.95f, 0.20f), 0, 0);
+            GUI.Box(new Rect(nxtX, rect.y, nxtTravelW, rect.height),
+                new GUIContent("", "next trader (timing unknown)"));
+        }
+
+        // "Now" marker: 3px vertical bar, positioned by current trader state.
+        if (cur is not null)
+        {
+            float nowOffset;
+            if (cur.IsInVillage)
+            {
+                // Centered in the visit window; we don't know how far through
+                // the visit we are, so the midpoint is the honest answer.
+                nowOffset = curTravelW + curVisitW * 0.5f;
+            }
+            else
+            {
+                var prog = LiveGameState.CurrentTraderTravelProgress() ?? 0f;
+                nowOffset = curTravelW * Mathf.Clamp01(prog);
+            }
+            var marker = new Rect(x + nowOffset - 1.5f, rect.y - 2, 3, rect.height + 4);
+            GUI.DrawTexture(marker, Texture2D.whiteTexture, ScaleMode.StretchToFill,
+                false, 0, new Color(1f, 1f, 1f, 0.95f), 0, 0);
         }
     }
 
