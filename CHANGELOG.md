@@ -24,6 +24,9 @@ entries between releases go under `## [Unreleased]`.
 - `StormGuide/Data/CacheBudget.cs` — single source of truth for the four `TtlCache` TTLs used by the UI plus the Diagnostics perf-ring frame-window size. Editing one constant rebalances the whole panel.
 - `StormGuide/Domain/EmbarkScoring.cs` — pure pre-settlement rankers: `TopStartingGoods` (race-need overlap × trade value, with a value-floor of 1 so free goods still score) and `TopCornerstoneTags` (per-race characteristic tag × catalog-building hits). Replaces the inline aggregation that lived in `DrawEmbarkTab`.
 - Settings tab "Diagnostics bundle" section: one-click `Copy diagnostics bundle` button captures plugin version + catalog snapshot + hotkey + crash-dump dir + per-section p50/p95 + active config + recent log to the clipboard. Available without enabling the Diagnostics tab.
+- `StormGuide/Domain/Localization.cs` — pure adapter for resolving display strings from catalog model keys. Exposes `GoodName` / `BuildingName` / `RaceName` / `RecipeName(modelKey, catalog)`. Resolution chain: optional `LiveLookup` (live game text-service, currently unwired) → catalog `DisplayName` → raw model key. Throwing or null/whitespace lookups fall through silently so translation can never crash the UI.
+- `tests/StormGuide.Tests/LocalizationTests.cs` — 11 tests covering empty key / catalog miss / catalog hit / live-lookup wins / live-lookup null|whitespace falls through / live-lookup throws is swallowed / live-lookup throws + catalog miss falls back to model key / per-domain (`Race`, `Building`, `Recipe`) accessors. Resets the static `LiveLookup` between tests via `IDisposable`.
+- `StormGuidePlugin.Awake()` carries a TODO comment block documenting the future `Localization.LiveLookup = key => textService.Get(key)` wiring point pending dnSpy verification of the AtS text-service surface.
 
 ### Changed
 
@@ -34,6 +37,7 @@ entries between releases go under `## [Unreleased]`.
 - `tools/Pack.ps1` reads `tools/manifest.template.json` and substitutes `version_number` instead of hard-coding the manifest body.
 - `UI/SidePanel.cs` per-section perf history switched from `Dictionary<string, Queue<double>>` + private `Percentile` helper to `Dictionary<string, PerfRing>`. Reads `ring.P50` / `ring.P95` for the Diagnostics surface.
 - `UI/SidePanel.cs` cache TTL literals (`0.5f`, `1.0f`) replaced with named constants from `CacheBudget` so the UI no longer carries bare timing values.
+- `UI/SidePanel.cs` routes its eight catalog-backed display lookups (alerts strip, home risks, home needs, building input chips, race needs supplied, trader buy-list, embark race-needs join, village summary race naming) through the new `Localization` adapter. Score breakdowns and structural UI labels stay English-only by design.
 
 ## [0.0.1] - 2026-04-26
 

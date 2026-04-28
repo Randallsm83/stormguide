@@ -325,8 +325,7 @@ internal sealed class SidePanel : MonoBehaviour
                 Math.Max(1f, Config.GoodsAtRiskThresholdMinutes.Value)),
             ttlSeconds: CacheBudget.AlertsTtlSec);
         _summaryCache = new TtlCache<StormGuide.Domain.VillageSummary?>(
-            () => LiveGameState.VillageSummary(name =>
-                Catalog.Races.TryGetValue(name, out var r) ? r.DisplayName : name),
+            () => LiveGameState.VillageSummary(name => Localization.RaceName(name, Catalog)),
             ttlSeconds: CacheBudget.SummaryTtlSec);
         _ownedCache   = new TtlCache<IReadOnlyList<LiveGameState.OwnedCornerstone>>(
             LiveGameState.OwnedCornerstones,
@@ -904,7 +903,7 @@ internal sealed class SidePanel : MonoBehaviour
         }
         foreach (var g in a.GoodsAtRisk.Take(3))
         {
-            var displayName = Catalog.Goods.TryGetValue(g.Good, out var gi) ? gi.DisplayName : g.Good;
+            var displayName = Localization.GoodName(g.Good, Catalog);
             var label = $"{displayName} {g.RunwayMinutes:0.#}m";
             if (GUILayout.Button(new GUIContent(label, "Jump to Good tab"), _tabStyle))
             {
@@ -1529,8 +1528,8 @@ internal sealed class SidePanel : MonoBehaviour
             {
                 if (string.IsNullOrEmpty(need)) continue;
                 if (LiveGameState.StockpileOf(need) > 0) continue;
-                var disp = Catalog.Goods.TryGetValue(need, out var gi) ? gi.DisplayName : need;
-                unmet.Add($"{p.DisplayName}→{disp}");
+                var disp = Localization.GoodName(need, Catalog);
+                unmet.Add($"{p.DisplayName}\u2192{disp}");
             }
         }
         if (unmet.Count == 0) return;
@@ -1788,7 +1787,7 @@ internal sealed class SidePanel : MonoBehaviour
         for (var i = 0; i < sells.Count; i++)
         {
             var s = sells[i];
-            var disp = Catalog.Goods.TryGetValue(s, out var gi) ? gi.DisplayName : s;
+            var disp = Localization.GoodName(s, Catalog);
             var on = _buyListSelections.Contains(s);
             var price = LiveGameState.BuyValueAtCurrentTrader(s);
             if (on) totalCost += price;
@@ -1890,8 +1889,8 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label($"⚠ Goods at risk — {alerts.GoodsAtRisk.Count}", _bodyStyle);
         foreach (var g in alerts.GoodsAtRisk.Take(5))
         {
-            var disp = Catalog.Goods.TryGetValue(g.Good, out var gi) ? gi.DisplayName : g.Good;
-            var label = $"   {disp}  —  {g.RunwayMinutes:0.#} min runway";
+            var disp = Localization.GoodName(g.Good, Catalog);
+            var label = $"   {disp}  \u2014  {g.RunwayMinutes:0.#} min runway";
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(new GUIContent(label, "Open in Good tab"), _tabStyle))
             {
@@ -2446,7 +2445,7 @@ internal sealed class SidePanel : MonoBehaviour
             var prevColor = GUI.color;
             foreach (var good in inputs)
             {
-                var disp = Catalog.Goods.TryGetValue(good, out var gi) ? gi.DisplayName : good;
+                var disp = Localization.GoodName(good, Catalog);
                 // Tint chip by net flow: red < 0, green > 0, neutral otherwise.
                 if (LiveGameState.IsReady)
                 {
@@ -3519,7 +3518,7 @@ internal sealed class SidePanel : MonoBehaviour
                 .Where(n => !string.IsNullOrEmpty(n))
                 .Select(n =>
                 {
-                    var disp = Catalog.Goods.TryGetValue(n, out var gi) ? gi.DisplayName : n;
+                    var disp = Localization.GoodName(n, Catalog);
                     return (Good: n, Display: disp, Stock: LiveGameState.StockpileOf(n));
                 })
                 .OrderByDescending(r => r.Stock)
@@ -4735,8 +4734,7 @@ internal sealed class SidePanel : MonoBehaviour
         {
             var needs = race.Needs.Count == 0
                 ? "(no needs)"
-                : string.Join(", ", race.Needs.Select(n =>
-                    Catalog.Goods.TryGetValue(n, out var gi) ? gi.DisplayName : n));
+                : string.Join(", ", race.Needs.Select(n => Localization.GoodName(n, Catalog)));
             if (GUILayout.Button(
                     new GUIContent(
                         $"   {race.DisplayName}: resolve {race.MinResolve}–{race.MaxResolve} · needs {needs}",

@@ -11,7 +11,9 @@ StormGuide/                   plugin assembly (netstandard2.0)
   Data/                       LiveGameState (game-API wrapper) + StaticCatalog + TtlCache
                               + CacheBudget (TTL/window constants) + LogCapture
   Domain/                     pure DTOs + math: Catalog, *Info, *ViewModel, Score,
-                              FlowRow, VillageSummary, PerfRing, EmbarkScoring… (no game refs)
+                              FlowRow, VillageSummary, PerfRing, EmbarkScoring,
+                              Localization (catalog-key → display-name adapter)…
+                              (no game refs)
   Providers/                  pure functions: Catalog + lookups → ViewModel
                               (Building, Good, Villager, CornerstoneDraft) + EffectWeights
   UI/SidePanel.cs             single IMGUI MonoBehaviour. Renders all tabs, alerts strip, resize/reset
@@ -106,6 +108,7 @@ Current caveats (resolved by Phase A of the 1.0 plan):
 - **New recommendation** — add a `Provider.For(...)` overload taking the new lookup as an optional `Func<...>`. Return a `Score` whose `Components` explain it row-by-row.
 - **Hot-path call** (called every frame from `OnGUI`) — wrap in `TtlCache<T>` and source the TTL from `StormGuide.Data.CacheBudget` (e.g. `CacheBudget.AlertsTtlSec`, `CacheBudget.SummaryTtlSec`). Don't sprinkle bare `0.5f` / `1.0f` literals through the UI — the centralised constants exist so editing one file rebalances the whole panel.
 - **New embedded doc** — drop the `.md` somewhere in the repo, add an `<EmbeddedResource Include="..\..." Link="Resources\docs\X.md" LogicalName="StormGuide.Resources.docs.X.md" />` entry to `StormGuide.csproj`, and surface it in the Settings tab's doc viewer.
+- **New catalog-backed UI label** — route through `StormGuide.Domain.Localization.GoodName` / `BuildingName` / `RaceName` / `RecipeName` so the live game text-service lookup (when wired) takes precedence over the embedded English `DisplayName`. Don't reach into `Catalog.Goods.TryGetValue(..).DisplayName` from new UI code.
 
 ## Game API hook map
 
@@ -208,10 +211,14 @@ Landed:
 - Crash-dump output already lands in `BepInEx.Paths.ConfigPath` (`stormguide-crash-*.txt`); the bundle includes that path so bug-report flow doesn't require Diagnostics-tab discovery.
 - `ShowDiagnosticsTab` stays `false` by default — the Settings bundle is the new sanctioned bug-report path.
 
-### Phase E — Localization passthrough
+### Phase E — Localization passthrough (landed)
 
-- New thin adapter (`StormGuide/Data/Localization.cs` or similar) wraps the game's text-service lookup. Unknown keys / unavailable service → fallback to the embedded English from the trimmed catalog.
-- Catalog-backed UI labels in `UI/SidePanel.cs` route through the adapter. Score breakdowns (which use English-only structural labels) stay as-is for now.
+Landed:
+
+- `StormGuide/Domain/Localization.cs` — pure adapter exposing `GoodName` / `BuildingName` / `RaceName` / `RecipeName(modelKey, catalog)`. Resolution chain: `LiveLookup` (live text-service, unwired by default) → catalog `DisplayName` → raw model key. Throwing or null/whitespace lookups fall through silently — translation must never crash the UI. Lives in `Domain/` (not `Data/` as originally planned) so the test project's `<Compile Include>` glob picks it up; `LiveLookup` will be assigned from `LiveGameState` once the AtS text-service surface is verified via dnSpy.
+- `UI/SidePanel.cs` rewires its eight catalog-backed display lookups (alerts strip, home risks, home needs, building input chips, race needs supplied, trader buy-list, embark race-needs join, village summary race naming) through the adapter. Score breakdowns and structural UI labels stay English-only by design.
+- `StormGuidePlugin.Awake()` carries a TODO comment block documenting the eventual `Localization.LiveLookup = key => textService.Get(key)` wiring point.
+- `tests/StormGuide.Tests/LocalizationTests.cs` — 11 tests cover empty key / catalog miss / catalog hit / live-lookup wins / live-lookup null|whitespace falls through / live-lookup throws is swallowed / live-lookup throws + catalog miss falls back to model key / per-domain (`Race`, `Building`, `Recipe`) accessors. Uses `IDisposable` to reset the static `LiveLookup` after every Fact for order-independence.
 
 ### Phase F — 1.0 release
 

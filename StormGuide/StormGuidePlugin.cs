@@ -60,6 +60,13 @@ public sealed class StormGuidePlugin : BaseUnityPlugin
         Catalog = StaticCatalog.Load(Log);
         PruneStaleSelections();
 
+        // TODO(localization): wire StormGuide.Domain.Localization.LiveLookup
+        // to the AtS in-game text-service once the API surface is verified
+        // via dnSpy. Until then, Localization falls back to the catalog's
+        // embedded English DisplayName, which is correct for v1 but won't
+        // pick up the player's selected locale or any modded translations.
+        // Expected shape: Localization.LiveLookup = key => textService.Get(key);
+
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll(typeof(StormGuidePlugin).Assembly);
 
