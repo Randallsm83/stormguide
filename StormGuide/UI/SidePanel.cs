@@ -3581,6 +3581,38 @@ internal sealed class SidePanel : MonoBehaviour
             // the segment — OnGUI lacks a primitive line draw without GL setup.
             DrawSegment(x0, y0, x1, y1, new Color(0.55f, 0.85f, 1f, 0.85f));
         }
+
+        // Trend extrapolation. Samples land once per second (see the cadence
+        // gate above), so we hand <see cref="PriceTrend.Compute"/> a fixed
+        // 1.0s spacing. Needs at least 3 samples to fit a line; a flat line
+        // (|slope|<0.005/min) renders as a neutral arrow with no projection
+        // line so the UI doesn't lie about a non-trend.
+        var est = PriceTrend.Compute(samples, 1.0);
+        if (est is null) return;
+        const double horizonMin = 3.0;
+        var slope = est.SlopePerMin;
+        var arrow = slope >  0.005 ? "\u2197"
+                  : slope < -0.005 ? "\u2198"
+                  : "\u2192";
+        var sign  = slope >= 0 ? "+" : "";
+        if (System.Math.Abs(slope) < 0.005)
+        {
+            GUILayout.Label(
+                $"   {arrow} trend: flat at {est.FittedNow:0.##}/u this visit",
+                _mutedStyle);
+        }
+        else
+        {
+            var projected = PriceTrend.Project(est, horizonMin);
+            // Clamp the projection to a non-negative price; the regression
+            // line can dip below zero on a strong downtrend, which is
+            // mathematically correct but a meaningless price.
+            if (projected < 0) projected = 0;
+            GUILayout.Label(
+                $"   {arrow} trend: {sign}{slope:0.###}/min \u00b7 if it holds, "
+                + $"price in ~{horizonMin:0}m \u2248 {projected:0.##}/u",
+                _mutedStyle);
+        }
     }
 
     private static void DrawSegment(float x0, float y0, float x1, float y1, Color c)
