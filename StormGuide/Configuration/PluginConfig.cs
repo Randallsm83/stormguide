@@ -116,8 +116,8 @@ public sealed class PluginConfig
         ShowSettingsTab  = cfg.Bind(SectionUI, "Tab · Settings",  true, "Show the in-panel Settings tab.");
         ShowDiagnosticsTab = cfg.Bind(SectionUI, "Tab · Diagnostics", false,
             "Show the in-panel Diagnostics tab (recent plugin log lines).");
-        ShowEmbarkTab    = cfg.Bind(SectionUI, "Tab · Embark",    false,
-            "Show the Embark planner tab (pre-settlement helper, scaffolding only).");
+        ShowEmbarkTab    = cfg.Bind(SectionUI, "Tab \u00b7 Embark",    true,
+            "Show the Embark planner tab (pre-settlement helper: race comparison, starting-goods overlap, cornerstone-tag leverage).");
 
         HideEmptyRecipeBuildings = cfg.Bind(SectionUI, "Hide empty-recipe buildings", true,
             "Hide buildings that have no recipes from the Building tab list.");

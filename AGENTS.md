@@ -11,7 +11,7 @@ StormGuide/                   plugin assembly (netstandard2.0)
   Data/                       LiveGameState (game-API wrapper) + StaticCatalog + TtlCache
                               + CacheBudget (TTL/window constants) + LogCapture
   Domain/                     pure DTOs + math: Catalog, *Info, *ViewModel, Score,
-                              FlowRow, VillageSummary, PerfRing… (no game refs)
+                              FlowRow, VillageSummary, PerfRing, EmbarkScoring… (no game refs)
   Providers/                  pure functions: Catalog + lookups → ViewModel
                               (Building, Good, Villager, CornerstoneDraft) + EffectWeights
   UI/SidePanel.cs             single IMGUI MonoBehaviour. Renders all tabs, alerts strip, resize/reset
@@ -149,8 +149,9 @@ What the panel currently shows, by tab. Update when adding/removing surfaces so 
 - **Orders** — active orders sorted (tracked → picked → time-pressure → name), tier badge (bronze/silver/gold pill), failable countdown (red/amber/muted), objectives with `✓`/progress-bar, reward score + categories, pick-options ranking on unpicked orders.
 - **Glades** — explored %, dangerous/forbidden counts, reward-chase alerts, danger-level distribution chart.
 - **Draft** — cornerstone draft auto-popup; per-option synergy with breakdown components (tag matches, owned-stack, resolve-shaped, total-buildings).
-- **Settings** (⚙) — reflection-driven tab toggles, persisted why-all flags, hide-empty-recipe filter, hotkey rebinder, catalog reload, embedded README/AGENTS/USER_GUIDE doc viewer.
-- **Diagnostics** (⚙?, off by default) — 200-line ring buffer of plugin log lines (BepInEx ILogListener filtered by source).
+- **Settings** (⚙) — reflection-driven tab toggles, persisted why-all flags, hide-empty-recipe filter, hotkey rebinder, catalog reload, **diagnostics bundle** copy action, embedded README/AGENTS/USER_GUIDE doc viewer.
+- **Diagnostics** (⚙?, off by default) — 200-line ring buffer of plugin log lines (BepInEx ILogListener filtered by source). The Settings tab carries a **Copy diagnostics bundle** button (plugin version, catalog, hotkey, per-section p50/p95, active config, crash-dump dir, recent log) so users don't need to enable this tab to share state for bug reports.
+- **Embark** (on by default) — pre-settlement guidance from the static catalog: race list ranked by min resolve, top starting goods (need overlap × trade value via `EmbarkScoring.TopStartingGoods`), top cornerstone tags by total catalog-building hits (`EmbarkScoring.TopCornerstoneTags`).
 - **Footer** — catalog source + plugin version + active hotkey.
 - **Hotkeys** — toggle hotkey (default rebindable; `F8` / `G` are common), `Ctrl+1`…`9` jump-to-tab while panel is visible, `F5` reload catalog.
 
@@ -196,11 +197,16 @@ Still pending (require a live mid-game profiling pass):
 - Per-tab p50/p95 budgets, recorded in this section. Diagnostics tab surfaces them live; CI does not gate on them. Capture the baseline against one representative settlement, then set budgets at observed p95 × 1.5 so a regression flips a Diagnostics warning.
 - Tune the `CacheBudget` constants once the baseline is captured — today's values (0.5s / 1.0s / 120 frames) are hand-tuned defaults, not measured ones.
 
-### Phase D — Productionize Embark + Diagnostics
+### Phase D — Productionize Embark + Diagnostics (landed)
 
-- `ShowEmbarkTab` flips to `true` by default once Embark's race-comparison + starting-goods recommendation surface is finished against the static catalog and shared scoring primitives.
-- `ShowDiagnosticsTab` stays `false` by default. The Settings tab grows a **Copy diagnostics bundle** action that snapshots the log ring buffer + frame-cost summary + active config to the clipboard — no Diagnostics tab needed.
-- Crash-dump output moves to a stable path under the BepInEx config dir; the bundle action includes that path.
+Landed:
+
+- `StormGuide/Domain/EmbarkScoring.cs` — pure pre-settlement rankers (`TopStartingGoods`, `TopCornerstoneTags`). `UI/SidePanel.DrawEmbarkTab` now calls into them; the inline aggregation is gone.
+- `ShowEmbarkTab` defaults to `true`. The tab description in `PluginConfig.cs` no longer says "scaffolding only".
+- The Embark tab header drops the scaffolding caveat and now reads as production guidance.
+- Settings tab gains a **Diagnostics bundle** section with a one-click "copy diagnostics bundle" button (`SidePanel.BuildDiagnosticsBundle`). Bundle includes plugin version, catalog snapshot, hotkey, crash-dump dir + count, per-section p50/p95, active config (via `ExportConfigJson`), and the recent log tail.
+- Crash-dump output already lands in `BepInEx.Paths.ConfigPath` (`stormguide-crash-*.txt`); the bundle includes that path so bug-report flow doesn't require Diagnostics-tab discovery.
+- `ShowDiagnosticsTab` stays `false` by default — the Settings bundle is the new sanctioned bug-report path.
 
 ### Phase E — Localization passthrough
 

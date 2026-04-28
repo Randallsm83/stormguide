@@ -227,6 +227,8 @@ internal sealed class SidePanel : MonoBehaviour
     private string _docView = "";       // "", "README.md", "AGENTS.md"
     private Vector2 _docScroll;
     private string _catalogReloadStatus = "";
+    // Diagnostics bundle copy status (Settings tab one-click action).
+    private string _bundleStatus = "";
 
     // ---- Diagnostics tab state -------------------------------------------
     private Vector2 _diagScroll;
@@ -1079,6 +1081,61 @@ internal sealed class SidePanel : MonoBehaviour
             sb.Append(kv.Key).Append(": ").Append(kv.Value.ToString("0.0")).Append("ms\n");
         var rect = new Rect(_rect.width - 140, _rect.height - 90, 132, 80);
         GUI.Label(rect, sb.ToString(), _mutedStyle);
+    }
+
+    /// <summary>
+    /// Composes a single text bundle of plugin state for bug reports: plugin
+    /// version + catalog snapshot + hotkey + crash-dump dir + per-section
+    /// frame-cost (p50/p95) + active config (reflection-driven JSON) + recent
+    /// log tail. Lives in Settings (always reachable) so players don't need
+    /// to enable the Diagnostics tab to share state.
+    /// </summary>
+    private string BuildDiagnosticsBundle()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"StormGuide diagnostics @ {DateTime.UtcNow:O}");
+        sb.AppendLine($"plugin v{StormGuidePlugin.PluginVersion}");
+        sb.AppendLine($"catalog: {Catalog.GameVersion} \u00b7 {Catalog.Buildings.Count} buildings, {Catalog.Goods.Count} goods, {Catalog.Recipes.Count} recipes, {Catalog.Races.Count} races");
+        sb.AppendLine($"hotkey: {Config.ToggleHotkey.Value}");
+        sb.AppendLine($"visible by default: {Config.VisibleByDefault.Value}");
+        sb.AppendLine($"active tab: {_activeTab}");
+
+        // Crash-dump dir (stable; same path WriteCrashDump uses).
+        string crashDir = "";
+        try { crashDir = BepInEx.Paths.ConfigPath ?? ""; } catch { }
+        sb.AppendLine($"crash-dump dir: {(string.IsNullOrEmpty(crashDir) ? "(unavailable)" : crashDir)}");
+        if (!string.IsNullOrEmpty(crashDir))
+        {
+            try
+            {
+                var crashes = System.IO.Directory.GetFiles(crashDir!, "stormguide-crash-*.txt");
+                sb.AppendLine($"crash dumps on disk: {crashes.Length}");
+            }
+            catch { }
+        }
+
+        sb.AppendLine();
+        sb.AppendLine($"---- per-section frame cost (last {CacheBudget.PerfRingFrames} frames) ----");
+        if (_perfHistory.Count == 0)
+            sb.AppendLine("(no samples yet)");
+        else
+            foreach (var kv in _perfHistory.OrderByDescending(k => k.Value.P95))
+                sb.AppendLine($"  {kv.Key}: p50 {kv.Value.P50:0.0}ms \u00b7 p95 {kv.Value.P95:0.0}ms ({kv.Value.Count} samples)");
+
+        sb.AppendLine();
+        sb.AppendLine("---- active config ----");
+        try { sb.AppendLine(ExportConfigJson()); }
+        catch { sb.AppendLine("(unavailable)"); }
+
+        var tail = StormGuidePlugin.LogTail?.Snapshot();
+        if (tail != null)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"---- last {tail.Count} plugin log lines ----");
+            foreach (var e in tail)
+                sb.AppendLine($"{e.UtcAt:O} [{e.Level}] {e.Message}");
+        }
+        return sb.ToString();
     }
 
     /// <summary>
@@ -4137,6 +4194,29 @@ internal sealed class SidePanel : MonoBehaviour
         DrawPinPresets();
 
         GUILayout.Space(8);
+        DrawSettingHeader("Diagnostics bundle");
+        GUILayout.Label(
+            "   One-click bundle for bug reports: plugin version, catalog snapshot, hotkey, crash-dump dir, per-section p50/p95, active config, and recent log lines. Stays accessible without enabling the Diagnostics tab.",
+            _mutedStyle);
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button(new GUIContent("copy diagnostics bundle",
+                "Copy a single bundle of plugin state to the clipboard"),
+                _tabStyle, GUILayout.Width(220)))
+        {
+            try
+            {
+                var bundle = BuildDiagnosticsBundle();
+                GUIUtility.systemCopyBuffer = bundle;
+                _bundleStatus = $"copied ({bundle.Length} chars)";
+            }
+            catch (Exception ex) { _bundleStatus = "error: " + ex.Message; }
+        }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        if (!string.IsNullOrEmpty(_bundleStatus))
+            GUILayout.Label("   " + _bundleStatus, _mutedStyle);
+
+        GUILayout.Space(8);
         DrawSettingHeader("Docs");
         GUILayout.BeginHorizontal();
         if (GUILayout.Button(
@@ -4615,17 +4695,17 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.Label("Embark planner", _h1Style);
         _embarkScroll = GUILayout.BeginScrollView(_embarkScroll, GUILayout.ExpandHeight(true));
         GUILayout.Label(
-            "Pre-settlement helper sourced from the static catalog. Per-biome ranking and the cornerstone deck composition still need a MetaController join.",
+            "Pre-settlement guidance from the static catalog: race comparison, starting-goods overlap, and cornerstone-tag leverage. Independent of any active settlement.",
             _mutedStyle);
         GUILayout.Space(6);
-        GUILayout.Label($"Catalog ready: {(Catalog.IsEmpty ? "no" : "yes")}.", _bodyStyle);
         if (Catalog.IsEmpty)
         {
+            GUILayout.Label("Catalog is empty \u2014 run tools/CatalogTrim against a JSONLoader export.", _warnStyle ?? _bodyStyle);
             GUILayout.EndScrollView();
             return;
         }
         GUILayout.Label(
-            $"   {Catalog.Races.Count} races \u00b7 {Catalog.Buildings.Count} buildings \u00b7 {Catalog.Goods.Count} goods",
+            $"Catalog: {Catalog.Races.Count} races \u00b7 {Catalog.Buildings.Count} buildings \u00b7 {Catalog.Goods.Count} goods",
             _mutedStyle);
 
         // Live weather/season hint so the player can frame the embark
@@ -4668,66 +4748,32 @@ internal sealed class SidePanel : MonoBehaviour
             }
         }
 
-        // Starting goods recommendation: union all races' needs, score each
-        // good by (number of races that need it × trade value), surface the
-        // top 5 as "bring these on day 1".
+        // Starting goods + cornerstone-tag scoring is pure catalog math; the
+        // ranked output lives in StormGuide.Domain.EmbarkScoring so the math
+        // is unit-tested. The UI just renders the result rows.
         GUILayout.Space(6);
-        GUILayout.Label("Starting goods — ranked by need overlap × value", _bodyStyle);
-        var startingScore = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-        var startingHits  = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var race in Catalog.Races.Values)
-        {
-            foreach (var n in race.Needs)
-            {
-                if (string.IsNullOrEmpty(n)) continue;
-                startingHits.TryGetValue(n, out var h);
-                startingHits[n] = h + 1;
-            }
-        }
-        foreach (var kv in startingHits)
-        {
-            var val = Catalog.Goods.TryGetValue(kv.Key, out var gi)
-                ? Math.Max(1, gi.TradingBuyValue) : 1;
-            startingScore[kv.Key] = kv.Value * val;
-        }
-        var top = startingScore
-            .OrderByDescending(kv => kv.Value)
-            .Take(5)
-            .ToList();
-        if (top.Count == 0)
+        GUILayout.Label("Starting goods \u2014 ranked by need overlap \u00d7 value", _bodyStyle);
+        var topGoods = EmbarkScoring.TopStartingGoods(Catalog, take: 5);
+        if (topGoods.Count == 0)
             GUILayout.Label("   (no race needs found)", _mutedStyle);
-        foreach (var kv in top)
+        foreach (var g in topGoods)
         {
-            var disp = Catalog.Goods.TryGetValue(kv.Key, out var gi) ? gi.DisplayName : kv.Key;
             GUILayout.Label(
-                $"   ★ {disp}  · needed by {startingHits[kv.Key]} race(s)  · score {kv.Value:0.##}",
+                $"   \u2605 {g.DisplayName}  \u00b7 needed by {g.RaceCount} race(s)  \u00b7 score {g.TotalScore:0.##}",
                 _mutedStyle);
         }
 
-        // Cornerstone-tag advisory: rank building tags by (race-perk hits ×
-        // catalog-building hits) so the player knows which tags carry the
-        // highest leverage if they see a matching cornerstone offered later.
+        // Cornerstone-tag advisory: tags ranked by total catalog-building hits
+        // across all race characteristics. High value = a cornerstone hitting
+        // that tag has more leverage for this race set.
         GUILayout.Space(6);
-        GUILayout.Label("Cornerstone tags — most leverage for this race set", _bodyStyle);
-        var tagScore = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var race in Catalog.Races.Values)
-        {
-            foreach (var c in race.Characteristics)
-            {
-                var tag = c.BuildingTag;
-                if (string.IsNullOrEmpty(tag)) continue;
-                var hits = Catalog.Buildings.Values.Count(b =>
-                    b.Tags.Contains(tag, StringComparer.OrdinalIgnoreCase));
-                if (hits == 0) continue;
-                tagScore.TryGetValue(tag, out var s);
-                tagScore[tag] = s + hits;
-            }
-        }
-        if (tagScore.Count == 0)
+        GUILayout.Label("Cornerstone tags \u2014 most leverage for this race set", _bodyStyle);
+        var topTags = EmbarkScoring.TopCornerstoneTags(Catalog, take: 5);
+        if (topTags.Count == 0)
             GUILayout.Label("   (no race-tag overlap found)", _mutedStyle);
-        foreach (var kv in tagScore.OrderByDescending(kv => kv.Value).Take(5))
+        foreach (var t in topTags)
             GUILayout.Label(
-                $"   \u2605 {kv.Key} \u00b7 {kv.Value} building-hit(s) across {Catalog.Races.Count} race(s)",
+                $"   \u2605 {t.Tag} \u00b7 {t.BuildingHits} building-hit(s) across {Catalog.Races.Count} race(s)",
                 _mutedStyle);
 
         GUILayout.Space(6);

@@ -22,8 +22,14 @@ entries between releases go under `## [Unreleased]`.
 - `tests/` folder added to `StormGuide.slnx` so `dotnet build StormGuide.slnx` and `dotnet test StormGuide.slnx` pick up the test project.
 - `StormGuide/Domain/PerfRing.cs` — bounded ring of frame-cost samples with `P50` / `P95` / `Percentile(p)`. Pure (game-free), so it's unit-tested in `tests/StormGuide.Tests/`.
 - `StormGuide/Data/CacheBudget.cs` — single source of truth for the four `TtlCache` TTLs used by the UI plus the Diagnostics perf-ring frame-window size. Editing one constant rebalances the whole panel.
+- `StormGuide/Domain/EmbarkScoring.cs` — pure pre-settlement rankers: `TopStartingGoods` (race-need overlap × trade value, with a value-floor of 1 so free goods still score) and `TopCornerstoneTags` (per-race characteristic tag × catalog-building hits). Replaces the inline aggregation that lived in `DrawEmbarkTab`.
+- Settings tab "Diagnostics bundle" section: one-click `Copy diagnostics bundle` button captures plugin version + catalog snapshot + hotkey + crash-dump dir + per-section p50/p95 + active config + recent log to the clipboard. Available without enabling the Diagnostics tab.
 
 ### Changed
+
+- `ShowEmbarkTab` default flipped from `false` to `true`. Embark is no longer scaffolding-only.
+- `PluginConfig.ShowEmbarkTab` description updated: "pre-settlement helper: race comparison, starting-goods overlap, cornerstone-tag leverage" (was "scaffolding only").
+- `UI/SidePanel.DrawEmbarkTab` rewired to call `EmbarkScoring.TopStartingGoods` / `TopCornerstoneTags`. The header dropped the "scaffolding" / "per-biome ranking still needs MetaController join" caveats.
 
 - `tools/Pack.ps1` reads `tools/manifest.template.json` and substitutes `version_number` instead of hard-coding the manifest body.
 - `UI/SidePanel.cs` per-section perf history switched from `Dictionary<string, Queue<double>>` + private `Percentile` helper to `Dictionary<string, PerfRing>`. Reads `ring.P50` / `ring.P95` for the Diagnostics surface.
