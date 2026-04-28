@@ -18,12 +18,16 @@ entries between releases go under `## [Unreleased]`.
 - `tools/Bump.ps1` — single command to bump the csproj `<Version>` and roll the changelog `Unreleased` section into a dated entry.
 - `.github/workflows/ci.yml` — validation pipeline on PRs and `main` (catalog JSON parse, manifest template parse, `tools/CatalogTrim` build, `dotnet test` on `tests/StormGuide.Tests`, PowerShell syntax check).
 - `.github/workflows/release.yml` — on `v*` tag, extracts release notes from this changelog and creates the GitHub Release. Asset upload is done from a workstation via `tools/Pack.ps1 -Publish` because the plugin DLL cannot be built on the runner without the game's reference assemblies.
-- `tests/StormGuide.Tests/` — xunit project (`net10.0`) source-sharing the `Domain/` layer via `<Compile Include>`. Covers `Score` formatting and value/components reconciliation, `Catalog` lookup methods (`RecipesProducing`, `RecipesConsuming`, `RacesNeeding`), `RecipeInfo.BaseGoodsPerSec`, and round-trip deserialization of the embedded catalog JSON files using the same Newtonsoft settings as `StaticCatalog`. 29 tests, no game references.
+- `tests/StormGuide.Tests/` — xunit project (`net10.0`) source-sharing the `Domain/` layer via `<Compile Include>`. Covers `Score` formatting and value/components reconciliation, `Catalog` lookup methods (`RecipesProducing`, `RecipesConsuming`, `RacesNeeding`), `RecipeInfo.BaseGoodsPerSec`, round-trip deserialization of the embedded catalog JSON files using the same Newtonsoft settings as `StaticCatalog`, and `PerfRing` (bounded ring + nearest-rank percentile). **41 tests**, no game references.
 - `tests/` folder added to `StormGuide.slnx` so `dotnet build StormGuide.slnx` and `dotnet test StormGuide.slnx` pick up the test project.
+- `StormGuide/Domain/PerfRing.cs` — bounded ring of frame-cost samples with `P50` / `P95` / `Percentile(p)`. Pure (game-free), so it's unit-tested in `tests/StormGuide.Tests/`.
+- `StormGuide/Data/CacheBudget.cs` — single source of truth for the four `TtlCache` TTLs used by the UI plus the Diagnostics perf-ring frame-window size. Editing one constant rebalances the whole panel.
 
 ### Changed
 
 - `tools/Pack.ps1` reads `tools/manifest.template.json` and substitutes `version_number` instead of hard-coding the manifest body.
+- `UI/SidePanel.cs` per-section perf history switched from `Dictionary<string, Queue<double>>` + private `Percentile` helper to `Dictionary<string, PerfRing>`. Reads `ring.P50` / `ring.P95` for the Diagnostics surface.
+- `UI/SidePanel.cs` cache TTL literals (`0.5f`, `1.0f`) replaced with named constants from `CacheBudget` so the UI no longer carries bare timing values.
 
 ## [0.0.1] - 2026-04-26
 

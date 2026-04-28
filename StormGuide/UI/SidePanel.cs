@@ -166,8 +166,9 @@ internal sealed class SidePanel : MonoBehaviour
     private readonly Queue<(float Time, float Progress)> _traderTravelSamples = new();
     private string? _traderTravelKey;
 
-    // Per-section perf ring (last 120 frames) for Diagnostics p50/p95.
-    private readonly Dictionary<string, Queue<double>> _perfHistory =
+    // Per-section perf ring for Diagnostics p50/p95. Window size lives in
+    // CacheBudget.PerfRingFrames so it can be tuned alongside the TTLs.
+    private readonly Dictionary<string, PerfRing> _perfHistory =
         new(StringComparer.Ordinal);
 
     // Pin preset name input (Settings tab).
@@ -314,26 +315,28 @@ internal sealed class SidePanel : MonoBehaviour
         // previously-drafted list keeps its filter across sessions.
         _cornerstoneHistorySearch = Config.CornerstoneHistorySearch.Value ?? "";
 
-        // Cache the slow aggregates: 0.5s is well below player perception
-        // for these kinds of metrics, but it cuts redundant scans by ~30x at
-        // the typical IMGUI redraw rate.
+        // Cache the slow aggregates. TTLs live in CacheBudget so editing one
+        // file rebalances the whole UI; sub-second TTLs are well below player
+        // perception while cutting redundant scans by ~30x at IMGUI rates.
         _alertsCache  = new TtlCache<LiveGameState.SettlementAlerts?>(
             () => LiveGameState.AlertsFor(Catalog,
-                Math.Max(1f, Config.GoodsAtRiskThresholdMinutes.Value)), ttlSeconds: 0.5f);
+                Math.Max(1f, Config.GoodsAtRiskThresholdMinutes.Value)),
+            ttlSeconds: CacheBudget.AlertsTtlSec);
         _summaryCache = new TtlCache<StormGuide.Domain.VillageSummary?>(
             () => LiveGameState.VillageSummary(name =>
                 Catalog.Races.TryGetValue(name, out var r) ? r.DisplayName : name),
-            ttlSeconds: 0.5f);
+            ttlSeconds: CacheBudget.SummaryTtlSec);
         _ownedCache   = new TtlCache<IReadOnlyList<LiveGameState.OwnedCornerstone>>(
-            LiveGameState.OwnedCornerstones, ttlSeconds: 1.0f);
+            LiveGameState.OwnedCornerstones,
+            ttlSeconds: CacheBudget.OwnedCornerstonesTtlSec);
         _currentDesiresCache = new TtlCache<IReadOnlyList<LiveGameState.TraderDesire>>(
             () => LiveGameState.RankTraderDesires(
                 LiveGameState.CurrentTrader(), Catalog, isCurrent: true),
-            ttlSeconds: 0.5f);
+            ttlSeconds: CacheBudget.TraderDesiresTtlSec);
         _nextDesiresCache = new TtlCache<IReadOnlyList<LiveGameState.TraderDesire>>(
             () => LiveGameState.RankTraderDesires(
                 LiveGameState.NextTrader(), Catalog, isCurrent: false),
-            ttlSeconds: 0.5f);
+            ttlSeconds: CacheBudget.TraderDesiresTtlSec);
 
         // Catalog-diff banner: compare the embedded resource hash against the
         // last value seen by this install and post a one-shot Diagnostics
@@ -1055,12 +1058,12 @@ internal sealed class SidePanel : MonoBehaviour
             _sectionWatch.Stop();
             var ms = _sectionWatch.Elapsed.TotalMilliseconds;
             _sectionMs[name] = ms;
-            // Also push into the long-running perf ring so Diagnostics can
-            // surface p50/p95 across the last 120 frames per section.
-            if (!_perfHistory.TryGetValue(name, out var q))
-                _perfHistory[name] = q = new Queue<double>(128);
-            q.Enqueue(ms);
-            while (q.Count > 120) q.Dequeue();
+            // Push into the per-section PerfRing so Diagnostics can surface
+            // p50/p95 across the rolling window. Ring size is centralised in
+            // CacheBudget.PerfRingFrames.
+            if (!_perfHistory.TryGetValue(name, out var ring))
+                _perfHistory[name] = ring = new PerfRing(CacheBudget.PerfRingFrames);
+            ring.Push(ms);
         }
     }
 
@@ -4817,25 +4820,17 @@ internal sealed class SidePanel : MonoBehaviour
     {
         if (_perfHistory.Count == 0) return;
         GUILayout.Space(4);
-        GUILayout.Label("Per-section p50 / p95 (last 120 frames)", _bodyStyle);
+        GUILayout.Label(
+            $"Per-section p50 / p95 (last {CacheBudget.PerfRingFrames} frames)",
+            _bodyStyle);
         foreach (var kv in _perfHistory
-                     .Select(kv => (Name: kv.Key, P50: Percentile(kv.Value, 0.5),
-                                                  P95: Percentile(kv.Value, 0.95)))
+                     .Select(kv => (Name: kv.Key, P50: kv.Value.P50, P95: kv.Value.P95))
                      .OrderByDescending(t => t.P95))
         {
             GUILayout.Label(
-                $"   {kv.Name}: p50 {kv.P50:0.0}ms · p95 {kv.P95:0.0}ms",
+                $"   {kv.Name}: p50 {kv.P50:0.0}ms \u00b7 p95 {kv.P95:0.0}ms",
                 _mutedStyle);
         }
-    }
-
-    private static double Percentile(IEnumerable<double> values, double p)
-    {
-        var arr = values.OrderBy(v => v).ToArray();
-        if (arr.Length == 0) return 0;
-        var idx = Math.Min(arr.Length - 1,
-            (int)Math.Floor((arr.Length - 1) * p));
-        return arr[idx];
     }
 
     /// <summary>

@@ -5,11 +5,13 @@ BepInEx 5 plugin for Against the Storm. C# / `netstandard2.0` / Unity 2021.3.x /
 ## Solution layout
 
 ```
-StormGuide.slnx               solution (slnx, not sln) — opens both projects
+StormGuide.slnx               solution (slnx, not sln) — opens all three projects
 StormGuide/                   plugin assembly (netstandard2.0)
   Configuration/              BepInEx config bindings (PluginConfig)
-  Data/                       LiveGameState (game-API wrapper) + StaticCatalog + TtlCache + LogCapture
-  Domain/                     pure DTOs: Catalog, *Info, *ViewModel, Score, FlowRow, VillageSummary…
+  Data/                       LiveGameState (game-API wrapper) + StaticCatalog + TtlCache
+                              + CacheBudget (TTL/window constants) + LogCapture
+  Domain/                     pure DTOs + math: Catalog, *Info, *ViewModel, Score,
+                              FlowRow, VillageSummary, PerfRing… (no game refs)
   Providers/                  pure functions: Catalog + lookups → ViewModel
                               (Building, Good, Villager, CornerstoneDraft) + EffectWeights
   UI/SidePanel.cs             single IMGUI MonoBehaviour. Renders all tabs, alerts strip, resize/reset
@@ -18,8 +20,9 @@ StormGuide/                   plugin assembly (netstandard2.0)
   GlobalUsings.cs             System / Collections.Generic / Linq
   Polyfills.cs                IsExternalInit shim (records work on netstandard2.0)
   StormGuidePlugin.cs         entry point: BaseUnityPlugin, spawns SidePanel host
+tests/StormGuide.Tests/       net10.0 xunit, Domain-only via <Compile Include>
 tools/CatalogTrim/            net10.0 console: JSONLoader export → trimmed catalog
-tools/{Pack,Capture,SmokeRun}.ps1   release / screenshot / r2modman smoke scripts
+tools/{Pack,Capture,SmokeRun,Bump}.ps1   release / screenshot / smoke / version-bump scripts
 docs/USER_GUIDE.md            end-user guide (also embedded into the plugin)
 research/                     decompiled game source (gitignored). NOTES.md has the hook map.
 ```
@@ -101,7 +104,7 @@ Current caveats (resolved by Phase A of the 1.0 plan):
 - **New tab** — add a value to `SidePanel.Tab`, a `bool` config in `PluginConfig`, a draw method, and a hide-check entry in `IsTabVisible`.
 - **New live-state read** — add a static method on `LiveGameState` returning a small DTO. Wrap the game-side call in try/catch; never let exceptions escape.
 - **New recommendation** — add a `Provider.For(...)` overload taking the new lookup as an optional `Func<...>`. Return a `Score` whose `Components` explain it row-by-row.
-- **Hot-path call** (called every frame from `OnGUI`) — wrap in `TtlCache<T>` (see existing `_alertsCache`, `_summaryCache`).
+- **Hot-path call** (called every frame from `OnGUI`) — wrap in `TtlCache<T>` and source the TTL from `StormGuide.Data.CacheBudget` (e.g. `CacheBudget.AlertsTtlSec`, `CacheBudget.SummaryTtlSec`). Don't sprinkle bare `0.5f` / `1.0f` literals through the UI — the centralised constants exist so editing one file rebalances the whole panel.
 - **New embedded doc** — drop the `.md` somewhere in the repo, add an `<EmbeddedResource Include="..\..." Link="Resources\docs\X.md" LogicalName="StormGuide.Resources.docs.X.md" />` entry to `StormGuide.csproj`, and surface it in the Settings tab's doc viewer.
 
 ## Game API hook map
@@ -181,10 +184,17 @@ Landed as `tests/StormGuide.Tests/` (`net10.0`, xunit) on commit — see Test / 
 
 - **Provider-level tests.** `BuildingProvider` / `CornerstoneDraftProvider` inputs are still typed against `EffectModel` / `BuildingsService` from `Assembly-CSharp`. Until pure scoring helpers are extracted into `Domain/`, ranking-determinism tests have to wait. Extracting them is also the prerequisite for Phase C cache budgeting.
 
-### Phase C — Performance budgets
+### Phase C — Performance budgets (centralisation landed)
 
-- Per-tab p50/p95 budgets recorded in this section once the baseline is captured. Diagnostics tab surfaces them live; CI does not gate on them.
-- Centralized cache TTL constants (likely `StormGuide/Data/CacheBudget.cs`) replace the ad-hoc `new TtlCache<T>(producer, seconds)` literals scattered through `UI/SidePanel.cs`. Editing one file rebalances the whole UI.
+Landed:
+
+- `StormGuide/Data/CacheBudget.cs` — single source of truth for cache TTLs (`AlertsTtlSec`, `SummaryTtlSec`, `OwnedCornerstonesTtlSec`, `TraderDesiresTtlSec`) and `PerfRingFrames`. `UI/SidePanel.cs` no longer carries bare timing literals.
+- `StormGuide/Domain/PerfRing.cs` — bounded ring + percentile math extracted into Domain so it's pure and unit-tested. Replaces the inline `Dictionary<string, Queue<double>>` plus private `Percentile` helper. The Diagnostics tab now reads `ring.P50` / `ring.P95` directly.
+
+Still pending (require a live mid-game profiling pass):
+
+- Per-tab p50/p95 budgets, recorded in this section. Diagnostics tab surfaces them live; CI does not gate on them. Capture the baseline against one representative settlement, then set budgets at observed p95 × 1.5 so a regression flips a Diagnostics warning.
+- Tune the `CacheBudget` constants once the baseline is captured — today's values (0.5s / 1.0s / 120 frames) are hand-tuned defaults, not measured ones.
 
 ### Phase D — Productionize Embark + Diagnostics
 
