@@ -51,6 +51,7 @@ public sealed class PluginConfig
     public ConfigEntry<string>           PinnedChaseModel { get; }
     public ConfigEntry<string>           TraderVisitArchive { get; }
     public ConfigEntry<string>           CornerstoneHistorySearch { get; }
+    public ConfigEntry<string>           HomeCollapsedSections { get; }
 
     public PluginConfig(ConfigFile cfg)
     {
@@ -165,5 +166,7 @@ public sealed class PluginConfig
             "Semicolon-separated archive of past trader visits. Format: 'trader|good=val,good=val,good=val;...'. Rolling 20 entries.");
         CornerstoneHistorySearch = cfg.Bind(SectionUI, "Cornerstone History Search", "",
             "Last text filter applied to the Draft tab's previously-drafted list. Persists between sessions.");
+        HomeCollapsedSections = cfg.Bind(SectionUI, "Home Collapsed Sections", "",
+            "Comma-separated list of Home tab section keys (pinned, marked, fuel, village, trade, idle, rebalance, risks, needs, orders, glades, cornerstones) the user has collapsed. Toggled via the \u25be / \u25b8 caret next to each header.");
     }
 }

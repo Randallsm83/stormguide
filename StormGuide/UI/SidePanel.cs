@@ -216,6 +216,10 @@ internal sealed class SidePanel : MonoBehaviour
 
     // ---- Home tab state ----------------------------------------------------
     private Vector2 _homeScroll;
+    // Section keys the user has collapsed (caret toggle next to each header).
+    // Persisted via PluginConfig.HomeCollapsedSections; reloaded in Start().
+    private readonly HashSet<string> _collapsedHomeSections =
+        new(StringComparer.OrdinalIgnoreCase);
 
     // ---- Orders/Glades tab state ------------------------------------------
     private Vector2 _ordersScroll;
@@ -316,6 +320,11 @@ internal sealed class SidePanel : MonoBehaviour
         // Restore the cornerstone-history search filter so the Draft tab's
         // previously-drafted list keeps its filter across sessions.
         _cornerstoneHistorySearch = Config.CornerstoneHistorySearch.Value ?? "";
+        // Restore the Home tab's collapsed-section set so the user's
+        // expand/collapse state survives a game restart.
+        if (!string.IsNullOrEmpty(Config.HomeCollapsedSections.Value))
+            foreach (var key in Config.HomeCollapsedSections.Value.Split(','))
+                if (!string.IsNullOrEmpty(key)) _collapsedHomeSections.Add(key);
 
         // Cache the slow aggregates. TTLs live in CacheBudget so editing one
         // file rebalances the whole UI; sub-second TTLs are well below player
@@ -1166,6 +1175,38 @@ internal sealed class SidePanel : MonoBehaviour
         catch { /* swallow — dumps are best-effort */ }
     }
 
+    /// <summary>
+    /// Opens the collapsible header row for a Home tab subsection. Renders a
+    /// caret toggle (\u25be expanded / \u25b8 collapsed) followed by the section
+    /// label inside a <see cref="GUILayout.BeginHorizontal()"/> block. Returns
+    /// <c>true</c> when the section is expanded; the caller should render the
+    /// body when true and skip it when false.
+    ///
+    /// The caller is always responsible for closing the row with
+    /// <c>FlexibleSpace</c> + <c>EndHorizontal</c>; case-2 sections (Village,
+    /// Trade, Idle, Orders, Glades, Cornerstones) insert their existing
+    /// right-aligned "open \u203a" buttons before the EndHorizontal.
+    ///
+    /// Collapsed state is persisted in <see cref="PluginConfig.HomeCollapsedSections"/>
+    /// as a comma-separated set of keys.
+    /// </summary>
+    private bool BeginHomeSection(string key, string label, GUIStyle? labelStyle = null)
+    {
+        GUILayout.BeginHorizontal();
+        var collapsed = _collapsedHomeSections.Contains(key);
+        var caret = collapsed ? "\u25b8" : "\u25be";
+        if (GUILayout.Button(
+                new GUIContent(caret, collapsed ? "Expand section" : "Collapse section"),
+                _tabStyle, GUILayout.Width(22)))
+        {
+            if (collapsed) _collapsedHomeSections.Remove(key);
+            else           _collapsedHomeSections.Add(key);
+            Config.HomeCollapsedSections.Value = string.Join(",", _collapsedHomeSections);
+        }
+        GUILayout.Label(label, labelStyle ?? _bodyStyle);
+        return !collapsed;
+    }
+
     private void DrawHomeTab()
     {
         if (!LiveGameState.IsReady)
@@ -1199,7 +1240,10 @@ internal sealed class SidePanel : MonoBehaviour
         if (_pinned.Count == 0) return;
 
         GUILayout.Space(4);
-        GUILayout.Label($"☆ Pinned recipes — {_pinned.Count}", _bodyStyle);
+        var sectionExpanded = BeginHomeSection("pinned", $"☆ Pinned recipes — {_pinned.Count}");
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
         var stale = new List<(string, string)>();
         // Group pins by their building's catalog Kind so long pin lists get
         // visual chapter breaks (Workshops vs Services vs Farms etc).
@@ -1377,7 +1421,10 @@ internal sealed class SidePanel : MonoBehaviour
         var hints = LiveGameState.WorkerRebalanceHints(Catalog);
         if (hints.Count == 0) return;
         GUILayout.Space(6);
-        GUILayout.Label($"⚠ Worker rebalance — {hints.Count} suggestion(s)", _bodyStyle);
+        var sectionExpanded = BeginHomeSection("rebalance", $"⚠ Worker rebalance — {hints.Count} suggestion(s)");
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
         foreach (var h in hints.Take(4))
         {
             GUILayout.Label(
@@ -1400,11 +1447,16 @@ internal sealed class SidePanel : MonoBehaviour
 
         GUILayout.Space(6);
         var srcTag = fr.IsLiveBurnRate ? "live" : "est.";
-        GUILayout.Label(
-            $"● Fuel — {fr.Stockpile} units · ~{fr.RunwayMinutes:0.#} min runway ({srcTag} {fr.EstimatedBurnPerMinute:0.#}/min)",
-            fr.RunwayMinutes < 5 ? (_critStyle ?? _bodyStyle)
+        var fuelStyle = fr.RunwayMinutes < 5 ? (_critStyle ?? _bodyStyle)
             : fr.RunwayMinutes < 15 ? (_warnStyle ?? _bodyStyle)
-            : _bodyStyle);
+            : _bodyStyle;
+        var sectionExpanded = BeginHomeSection(
+            "fuel",
+            $"● Fuel — {fr.Stockpile} units · ~{fr.RunwayMinutes:0.#} min runway ({srcTag} {fr.EstimatedBurnPerMinute:0.#}/min)",
+            fuelStyle);
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
         // Top-3 contributing fuel goods so the player can see what to refill.
         foreach (var (good, n) in fr.ByGood.Take(3))
             GUILayout.Label($"   {good}: {n}", _mutedStyle);
@@ -1471,9 +1523,12 @@ internal sealed class SidePanel : MonoBehaviour
     {
         if (_markedStopped.Count == 0 && _markedPriority.Count == 0) return;
         GUILayout.Space(4);
-        GUILayout.Label(
-            $"\u26a1 Marked recipes \u2014 {_markedPriority.Count} priority \u00b7 {_markedStopped.Count} stopped",
-            _bodyStyle);
+        var sectionExpanded = BeginHomeSection(
+            "marked",
+            $"\u26a1 Marked recipes \u2014 {_markedPriority.Count} priority \u00b7 {_markedStopped.Count} stopped");
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
         // Find a building hosting each marked recipe so the row can navigate.
         // Recipe -> first matching building name from the catalog.
         string? FirstBuildingFor(string recipeName) => Catalog.Buildings.Values
@@ -1535,7 +1590,10 @@ internal sealed class SidePanel : MonoBehaviour
         if (unmet.Count == 0) return;
 
         GUILayout.Space(6);
-        GUILayout.Label($"⚠ Race needs unmet — {unmet.Count}", _bodyStyle);
+        var sectionExpanded = BeginHomeSection("needs", $"⚠ Race needs unmet — {unmet.Count}");
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
         // Cap the list so the home tab doesn't unbounded-grow on starvation.
         foreach (var line in unmet.Take(6))
             GUILayout.Label($"   · {line}", _mutedStyle);
@@ -1557,10 +1615,10 @@ internal sealed class SidePanel : MonoBehaviour
         }
 
         GUILayout.Space(4);
-        GUILayout.BeginHorizontal();
-        GUILayout.Label($"● Village  —  {summary.TotalVillagers} villagers" +
-                        (homeless > 0 ? $"  ·  {homeless} homeless" : ""),
-                        _bodyStyle);
+        var sectionExpanded = BeginHomeSection(
+            "village",
+            $"● Village  —  {summary.TotalVillagers} villagers" +
+                (homeless > 0 ? $"  ·  {homeless} homeless" : ""));
         GUILayout.FlexibleSpace();
         if (Config.ShowVillagersTab.Value &&
             GUILayout.Button(new GUIContent("open ›", "Jump to Villagers tab"),
@@ -1569,6 +1627,7 @@ internal sealed class SidePanel : MonoBehaviour
             _activeTab = Tab.Villagers;
         }
         GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
 
         var line = string.Join("  ·  ", summary.Races
             .Where(p => p.Alive > 0 || p.Total > 0)
@@ -1626,8 +1685,7 @@ internal sealed class SidePanel : MonoBehaviour
         if (cur is null && nxt is null) return;
 
         GUILayout.Space(6);
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("● Trade", _bodyStyle);
+        var sectionExpanded = BeginHomeSection("trade", "● Trade");
         GUILayout.FlexibleSpace();
         if (Config.ShowGoodTab.Value &&
             GUILayout.Button(new GUIContent("open ›", "Jump to Good tab"),
@@ -1636,6 +1694,7 @@ internal sealed class SidePanel : MonoBehaviour
             _activeTab = Tab.Good;
         }
         GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
 
         if (cur is not null)
         {
@@ -1848,8 +1907,7 @@ internal sealed class SidePanel : MonoBehaviour
         if (idle.Count == 0) return;
 
         GUILayout.Space(6);
-        GUILayout.BeginHorizontal();
-        GUILayout.Label($"⚠ Idle workshops — {idle.Count}", _bodyStyle);
+        var sectionExpanded = BeginHomeSection("idle", $"⚠ Idle workshops — {idle.Count}");
         GUILayout.FlexibleSpace();
         if (Config.ShowBuildingTab.Value &&
             GUILayout.Button(new GUIContent("open ›", "Jump to Building tab"),
@@ -1858,6 +1916,7 @@ internal sealed class SidePanel : MonoBehaviour
             _activeTab = Tab.Building;
         }
         GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
 
         // Top-3 grouped by model so duplicates collapse.
         var grouped = idle
@@ -1886,7 +1945,10 @@ internal sealed class SidePanel : MonoBehaviour
         SampleAtRiskFlows(alerts);
 
         GUILayout.Space(6);
-        GUILayout.Label($"⚠ Goods at risk — {alerts.GoodsAtRisk.Count}", _bodyStyle);
+        var sectionExpanded = BeginHomeSection("risks", $"⚠ Goods at risk — {alerts.GoodsAtRisk.Count}");
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
         foreach (var g in alerts.GoodsAtRisk.Take(5))
         {
             var disp = Localization.GoodName(g.Good, Catalog);
@@ -2062,10 +2124,9 @@ internal sealed class SidePanel : MonoBehaviour
         }
 
         GUILayout.Space(6);
-        GUILayout.BeginHorizontal();
-        GUILayout.Label(
-            $"● Orders — {orders.Count} active ({picked} picked, {tracked} tracked)",
-            _bodyStyle);
+        var sectionExpanded = BeginHomeSection(
+            "orders",
+            $"● Orders — {orders.Count} active ({picked} picked, {tracked} tracked)");
         GUILayout.FlexibleSpace();
         if (Config.ShowOrdersTab.Value &&
             GUILayout.Button(new GUIContent("open ›", "Jump to Orders tab"),
@@ -2074,6 +2135,7 @@ internal sealed class SidePanel : MonoBehaviour
             _activeTab = Tab.Orders;
         }
         GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
         if (critical > 0)
             GUILayout.Label(
                 $"   ⚠ {critical} order{(critical == 1 ? "" : "s")} under 1 min from failure",
@@ -2099,10 +2161,9 @@ internal sealed class SidePanel : MonoBehaviour
 
         var explored = summary.Discovered * 100f / summary.Total;
         GUILayout.Space(6);
-        GUILayout.BeginHorizontal();
-        GUILayout.Label(
-            $"● Forest — {summary.Discovered}/{summary.Total} glades ({explored:0}%)",
-            _bodyStyle);
+        var sectionExpanded = BeginHomeSection(
+            "glades",
+            $"● Forest — {summary.Discovered}/{summary.Total} glades ({explored:0}%)");
         GUILayout.FlexibleSpace();
         if (Config.ShowGladesTab.Value &&
             GUILayout.Button(new GUIContent("open ›", "Jump to Glades tab"),
@@ -2111,6 +2172,7 @@ internal sealed class SidePanel : MonoBehaviour
             _activeTab = Tab.Glades;
         }
         GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
         if (summary.RewardChasesActive > 0)
             GUILayout.Label(
                 $"   ⚠ {summary.RewardChasesActive} reward-chase{(summary.RewardChasesActive == 1 ? "" : "s")} active",
@@ -2193,8 +2255,7 @@ internal sealed class SidePanel : MonoBehaviour
         if (owned is null || owned.Count == 0) return;
 
         GUILayout.Space(6);
-        GUILayout.BeginHorizontal();
-        GUILayout.Label($"● Cornerstones — {owned.Count} owned", _bodyStyle);
+        var sectionExpanded = BeginHomeSection("cornerstones", $"● Cornerstones — {owned.Count} owned");
         GUILayout.FlexibleSpace();
         if (Config.ShowDraftTab.Value &&
             GUILayout.Button(new GUIContent("open ›", "Jump to Draft tab"),
@@ -2203,6 +2264,7 @@ internal sealed class SidePanel : MonoBehaviour
             _activeTab = Tab.Draft;
         }
         GUILayout.EndHorizontal();
+        if (!sectionExpanded) return;
         foreach (var o in owned.Take(3))
             GUILayout.Label($"   · {o.DisplayName}", _mutedStyle);
         if (owned.Count > 3)

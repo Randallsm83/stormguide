@@ -11,6 +11,11 @@ entries between releases go under `## [Unreleased]`.
 
 ## [Unreleased]
 
+### Added
+
+- Home tab subsection collapse/expand: every Home section (Pinned, Marked recipes, Fuel, Village, Trade, Idle, Rebalance, Risks, Needs, Orders, Glades, Cornerstones) now renders a ▾ / ▸ caret next to its header. Click to collapse the section body; the chosen state persists across sessions via the new `PluginConfig.HomeCollapsedSections` config string. Header decoration ("open \u203a" jump buttons, dynamic styling for fuel runway colour) stays intact when the section is expanded.
+- `StormGuide/UI/SidePanel.BeginHomeSection` helper: opens a `BeginHorizontal` row with the caret + label, returning whether the section is expanded so callers can early-return without rendering the body. Persists collapsed-set diffs immediately on toggle.
+
 ## [1.0.0] - 2026-04-28
 
 First public release. The `0.0.1` baseline already shipped every feature surface end-users see; `1.0.0` is what closes out the productionization work behind it: release plumbing (manifest template, CI, release workflow, version-bump script), a Domain-only test project (60 tests), centralised cache TTLs and per-section frame-cost percentiles, productionized Embark and Diagnostics tabs, and a localization passthrough adapter so non-English players can pick up translated catalog strings once the live text-service is wired.
