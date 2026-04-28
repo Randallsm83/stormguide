@@ -171,6 +171,15 @@ internal sealed class SidePanel : MonoBehaviour
     private readonly Dictionary<string, PerfRing> _perfHistory =
         new(StringComparer.Ordinal);
 
+    // Per-Building-tab-frame cache: produced-good model name → (matching
+    // active order, ETA minutes at current settlement burn). Populated once
+    // at the top of <see cref="DrawBuildingDetail"/> so each recipe card can
+    // surface a one-line "this recipe feeds order X" hint without
+    // re-scanning ActiveOrders / MatchedGoodFor per row. Cleared and
+    // repopulated on every render; lifetime is one frame.
+    private Dictionary<string, (LiveGameState.OrderInfo Order, double Minutes)>?
+        _recipeOrderEtaCache;
+
     // Pin preset name input (Settings tab).
     private string _newPresetName = "";
 
@@ -2488,8 +2497,10 @@ internal sealed class SidePanel : MonoBehaviour
             ? name => LiveGameState.FlowFor(name, Catalog).Net
             : null;
         var vm = BuildingProvider.For(Catalog, _selectedBuilding!, stockLookup, workersLookup, flowLookup);
+        // Refresh the recipe → order ETA map for this frame's recipe cards.
+        PopulateRecipeOrderEtaCache();
         GUILayout.Label(vm.Building.DisplayName, _h1Style);
-        var meta = $"{vm.Building.Kind} · {vm.Building.Profession}";
+        var meta = $"{vm.Building.Kind} \u00b7 {vm.Building.Profession}";
         GUILayout.Label(meta, _mutedStyle);
         DrawBuildingCyclesHeader(_selectedBuilding!);
 
@@ -2744,6 +2755,13 @@ internal sealed class SidePanel : MonoBehaviour
 
         GUILayout.Label(FormatRecipeInputs(rk.Recipe), _mutedStyle);
 
+        // Active-order ETA hint: when this recipe's produced good is the
+        // target of an active order objective, surface the matching order +
+        // estimated minutes at current settlement burn. Settlement-wide net
+        // is the right denominator here — it already accounts for every
+        // running producer of the good, not just this recipe.
+        DrawRecipeOrderEta(rk.Recipe);
+
         if (rk.Inputs.Count > 0)
         {
             foreach (var ia in rk.Inputs)
@@ -2827,6 +2845,71 @@ internal sealed class SidePanel : MonoBehaviour
 
         GUILayout.EndHorizontal();
         GUILayout.Space(4);
+    }
+
+    /// <summary>
+    /// Pre-computes a map of <c>produced-good model name</c> →
+    /// <c>(order, ETA minutes)</c> for the currently-active orders. Called
+    /// once per <see cref="DrawBuildingDetail"/> render so the recipe cards
+    /// can render a one-line ETA hint without re-walking the order list.
+    ///
+    /// ETA uses the settlement's current net flow (positive only) as the
+    /// denominator — mirrors <see cref="DrawObjectiveEta"/>. When multiple
+    /// orders target the same good, the soonest ETA wins.
+    /// </summary>
+    private void PopulateRecipeOrderEtaCache()
+    {
+        _recipeOrderEtaCache = new Dictionary<string, (LiveGameState.OrderInfo Order, double Minutes)>(
+            StringComparer.OrdinalIgnoreCase);
+        if (!LiveGameState.IsReady) return;
+        IReadOnlyList<LiveGameState.OrderInfo> orders;
+        try { orders = LiveGameState.ActiveOrders(); }
+        catch { return; }
+        foreach (var o in orders)
+        {
+            if (o.Objectives.Count == 0) continue;
+            foreach (var ob in o.Objectives)
+            {
+                if (ob.Completed) continue;
+                if (string.IsNullOrEmpty(ob.Description)) continue;
+                var match = ProgressRegex.Match(ob.Description);
+                if (!match.Success) continue;
+                if (!int.TryParse(match.Groups[1].Value, out var have)) continue;
+                if (!int.TryParse(match.Groups[2].Value, out var need)) continue;
+                if (need <= have) continue;
+                var matched = LiveGameState.MatchedGoodFor(ob, Catalog);
+                if (matched is null) continue;
+                var net = LiveGameState.FlowFor(matched.Name, Catalog).Net;
+                if (net <= 1e-6) continue;
+                var minutes = (need - have) / net;
+                if (minutes <= 0 || minutes > 999) continue;
+                if (_recipeOrderEtaCache.TryGetValue(matched.Name, out var existing) &&
+                    existing.Minutes <= minutes) continue;
+                _recipeOrderEtaCache[matched.Name] = (o, minutes);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Renders the inline order-ETA hint on a recipe card when applicable.
+    /// Uses the cache populated by <see cref="PopulateRecipeOrderEtaCache"/>;
+    /// silent when no active order targets this recipe's produced good or
+    /// when the settlement isn't producing it net-positive. Click jumps to
+    /// the Orders tab.
+    /// </summary>
+    private void DrawRecipeOrderEta(RecipeInfo r)
+    {
+        if (_recipeOrderEtaCache is null) return;
+        if (string.IsNullOrEmpty(r.ProducedGood)) return;
+        if (!_recipeOrderEtaCache.TryGetValue(r.ProducedGood, out var entry)) return;
+        var tier = string.IsNullOrEmpty(entry.Order.Tier) ? "" : $" [{entry.Order.Tier}]";
+        var label = $"   \u2192 reputation order \"{entry.Order.DisplayName}\"{tier}: ~{entry.Minutes:0.#}m at current burn";
+        if (GUILayout.Button(
+                new GUIContent(label, "Open Orders tab"),
+                _okStyle ?? _tabStyle))
+        {
+            _activeTab = Tab.Orders;
+        }
     }
 
     /// <summary>

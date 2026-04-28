@@ -15,6 +15,8 @@ entries between releases go under `## [Unreleased]`.
 
 - Home tab subsection collapse/expand: every Home section (Pinned, Marked recipes, Fuel, Village, Trade, Idle, Rebalance, Risks, Needs, Orders, Glades, Cornerstones) now renders a ▾ / ▸ caret next to its header. Click to collapse the section body; the chosen state persists across sessions via the new `PluginConfig.HomeCollapsedSections` config string. Header decoration ("open \u203a" jump buttons, dynamic styling for fuel runway colour) stays intact when the section is expanded.
 - `StormGuide/UI/SidePanel.BeginHomeSection` helper: opens a `BeginHorizontal` row with the caret + label, returning whether the section is expanded so callers can early-return without rendering the body. Persists collapsed-set diffs immediately on toggle.
+- Building tab recipe cards: when a recipe's produced good is the target of an active reputation order objective and the settlement is producing it net-positive, the card now surfaces a clickable `\u2192 reputation order "X" [tier]: ~N.Nm at current burn` line. ETA uses settlement-wide net flow as the denominator; clicking jumps to the Orders tab. Soonest-ETA wins when multiple orders target the same good.
+- `SidePanel.PopulateRecipeOrderEtaCache` / `DrawRecipeOrderEta` helpers: populate a per-frame map of `producedGood \u2192 (order, ETA minutes)` at the top of `DrawBuildingDetail` so each recipe card looks up in O(1) instead of re-walking active orders + `MatchedGoodFor`.
 
 ## [1.0.0] - 2026-04-28
 
