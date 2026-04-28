@@ -16,8 +16,10 @@ entries between releases go under `## [Unreleased]`.
 - `CHANGELOG.md` (this file).
 - `tools/manifest.template.json` — checked-in Thunderstore manifest template; `tools/Pack.ps1` reads it instead of building the manifest inline.
 - `tools/Bump.ps1` — single command to bump the csproj `<Version>` and roll the changelog `Unreleased` section into a dated entry.
-- `.github/workflows/ci.yml` — validation pipeline on PRs and `main` (catalog JSON parse, manifest template parse, `tools/CatalogTrim` build, PowerShell syntax check).
+- `.github/workflows/ci.yml` — validation pipeline on PRs and `main` (catalog JSON parse, manifest template parse, `tools/CatalogTrim` build, `dotnet test` on `tests/StormGuide.Tests`, PowerShell syntax check).
 - `.github/workflows/release.yml` — on `v*` tag, extracts release notes from this changelog and creates the GitHub Release. Asset upload is done from a workstation via `tools/Pack.ps1 -Publish` because the plugin DLL cannot be built on the runner without the game's reference assemblies.
+- `tests/StormGuide.Tests/` — xunit project (`net10.0`) source-sharing the `Domain/` layer via `<Compile Include>`. Covers `Score` formatting and value/components reconciliation, `Catalog` lookup methods (`RecipesProducing`, `RecipesConsuming`, `RacesNeeding`), `RecipeInfo.BaseGoodsPerSec`, and round-trip deserialization of the embedded catalog JSON files using the same Newtonsoft settings as `StaticCatalog`. 29 tests, no game references.
+- `tests/` folder added to `StormGuide.slnx` so `dotnet build StormGuide.slnx` and `dotnet test StormGuide.slnx` pick up the test project.
 
 ### Changed
 

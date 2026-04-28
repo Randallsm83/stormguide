@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>StormGuide.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!--
+    Domain-only source share. The Domain folder is intentionally game-free (no
+    Unity, no BepInEx, no Eremite refs - verified by grep). Source-sharing the
+    .cs files keeps the test project decoupled from the plugin's game refs.
+
+    DO NOT add a <ProjectReference> to StormGuide.csproj here - that would pull
+    in Assembly-CSharp / UniRx / Sirenix.* which aren't available on CI.
+
+    DO NOT broaden this glob to Providers/, Data/, or UI/ - those layers depend
+    on the running game. If a Provider needs unit-testable pure logic, extract
+    it into Domain/ first.
+  -->
+  <ItemGroup>
+    <Compile Include="..\..\StormGuide\Domain\**\*.cs" LinkBase="Domain" />
+  </ItemGroup>
+
+  <!-- Catalog JSON files are copied next to the test assembly so tests can
+       deserialize them from AppContext.BaseDirectory without path arithmetic. -->
+  <ItemGroup>
+    <None Include="..\..\StormGuide\Resources\catalog\*.json"
+          Link="catalog\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>

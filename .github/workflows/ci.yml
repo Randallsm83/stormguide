@@ -10,10 +10,8 @@
 #   - the embedded trimmed catalog JSON parses
 #   - the Thunderstore manifest template parses and has the required keys
 #   - tools/CatalogTrim builds (net10.0, pure C#, no game refs)
+#   - tests/StormGuide.Tests runs (Domain-only via <Compile Include>)
 #   - tools/*.ps1 are syntactically valid
-#
-# When Phase B lands and `tests/StormGuide.Tests/` exists (Domain-only), this
-# workflow gains a `dotnet test` step against that project.
 
 name: CI
 
@@ -81,6 +79,9 @@ jobs:
 
       - name: Build tools/CatalogTrim (no game refs)
         run: dotnet build tools/CatalogTrim/CatalogTrim.csproj -c Release -nologo
+
+      - name: Run StormGuide.Tests (Domain-only)
+        run: dotnet test tests/StormGuide.Tests/StormGuide.Tests.csproj -c Release --nologo --verbosity minimal
 
       - name: PowerShell syntax check (tools/*.ps1)
         shell: pwsh

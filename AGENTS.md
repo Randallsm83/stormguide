@@ -52,19 +52,24 @@ Reference assemblies are resolved from:
 
 ## Test / smoke
 
-There are no unit tests *yet*. The "test" surface today is an MSBuild `Smoke` target in `StormGuide.csproj` plus a runtime smoke script.
+Three layers, fastest to slowest:
 
 ```pwsh
-# Structural sanity over embedded catalog + built assembly. Fails fast.
+# 1. Domain-only xunit tests (no game refs). Runs on CI.
+dotnet test tests/StormGuide.Tests/StormGuide.Tests.csproj -c Release
+
+# 2. Structural sanity over embedded catalog + built plugin assembly.
 dotnet build StormGuide/StormGuide.csproj /t:Build;Smoke -c Release
 
-# End-to-end: build → deploy to r2modman → tail BepInEx log
+# 3. End-to-end: build → deploy to r2modman → tail BepInEx log.
 pwsh tools/SmokeRun.ps1
 ```
 
-`Smoke` checks that `Resources/catalog/{buildings,goods,recipes,races}.json` exist and the built assembly is on disk. Extend it by adding more `<Error Condition="..." Text="..." />` guards — keep checks fast and message-rich; CI can wire `dotnet build /t:Smoke` without an external runner. Anything that needs the running game belongs in `tools/SmokeRun.ps1`, not `Smoke`.
+`tests/StormGuide.Tests/` (`net10.0`, xunit) source-shares the `Domain/` layer via `<Compile Include="..\..\StormGuide\Domain\**\*.cs" />`. **Do not** broaden that glob to `Providers/` / `Data/` / `UI/` and **do not** add a `<ProjectReference>` to `StormGuide.csproj` — either move would pull in `Assembly-CSharp` / Unity / BepInEx, which CI cannot resolve. If a Provider needs unit-testable pure logic, extract it to `Domain/` first.
 
-> **Planned (1.0 plan, Phase B):** a Domain-only xunit project at `tests/StormGuide.Tests/` covering catalog deserialization, `Score.Components` reconciliation, and deterministic Building/Draft ranking. `dotnet test` becomes part of the local smoke loop and CI. The test project must **not** transitively pull in game assemblies — it depends on `Domain/` types only, so the dependency direction (Resources → Domain → Providers → UI) stays enforceable.
+Catalog JSON files are copied next to the test assembly via `<None Include=... CopyToOutputDirectory>` so `CatalogDeserializationTests` can read from `AppContext.BaseDirectory/catalog/`. The deserialization settings in that test must mirror `StormGuide/Data/StaticCatalog.cs` — keep them in lockstep when one moves.
+
+`Smoke` (the MSBuild target) checks that `Resources/catalog/{buildings,goods,recipes,races}.json` exist and the built assembly is on disk. Extend it by adding more `<Error Condition="..." Text="..." />` guards — keep checks fast and message-rich. Anything that needs the running game belongs in `tools/SmokeRun.ps1`, not `Smoke`.
 
 ## Packaging / release
 
@@ -153,7 +158,7 @@ What the panel currently shows, by tab. Update when adding/removing surfaces so 
 - Don't iterate `BuildingsService.Buildings` directly — it's a `Dictionary<int, Building>`; use `.Values`.
 - Don't auto-launch the game from PowerShell scripts. r2modman owns the launch and we don't replicate its preloader injection reliably.
 - Don't reach into `GameController` from `Providers/` or `UI/` — go through `LiveGameState`. Keeps the read-only invariant auditable in one file.
-- Don't reorder dependency direction (Resources → Domain → Providers → UI). Domain stays game-free so the planned `tests/StormGuide.Tests/` project can stay game-free too.
+- Don't reorder dependency direction (Resources → Domain → Providers → UI). Domain stays game-free so `tests/StormGuide.Tests/` can stay game-free too.
 - Don't commit `tools/dist/`, `tools/screenshots/`, or `research/AssemblyCSharp/` — all gitignored.
 - Don't bump `<Version>` in `StormGuide/StormGuide.csproj` directly once `tools/Bump.ps1` lands — it has to keep csproj and `CHANGELOG.md` in sync.
 
@@ -170,11 +175,11 @@ Tracked in plan `503ea85f-d552-4ae2-baae-2b894fb2bc18` ("StormGuide 1.0 — Prod
 - `.github/workflows/release.yml` — triggers on `v*` tags. Runs Pack, then `gh release create` to attach `tools/dist/StormGuide-<version>.zip`.
 - `tools/Bump.ps1` — single command: bumps `<Version>` in `StormGuide/StormGuide.csproj`, rolls `CHANGELOG.md` `Unreleased` into a dated section, and stages both files for the same commit.
 
-### Phase B — Test scaffolding
+### Phase B — Test scaffolding (landed)
 
-- `tests/StormGuide.Tests/StormGuide.Tests.csproj` — modern SDK target (probably `net8.0`), xunit, `<IsPackable>false</IsPackable>`. **Domain-only**: `<ProjectReference>` only to a future `StormGuide.Domain` lib or via `<Compile Include="..\StormGuide\Domain\**\*.cs" />`. Must not transitively reference `Assembly-CSharp` / Unity / BepInEx.
-- Coverage: catalog round-trip (`StaticCatalog` deserialize → reserialize → equal), `Score.Components` sums match the headline, deterministic ranking on canned `BuildingProvider`/`CornerstoneDraftProvider` inputs.
-- `dotnet test` becomes the third command in the local smoke loop (alongside `dotnet build /t:Build;Smoke` and `pwsh tools/SmokeRun.ps1`).
+Landed as `tests/StormGuide.Tests/` (`net10.0`, xunit) on commit — see Test / smoke section above. Outstanding follow-ups owned by later phases:
+
+- **Provider-level tests.** `BuildingProvider` / `CornerstoneDraftProvider` inputs are still typed against `EffectModel` / `BuildingsService` from `Assembly-CSharp`. Until pure scoring helpers are extracted into `Domain/`, ranking-determinism tests have to wait. Extracting them is also the prerequisite for Phase C cache budgeting.
 
 ### Phase C — Performance budgets
 
