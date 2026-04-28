@@ -84,15 +84,9 @@ pwsh tools/Pack.ps1 -Publish   # also runs `gh release create` (or uploads to ex
 pwsh tools/Capture.ps1         # full-screen PNGs into tools/screenshots/ (Thunderstore page)
 ```
 
-Version comes from `<Version>` in `StormGuide/StormGuide.csproj`. `tools/dist/` and `tools/screenshots/` are gitignored.
+Version comes from `<Version>` in `StormGuide/StormGuide.csproj`. Bump it via `tools/Bump.ps1 -Version <x.y.z>` so the csproj and `CHANGELOG.md` move together; never hand-edit either.
 
-Current caveats (resolved by Phase A of the 1.0 plan):
-
-- `Pack.ps1` builds the Thunderstore manifest **inline** with a placeholder `website_url` (`https://github.com/example/stormguide`).
-- No real `tools/icon.png` — `Pack.ps1` falls back to a 1×1 transparent PNG so the layout still validates.
-- There is no `CHANGELOG.md` and no GitHub Actions — every release is currently driven by hand from a workstation.
-
-> **Planned (1.0 plan, Phase A):** extract the manifest to a checked-in template with the real repo URL, ship a real `tools/icon.png`, add `CHANGELOG.md` (Keep-a-Changelog), and wire up `.github/workflows/{ci,release}.yml`. `ci.yml` runs `dotnet build /t:Build;Smoke -c Release` + `dotnet test` on PRs and `main`. `release.yml` triggers on `v*` tags and attaches the Pack zip to the GitHub Release. A `tools/Bump.ps1` (or similar) updates `<Version>` in the csproj and prepends a new section to `CHANGELOG.md` in one step.
+`tools/dist/` and `tools/screenshots/` are gitignored. The release flow is split: `release.yml` creates the GitHub Release and attaches notes from `CHANGELOG.md` on `v*` tag push; `tools/Pack.ps1 -Publish` is run from a workstation afterwards to build the plugin DLL (game refs aren't on the runner) and `gh release upload --clobber` the Thunderstore zip onto the same release. The same zip is then uploaded to `thunderstore.io/c/against-the-storm/` by hand.
 
 ## Hard invariants
 
@@ -169,59 +163,19 @@ What the panel currently shows, by tab. Update when adding/removing surfaces so 
 - Don't commit `tools/dist/`, `tools/screenshots/`, or `research/AssemblyCSharp/` — all gitignored.
 - Don't bump `<Version>` in `StormGuide/StormGuide.csproj` directly once `tools/Bump.ps1` lands — it has to keep csproj and `CHANGELOG.md` in sync.
 
-## Planned for 1.0
+## 1.0 history
 
-Tracked in plan `503ea85f-d552-4ae2-baae-2b894fb2bc18` ("StormGuide 1.0 — Productionize, Performance, Release"). Items below are **forward-looking**; treat the existing sections above as the source of truth for what's actually implemented. When a phase lands, fold its details into the relevant section above and trim the bullet here.
+The full Phase A–F productionization arc that closed `0.0.1 → 1.0.0` is recorded in plan `503ea85f-d552-4ae2-baae-2b894fb2bc18` ("StormGuide 1.0 — Productionize, Performance, Release") and in `CHANGELOG.md` under `[1.0.0]`. Per-phase summaries:
 
-### Phase A — Release plumbing
+- **Phase A** — release plumbing (manifest template, real icon, CHANGELOG, `tools/Bump.ps1`, `.github/workflows/{ci,release}.yml`).
+- **Phase B** — `tests/StormGuide.Tests/` (`net10.0`, xunit, Domain-only via `<Compile Include>`).
+- **Phase C** — cache TTL constants in `Data/CacheBudget.cs`, percentile math in `Domain/PerfRing.cs`. Live profiling baseline + per-tab p95 budgets are still open follow-ups (Diagnostics surfaces them; CI doesn't gate).
+- **Phase D** — `Domain/EmbarkScoring.cs`, `ShowEmbarkTab` flipped to `true`, Settings "Diagnostics bundle" copy-action.
+- **Phase E** — `Domain/Localization.cs` adapter; SidePanel display-name lookups routed through it. `Localization.LiveLookup` wiring against the AtS text-service is deferred until the surface is verified via dnSpy.
+- **Phase F** — `1.0.0` shipped.
 
-- `tools/manifest.template.json` (or similar) replaces the inline Thunderstore manifest in `Pack.ps1`. Real `website_url`, real `dependencies` list.
-- Real `tools/icon.png`. Drop the 1×1 stub fallback for tagged release builds.
-- `CHANGELOG.md` in Keep-a-Changelog format — `Unreleased` section plus a seeded `0.0.1` entry covering everything shipped to date.
-- `.github/workflows/ci.yml` — `windows-latest` runner; runs `dotnet build /t:Build;Smoke -c Release` + `dotnet test` on PRs and pushes to `main`. Game/ATS_API reference assemblies are not available on the runner, so CI must build with stub paths or skip targets that require them; the Smoke target itself works without the game.
-- `.github/workflows/release.yml` — triggers on `v*` tags. Runs Pack, then `gh release create` to attach `tools/dist/StormGuide-<version>.zip`.
-- `tools/Bump.ps1` — single command: bumps `<Version>` in `StormGuide/StormGuide.csproj`, rolls `CHANGELOG.md` `Unreleased` into a dated section, and stages both files for the same commit.
+Post-1.0 carry-overs:
 
-### Phase B — Test scaffolding (landed)
-
-Landed as `tests/StormGuide.Tests/` (`net10.0`, xunit) on commit — see Test / smoke section above. Outstanding follow-ups owned by later phases:
-
-- **Provider-level tests.** `BuildingProvider` / `CornerstoneDraftProvider` inputs are still typed against `EffectModel` / `BuildingsService` from `Assembly-CSharp`. Until pure scoring helpers are extracted into `Domain/`, ranking-determinism tests have to wait. Extracting them is also the prerequisite for Phase C cache budgeting.
-
-### Phase C — Performance budgets (centralisation landed)
-
-Landed:
-
-- `StormGuide/Data/CacheBudget.cs` — single source of truth for cache TTLs (`AlertsTtlSec`, `SummaryTtlSec`, `OwnedCornerstonesTtlSec`, `TraderDesiresTtlSec`) and `PerfRingFrames`. `UI/SidePanel.cs` no longer carries bare timing literals.
-- `StormGuide/Domain/PerfRing.cs` — bounded ring + percentile math extracted into Domain so it's pure and unit-tested. Replaces the inline `Dictionary<string, Queue<double>>` plus private `Percentile` helper. The Diagnostics tab now reads `ring.P50` / `ring.P95` directly.
-
-Still pending (require a live mid-game profiling pass):
-
-- Per-tab p50/p95 budgets, recorded in this section. Diagnostics tab surfaces them live; CI does not gate on them. Capture the baseline against one representative settlement, then set budgets at observed p95 × 1.5 so a regression flips a Diagnostics warning.
-- Tune the `CacheBudget` constants once the baseline is captured — today's values (0.5s / 1.0s / 120 frames) are hand-tuned defaults, not measured ones.
-
-### Phase D — Productionize Embark + Diagnostics (landed)
-
-Landed:
-
-- `StormGuide/Domain/EmbarkScoring.cs` — pure pre-settlement rankers (`TopStartingGoods`, `TopCornerstoneTags`). `UI/SidePanel.DrawEmbarkTab` now calls into them; the inline aggregation is gone.
-- `ShowEmbarkTab` defaults to `true`. The tab description in `PluginConfig.cs` no longer says "scaffolding only".
-- The Embark tab header drops the scaffolding caveat and now reads as production guidance.
-- Settings tab gains a **Diagnostics bundle** section with a one-click "copy diagnostics bundle" button (`SidePanel.BuildDiagnosticsBundle`). Bundle includes plugin version, catalog snapshot, hotkey, crash-dump dir + count, per-section p50/p95, active config (via `ExportConfigJson`), and the recent log tail.
-- Crash-dump output already lands in `BepInEx.Paths.ConfigPath` (`stormguide-crash-*.txt`); the bundle includes that path so bug-report flow doesn't require Diagnostics-tab discovery.
-- `ShowDiagnosticsTab` stays `false` by default — the Settings bundle is the new sanctioned bug-report path.
-
-### Phase E — Localization passthrough (landed)
-
-Landed:
-
-- `StormGuide/Domain/Localization.cs` — pure adapter exposing `GoodName` / `BuildingName` / `RaceName` / `RecipeName(modelKey, catalog)`. Resolution chain: `LiveLookup` (live text-service, unwired by default) → catalog `DisplayName` → raw model key. Throwing or null/whitespace lookups fall through silently — translation must never crash the UI. Lives in `Domain/` (not `Data/` as originally planned) so the test project's `<Compile Include>` glob picks it up; `LiveLookup` will be assigned from `LiveGameState` once the AtS text-service surface is verified via dnSpy.
-- `UI/SidePanel.cs` rewires its eight catalog-backed display lookups (alerts strip, home risks, home needs, building input chips, race needs supplied, trader buy-list, embark race-needs join, village summary race naming) through the adapter. Score breakdowns and structural UI labels stay English-only by design.
-- `StormGuidePlugin.Awake()` carries a TODO comment block documenting the eventual `Localization.LiveLookup = key => textService.Get(key)` wiring point.
-- `tests/StormGuide.Tests/LocalizationTests.cs` — 11 tests cover empty key / catalog miss / catalog hit / live-lookup wins / live-lookup null|whitespace falls through / live-lookup throws is swallowed / live-lookup throws + catalog miss falls back to model key / per-domain (`Race`, `Building`, `Recipe`) accessors. Uses `IDisposable` to reset the static `LiveLookup` after every Fact for order-independence.
-
-### Phase F — 1.0 release
-
-- Bump to `1.0.0` via `tools/Bump.ps1`.
-- Capture fresh Thunderstore screenshots via `Capture.ps1`.
-- Tag `v1.0.0` → `release.yml` attaches the zip → manual upload of the same artifact to `thunderstore.io/c/against-the-storm/`.
+- Wire `Localization.LiveLookup` from `LiveGameState` and verify a non-English locale in a real smoke pass.
+- Capture per-tab p50/p95 budgets against one representative settlement and surface a Diagnostics regression warning when p95 × 1.5 is exceeded.
+- Pure-`Domain/` extraction for `BuildingProvider` / `CornerstoneDraftProvider` ranking so deterministic tests can land.
