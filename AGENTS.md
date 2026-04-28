@@ -52,7 +52,7 @@ Reference assemblies are resolved from:
 
 ## Test / smoke
 
-There are no unit tests. The "test" surface is an MSBuild `Smoke` target in `StormGuide.csproj` plus a runtime smoke script.
+There are no unit tests *yet*. The "test" surface today is an MSBuild `Smoke` target in `StormGuide.csproj` plus a runtime smoke script.
 
 ```pwsh
 # Structural sanity over embedded catalog + built assembly. Fails fast.
@@ -64,6 +64,8 @@ pwsh tools/SmokeRun.ps1
 
 `Smoke` checks that `Resources/catalog/{buildings,goods,recipes,races}.json` exist and the built assembly is on disk. Extend it by adding more `<Error Condition="..." Text="..." />` guards — keep checks fast and message-rich; CI can wire `dotnet build /t:Smoke` without an external runner. Anything that needs the running game belongs in `tools/SmokeRun.ps1`, not `Smoke`.
 
+> **Planned (1.0 plan, Phase B):** a Domain-only xunit project at `tests/StormGuide.Tests/` covering catalog deserialization, `Score.Components` reconciliation, and deterministic Building/Draft ranking. `dotnet test` becomes part of the local smoke loop and CI. The test project must **not** transitively pull in game assemblies — it depends on `Domain/` types only, so the dependency direction (Resources → Domain → Providers → UI) stays enforceable.
+
 ## Packaging / release
 
 ```pwsh
@@ -73,6 +75,14 @@ pwsh tools/Capture.ps1         # full-screen PNGs into tools/screenshots/ (Thund
 ```
 
 Version comes from `<Version>` in `StormGuide/StormGuide.csproj`. `tools/dist/` and `tools/screenshots/` are gitignored.
+
+Current caveats (resolved by Phase A of the 1.0 plan):
+
+- `Pack.ps1` builds the Thunderstore manifest **inline** with a placeholder `website_url` (`https://github.com/example/stormguide`).
+- No real `tools/icon.png` — `Pack.ps1` falls back to a 1×1 transparent PNG so the layout still validates.
+- There is no `CHANGELOG.md` and no GitHub Actions — every release is currently driven by hand from a workstation.
+
+> **Planned (1.0 plan, Phase A):** extract the manifest to a checked-in template with the real repo URL, ship a real `tools/icon.png`, add `CHANGELOG.md` (Keep-a-Changelog), and wire up `.github/workflows/{ci,release}.yml`. `ci.yml` runs `dotnet build /t:Build;Smoke -c Release` + `dotnet test` on PRs and `main`. `release.yml` triggers on `v*` tags and attaches the Pack zip to the GitHub Release. A `tools/Bump.ps1` (or similar) updates `<Version>` in the csproj and prepends a new section to `CHANGELOG.md` in one step.
 
 ## Hard invariants
 
@@ -143,5 +153,47 @@ What the panel currently shows, by tab. Update when adding/removing surfaces so 
 - Don't iterate `BuildingsService.Buildings` directly — it's a `Dictionary<int, Building>`; use `.Values`.
 - Don't auto-launch the game from PowerShell scripts. r2modman owns the launch and we don't replicate its preloader injection reliably.
 - Don't reach into `GameController` from `Providers/` or `UI/` — go through `LiveGameState`. Keeps the read-only invariant auditable in one file.
-- Don't reorder dependency direction (Resources → Domain → Providers → UI). Domain stays game-free so it stays unit-testable in isolation if/when tests are added.
+- Don't reorder dependency direction (Resources → Domain → Providers → UI). Domain stays game-free so the planned `tests/StormGuide.Tests/` project can stay game-free too.
 - Don't commit `tools/dist/`, `tools/screenshots/`, or `research/AssemblyCSharp/` — all gitignored.
+- Don't bump `<Version>` in `StormGuide/StormGuide.csproj` directly once `tools/Bump.ps1` lands — it has to keep csproj and `CHANGELOG.md` in sync.
+
+## Planned for 1.0
+
+Tracked in plan `503ea85f-d552-4ae2-baae-2b894fb2bc18` ("StormGuide 1.0 — Productionize, Performance, Release"). Items below are **forward-looking**; treat the existing sections above as the source of truth for what's actually implemented. When a phase lands, fold its details into the relevant section above and trim the bullet here.
+
+### Phase A — Release plumbing
+
+- `tools/manifest.template.json` (or similar) replaces the inline Thunderstore manifest in `Pack.ps1`. Real `website_url`, real `dependencies` list.
+- Real `tools/icon.png`. Drop the 1×1 stub fallback for tagged release builds.
+- `CHANGELOG.md` in Keep-a-Changelog format — `Unreleased` section plus a seeded `0.0.1` entry covering everything shipped to date.
+- `.github/workflows/ci.yml` — `windows-latest` runner; runs `dotnet build /t:Build;Smoke -c Release` + `dotnet test` on PRs and pushes to `main`. Game/ATS_API reference assemblies are not available on the runner, so CI must build with stub paths or skip targets that require them; the Smoke target itself works without the game.
+- `.github/workflows/release.yml` — triggers on `v*` tags. Runs Pack, then `gh release create` to attach `tools/dist/StormGuide-<version>.zip`.
+- `tools/Bump.ps1` — single command: bumps `<Version>` in `StormGuide/StormGuide.csproj`, rolls `CHANGELOG.md` `Unreleased` into a dated section, and stages both files for the same commit.
+
+### Phase B — Test scaffolding
+
+- `tests/StormGuide.Tests/StormGuide.Tests.csproj` — modern SDK target (probably `net8.0`), xunit, `<IsPackable>false</IsPackable>`. **Domain-only**: `<ProjectReference>` only to a future `StormGuide.Domain` lib or via `<Compile Include="..\StormGuide\Domain\**\*.cs" />`. Must not transitively reference `Assembly-CSharp` / Unity / BepInEx.
+- Coverage: catalog round-trip (`StaticCatalog` deserialize → reserialize → equal), `Score.Components` sums match the headline, deterministic ranking on canned `BuildingProvider`/`CornerstoneDraftProvider` inputs.
+- `dotnet test` becomes the third command in the local smoke loop (alongside `dotnet build /t:Build;Smoke` and `pwsh tools/SmokeRun.ps1`).
+
+### Phase C — Performance budgets
+
+- Per-tab p50/p95 budgets recorded in this section once the baseline is captured. Diagnostics tab surfaces them live; CI does not gate on them.
+- Centralized cache TTL constants (likely `StormGuide/Data/CacheBudget.cs`) replace the ad-hoc `new TtlCache<T>(producer, seconds)` literals scattered through `UI/SidePanel.cs`. Editing one file rebalances the whole UI.
+
+### Phase D — Productionize Embark + Diagnostics
+
+- `ShowEmbarkTab` flips to `true` by default once Embark's race-comparison + starting-goods recommendation surface is finished against the static catalog and shared scoring primitives.
+- `ShowDiagnosticsTab` stays `false` by default. The Settings tab grows a **Copy diagnostics bundle** action that snapshots the log ring buffer + frame-cost summary + active config to the clipboard — no Diagnostics tab needed.
+- Crash-dump output moves to a stable path under the BepInEx config dir; the bundle action includes that path.
+
+### Phase E — Localization passthrough
+
+- New thin adapter (`StormGuide/Data/Localization.cs` or similar) wraps the game's text-service lookup. Unknown keys / unavailable service → fallback to the embedded English from the trimmed catalog.
+- Catalog-backed UI labels in `UI/SidePanel.cs` route through the adapter. Score breakdowns (which use English-only structural labels) stay as-is for now.
+
+### Phase F — 1.0 release
+
+- Bump to `1.0.0` via `tools/Bump.ps1`.
+- Capture fresh Thunderstore screenshots via `Capture.ps1`.
+- Tag `v1.0.0` → `release.yml` attaches the zip → manual upload of the same artifact to `thunderstore.io/c/against-the-storm/`.
