@@ -180,6 +180,15 @@ internal sealed class SidePanel : MonoBehaviour
     private Dictionary<string, (LiveGameState.OrderInfo Order, double Minutes)>?
         _recipeOrderEtaCache;
 
+    // Per-Orders-tab-frame: reward categories that the player's owned
+    // cornerstones appear to amplify (heuristic match via
+    // <see cref="CornerstoneAmplification.AmplifiedCategoriesFrom"/>).
+    // Populated once at the top of <see cref="DrawOrdersTab"/>; pick rows
+    // intersect with their own RewardCategories to flag the
+    // <c>\u2665 best for me</c> badge. Empty when nothing matches \u2014
+    // the badge then never renders, keeping cards clean.
+    private HashSet<string>? _amplifiedCategories;
+
     // Pin preset name input (Settings tab).
     private string _newPresetName = "";
 
@@ -4036,7 +4045,24 @@ internal sealed class SidePanel : MonoBehaviour
 
         var picked  = sorted.Count(o => o.Picked);
         var tracked = sorted.Count(o => o.Tracked);
-        GUILayout.Label($"{sorted.Count} orders — {picked} picked, {tracked} tracked", _mutedStyle);
+        GUILayout.Label($"{sorted.Count} orders \u2014 {picked} picked, {tracked} tracked", _mutedStyle);
+
+        // Owned-cornerstone synergy: scan the live cornerstone list for
+        // keywords that hint at amplified reward categories. Used by
+        // <see cref="DrawOrderCard"/> to badge picks whose RewardCategories
+        // overlap. Computed once per frame so the heuristic doesn't run
+        // per-pick.
+        var owned = _ownedCache?.Get();
+        _amplifiedCategories = owned is null || owned.Count == 0
+            ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            : CornerstoneAmplification.AmplifiedCategoriesFrom(
+                owned.Select(c => (c.DisplayName, c.Description)));
+        if (_amplifiedCategories.Count > 0)
+            GUILayout.Label(
+                "   \u2665 your cornerstones amplify: " +
+                    string.Join(", ", _amplifiedCategories.OrderBy(c => c)) +
+                    "  \u2014 picks favouring these get a \u2665 badge",
+                _mutedStyle);
 
         // Tier filter chips: empty filter = no scoping. Re-clicking the last
         // de-selected chip collapses back to "all" so the user always has a
@@ -4238,8 +4264,32 @@ internal sealed class SidePanel : MonoBehaviour
                 GUILayout.Label("   picks \u2014 ranked by reward score:", _mutedStyle);
                 // Compute the running max so the what-if can show "\u0394 vs best".
                 var bestScore = live.Count == 0 ? 0 : live.Max(p => p.RewardScore);
-                foreach (var p in picks)
+                // Pick "best for me" by RewardCategories ∩ _amplifiedCategories.
+                // Highest hits wins; ties broken by RewardScore. Skipped when no
+                // cornerstone amplifies anything or no live pick has a hit.
+                var bestFitIdx = -1;
+                if (_amplifiedCategories is { Count: > 0 } amp)
                 {
+                    var bestHits = 0;
+                    var bestFitScoreLocal = double.NegativeInfinity;
+                    for (var i = 0; i < picks.Count; i++)
+                    {
+                        var p = picks[i];
+                        if (p.Failed) continue;
+                        var hits = p.RewardCategories.Count(c => amp.Contains(c));
+                        if (hits == 0) continue;
+                        if (hits > bestHits ||
+                            (hits == bestHits && p.RewardScore > bestFitScoreLocal))
+                        {
+                            bestHits = hits;
+                            bestFitScoreLocal = p.RewardScore;
+                            bestFitIdx = i;
+                        }
+                    }
+                }
+                for (var pi = 0; pi < picks.Count; pi++)
+                {
+                    var p = picks[pi];
                     var marker = p.Failed
                         ? "\u2715"
                         : (p.IsTopRanked && Config.ShowRecommendations.Value ? "\u2605" : "\u00b7");
@@ -4248,10 +4298,11 @@ internal sealed class SidePanel : MonoBehaviour
                         : string.Join(", ", p.Rewards.Select(r => r.DisplayName));
                     var cats = p.RewardCategories.Count == 0 ? "" :
                         $" [{string.Join("+", p.RewardCategories)}]";
+                    var fitTag = pi == bestFitIdx ? " \u2665 best for me" : "";
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(
-                        $"      {marker} {p.SetIndexLabel} (score {p.RewardScore:0}){cats} \u2192 {rewardNames}",
-                        _mutedStyle);
+                        $"      {marker} {p.SetIndexLabel} (score {p.RewardScore:0}){fitTag}{cats} \u2192 {rewardNames}",
+                        pi == bestFitIdx ? (_okStyle ?? _mutedStyle) : _mutedStyle);
                     GUILayout.FlexibleSpace();
                     // What-if: open a small breakdown of this pick's rewards
                     // relative to the best available pick. Toggles per-row.
