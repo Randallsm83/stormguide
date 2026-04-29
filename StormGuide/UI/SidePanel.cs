@@ -3851,6 +3851,32 @@ internal sealed class SidePanel : MonoBehaviour
                     GUILayout.Label($"      {row.Display}: {row.Stock} in stock", style);
                 }
             }
+            // Dietary variety summary: pure metric living in
+            // <see cref="DietaryVariety.Compute"/>; counts how many of the
+            // race's needs currently have a positive stockpile and surfaces
+            // a single 0..100 score plus the top missing entries (capped at
+            // three) so the player has a one-glance read on diet breadth.
+            // Lit green at \u226580%, amber at \u226550%, red below.
+            var variety = DietaryVariety.Compute(vm.Race.Needs, LiveGameState.StockpileOf);
+            if (variety is not null)
+            {
+                var vStyle = variety.ScorePercent >= 80 ? (_okStyle ?? _mutedStyle)
+                           : variety.ScorePercent >= 50 ? (_warnStyle ?? _mutedStyle)
+                           : (_critStyle ?? _mutedStyle);
+                GUILayout.Label(
+                    $"   \U0001f374 dietary variety: {variety.SuppliedCount}/{variety.TotalNeeds} needs in stock ({variety.ScorePercent}%)",
+                    vStyle);
+                if (variety.MissingNeeds.Count > 0)
+                {
+                    var missingDisp = variety.MissingNeeds.Take(3)
+                        .Select(n => Localization.GoodName(n, Catalog));
+                    var tail = variety.MissingNeeds.Count > 3
+                        ? $" \u2026 (+{variety.MissingNeeds.Count - 3} more)" : "";
+                    GUILayout.Label(
+                        "      missing: " + string.Join(", ", missingDisp) + tail,
+                        _mutedStyle);
+                }
+            }
         }
 
         // Housing match: join the race's preferred-housing need against
