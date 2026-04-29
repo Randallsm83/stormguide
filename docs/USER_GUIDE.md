@@ -10,13 +10,101 @@ never clicks anything for you. Recommendations can be turned off entirely under
 ## Quick start
 1. Press `F8` (default) to open the panel; press it again to hide. The hotkey is
    rebindable under `Settings → Hotkey` (or directly in the BepInEx config).
-2. The tabs are stacked left-to-right. Tab order matches the strip: Home, Building, Good,
-   Villagers, Orders, Glades, Draft, Settings (`⚙`), Diagnostics (`⚙?`), Embark.
+2. The tabs are stacked left-to-right. Tab order matches the strip: Home, Building, Goods,
+   Villagers, Orders, Glades, Draft, Settings (`⚙`), Diagnostics (`⚙?`), Embark. Each tab
+   button shows a small `·N` index hint (e.g. `Home ·1`, `Building ·2`); the hint is a
+   display-only reminder of the original `Ctrl+N` bindings (see Hotkeys for current status).
 3. Drag the title bar to move; drag the bottom-right grip (`◢`) to resize. The reset button
    (`↺`) at the top-right snaps the panel back to its default position and size.
 4. Hover almost any chip/button for a tooltip explaining what it does.
 5. A small `StormGuide alive` label sits in the screen's top-left corner whenever the
    plugin is loaded. It's a one-line liveness indicator and otherwise harmless.
+
+## Panel layout at a glance
+The overlay is a single resizable IMGUI window stacked into four logical bands. The ASCII
+sketch below renders identically inside the in-panel doc viewer (`Settings → Docs → USER
+GUIDE`) and on GitHub, so it's the canonical visual reference:
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ StormGuide                                                  ↺   │  ← title bar (drag to move; ↺ resets)
+├──────────────────────────────────────────────────────────────────┤
+│ ⛅ drizzle: 3:24 until next phase                                │  ← storm/season header
+│ [Home·1][Building·2][Goods·3][Villagers·4][Orders·5][Glades·6]…  │  ← tab strip + ·N index hints
+│ ⚠ 2 idle  3 below resolve  Planks 4.2m  Pipes 1.1m               │  ← alerts strip (clickable chips)
+│ ────────────────────────────────────────────────────────────────  │
+│                                                                  │
+│   (active tab body — see per-tab sections below)                 │
+│                                                                  │
+│ ────────────────────────────────────────────────────────────────  │
+│ catalog game 1.7  ·  StormGuide v1.0.x  ·  toggle: F8       ◢   │  ← footer + resize grip
+└──────────────────────────────────────────────────────────────────┘
+```
+
+Clicking any chip in the alerts strip deep-links into the right tab + selection. The
+footer is read-only.
+
+The tab body itself usually splits into a list-on-left / detail-on-right layout (Building,
+Goods, Villagers, Draft) or a vertically-scrolling dashboard (Home, Orders, Glades,
+Settings, Diagnostics, Embark).
+
+```
+list + detail (Building / Goods / Villagers / Draft)
+┌──────────────┬──────────────────────────────────────────────────┐
+│ Search: ___  │  Selected entry header                           │
+│ Category A   │  meta line · live/static badge                   │
+│   • item 1   │  metric line(s) — flow, throughput, resolve…    │
+│   • item 2 ★ │  ▸ why  ▾ stacks-with  ☆ pin  …                  │
+│ Category B   │  inline charts (sparklines, progress bars)       │
+│   • item 3   │  expandable details + ▸ vs / ▸ what-if           │
+└──────────────┴──────────────────────────────────────────────────┘
+```
+
+```
+dashboard (Home / Orders / Glades / Diagnostics / Embark)
+┌──────────────────────────────────────────────────────────────────┐
+│ ▾ ☆ Pinned recipes — 4                                  open ›  │
+│   Brickyard → Bricks: 3.2/min · stock 41 · → 50 in ~2.3m         │
+│   …                                                              │
+│ ▾ ● Fuel — 38 units · ~9.4 min runway (live 4.1/min)             │
+│ ▾ ● Trade                                                  open › │
+│   ░░░░░░▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░  ← trader timeline mini-bar     │
+│   current: Stone (in village) · wants 8 · sells 6                │
+│   ■■■░░■■■■■░░░░  ← trader desire heatmap (red=0, amber=<20)     │
+│   ★ sell Coats: 5.50/u × 12 = 66.00                              │
+│   potential trade revenue (top-3 each): 124.50                   │
+│ ▸ ⚠ Goods at risk — 3                                            │
+│ ▸ ● Cornerstones — 5 owned                              open ›  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Data-flow architecture (renders on GitHub; reads as text in the doc viewer)
+```mermaid
+flowchart LR
+  Game[Against the Storm runtime] -->|live reads| LGS[LiveGameState]
+  Catalog[(Resources/catalog/*.json)] --> Domain[Domain DTOs + math]
+  LGS --> Providers
+  Domain --> Providers[Providers · pure ViewModel builders]
+  Providers --> SidePanel[UI/SidePanel.cs]
+  Config[(BepInEx config)] --> SidePanel
+  SidePanel --> User((You))
+```
+
+The single arrow that touches the running game is `LiveGameState`; everything downstream is
+pure (and unit-tested in `tests/StormGuide.Tests`).
+
+### Capturing real screenshots
+`tools/Capture.ps1` takes full-screen PNGs into `tools/screenshots/` (gitignored). Run it
+with the game already loaded and the panel visible:
+
+```pwsh
+pwsh tools/Capture.ps1 -Count 9 -DelaySeconds 4 -Prefix stormguide
+```
+
+Once captured, drop the PNGs you want to commit into `docs/screenshots/` (which **is**
+tracked) and reference them from this guide using standard markdown image syntax — alt text
+stays readable in the in-panel doc viewer, while GitHub renders the image inline. See
+`docs/screenshots/README.md` for the layout convention.
 
 ## Reading conventions
 - `★` marks the top-ranked option in a list (when recommendations are on).
@@ -35,7 +123,8 @@ never clicks anything for you. Recommendations can be turned off entirely under
   Unity Input System with the legacy `UnityEngine.Input` class disabled, so StormGuide
   swallows them (a single warning is emitted in the BepInEx log on first invocation).
   When this happens, the same actions are still reachable via mouse:
-  - `Ctrl+1`…`Ctrl+9` — tab quick-jump → click the tab buttons in the strip.
+  - `Ctrl+1`…`Ctrl+9` — tab quick-jump (the `·N` hint shown on each tab button is the
+    legacy index, kept as a visual reminder) → click the tab buttons in the strip.
   - `F5` — reload catalog → `Settings → Catalog → reload catalog`.
   - Hold `Shift` — per-section frame-cost overlay → use `Diagnostics → per-section p50/p95`.
 
@@ -62,8 +151,13 @@ collapsed-set persists across sessions (stored in `HomeCollapsedSections`).
 - **Trade** — current/next trader plus a horizontal **trader timeline** mini-bar (sky-blue
   travel zone for the current trader, green visit zone, dim slot for the next trader, white
   3 px "now" marker positioned by exact travel-progress when en route or centered in the
-  visit window once arrived). Below the bar: top desire, combined revenue across both
-  rotations, buy-list builder, and a rolling archive of recent visits.
+  visit window once arrived). When a trader is in the village, a **desire heatmap** strip
+  renders one coloured square per wanted good (red = no stockpile, amber = some, green =
+  meaningful pile) so you can read "can I trade right now?" without opening the Goods tab.
+  Below the bar: top desire, **visit countdown** (`~mm:ss to arrival (extrapolated)` from
+  the recent travel-progress slope), **combined trade revenue** across both rotations
+  (`potential trade revenue (top-3 each): N`), buy-list builder, and a rolling archive of
+  recent visits.
 - **Idle workshops** — top-3 idle building models with a one-click open-in-Building.
 - **Worker rebalance** — suggestions like "move from Woodcutters → Brickyard" when a draining
   good has an underfilled producer.
@@ -100,7 +194,7 @@ Two-column layout: scrollable list on the left, detail on the right.
     Orders tab. Settlement-wide net is the denominator (already accounts for every running
     producer); the soonest ETA wins when multiple orders target the same good.
 
-### Good — production paths, runway, prices, traders
+### Goods — production paths, runway, prices, traders
 Two-column layout again. The detail pane shows:
 - **Trade value** + **flow line** with arrow (`↑ ↓ ≡`) and runway in minutes.
 - **What-if burn slider** (0.5×–2×) — drag to project runway under a hypothetical change in
@@ -205,6 +299,10 @@ Free-text filter at the top scopes the listing.
 - **Config sync** — export the bool/string portion of your config to JSON in the clipboard,
   or import from clipboard.
 - **Pin presets** — name and save your current pin list, then load or delete by name.
+- **Diagnostics bundle** — one-click `copy diagnostics bundle` button captures plugin
+  version, catalog snapshot, hotkey, crash-dump dir, per-section p50/p95, active config,
+  and the recent log tail to the clipboard. Stays accessible without enabling the
+  Diagnostics tab.
 - **Docs** — embedded README, AGENTS, and **this user guide** (USER_GUIDE.md), all readable
   offline from inside the panel.
 
@@ -222,7 +320,8 @@ The tab strip also gets a one-line warn/err alert chip when the plugin emits war
 errors in the last 60 seconds; clicking it opens this tab.
 
 ### Embark — pre-settlement helper
-Off by default. Surfaces catalog-only context that's useful before clicking through embark:
+On by default since 1.0. Surfaces catalog-only context that's useful before clicking
+through embark:
 - Race table sorted by min resolve.
 - Starting goods ranked by need overlap × trade value.
 - Cornerstone-tag advisory ranking the highest-leverage tags for the race set.
@@ -231,13 +330,13 @@ Off by default. Surfaces catalog-only context that's useful before clicking thro
 ## Common workflows
 
 ### "I'm running out of fuel"
-1. Open Home (`Ctrl+1`).
+1. Click the **Home** tab.
 2. The Fuel section will already be red. Click `☆ auto-pin top fuel producer` if it appears.
-3. If you need more buffer, jump to Good (`Ctrl+3`), select the fuel good in question, and
+3. If you need more buffer, click the **Goods** tab, select the fuel good in question, and
    open the **flow breakdown** to see who's eating the most.
 
 ### "A trader just arrived"
-1. The panel auto-jumps to Good and selects the trader's top desire.
+1. The panel auto-jumps to Goods and selects the trader's top desire.
 2. Cross-check the **affordability** line: how much currency you'd net by selling the top-3
    desires.
 3. Use the **buy-list builder** in Home → Trade to tick the things you actually want to
@@ -255,7 +354,7 @@ Off by default. Surfaces catalog-only context that's useful before clicking thro
 4. The `skip cost:` line under each option summarises what you lose if you don't pick it.
 
 ### "An order is failing"
-1. Open Orders (`Ctrl+5`). Tracked failable orders sit at the top.
+1. Click the **Orders** tab. Tracked failable orders sit at the top.
 2. The objective progress bar + sparkline + ETA tell you whether you'll make it at current
    burn.
 3. The `plan of attack:` line lists the top-2 producer recipes and the upstream chain. Pin

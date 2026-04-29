@@ -11,6 +11,16 @@ entries between releases go under `## [Unreleased]`.
 
 ## [Unreleased]
 
+### Changed
+
+- Tab label "Good" renamed to "Goods" everywhere it surfaces in the UI: the tab strip button, the alerts-strip `Jump to ...` tooltip on at-risk goods chips, the Home Trade `open ›` tooltip, and the BepInEx config descriptions for `Tab · Good` + `Expand all producer reasoning`. The internal `SidePanel.Tab.Good` enum value, the `PluginConfig.ShowGoodTab` field, and the `"Tab · Good"` BepInEx config key are deliberately unchanged so existing player configs keep their on/off setting after upgrade.
+
+### Documentation
+
+- `docs/USER_GUIDE.md` overhauled: renamed the Goods section + every "Good tab" reference; corrected the Embark default (`On by default since 1.0`, was incorrectly documented as off-by-default); documented the previously-undocumented Home → Trade trader desire heatmap, visit countdown, combined trade revenue line, and the per-tab-button `·N` index hint; added a Settings → Diagnostics bundle subsection so the bundle copy action is discoverable without scrolling to troubleshooting; replaced the broken `Ctrl+1` / `Ctrl+3` / `Ctrl+5` workflow callouts with click-the-tab instructions (the legacy `UnityEngine.Input` shortcuts no-op on current AtS builds). Added a new "Panel layout at a glance" section with two ASCII layout diagrams (chrome + dashboard) plus a Mermaid data-flow diagram, both of which render correctly in the in-panel doc viewer (alt-text only) and on GitHub. Added a "Capturing real screenshots" subsection pointing at `tools/Capture.ps1`.
+- `docs/screenshots/` placeholder folder created with a `README.md` describing the capture workflow, layout convention, and image-reference syntax for future committed PNGs (`tools/screenshots/` remains the gitignored staging area).
+- `AGENTS.md` cheat-sheet entry for the Goods tab updated to match (label rename + note that the internal `Tab.Good` enum and `ShowGoodTab` config key are deliberately preserved for backwards compatibility).
+
 ### Fixed
 
 - Side panel rendered an empty window with no tab content on current Against the Storm builds. Root cause: AtS now ships the new Unity Input System with the legacy `UnityEngine.Input` class disabled, so every direct `Input.GetKey` / `Input.GetKeyDown` call threw `InvalidOperationException`. The throw inside `DrawWindow`'s trailing Shift-overlay check propagated out of the `GUILayout.Window` callback every frame, which is the documented Unity behaviour that aborts the window content while leaving the chrome visible. `UI/SidePanel.cs` now routes the four legacy-input call sites (Ctrl-modifier check + per-digit Ctrl+1\u20269 quick-jump, F5 catalog reload, Shift-held debug overlay) through new `SafeInputGetKey` / `SafeInputGetKeyDown` helpers that try/catch on first use, log a single warning, and short-circuit subsequent calls. The `F8` toggle keeps working because it goes through BepInEx's `KeyboardShortcut.IsDown()` path, which the input system can't disable.

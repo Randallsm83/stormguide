@@ -1029,7 +1029,7 @@ internal sealed class SidePanel : MonoBehaviour
         {
             var displayName = Localization.GoodName(g.Good, Catalog);
             var label = $"{displayName} {g.RunwayMinutes:0.#}m";
-            if (GUILayout.Button(new GUIContent(label, "Jump to Good tab"), _tabStyle))
+            if (GUILayout.Button(new GUIContent(label, "Jump to Goods tab"), _tabStyle))
             {
                 _activeTab = Tab.Good;
                 _selectedGood = g.Good;
@@ -1097,7 +1097,7 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.BeginHorizontal();
         if (Config.ShowHomeTab.Value)      DrawTab(Tab.Home,      "Home");
         if (Config.ShowBuildingTab.Value)  DrawTab(Tab.Building,  "Building");
-        if (Config.ShowGoodTab.Value)      DrawTab(Tab.Good,      "Good");
+        if (Config.ShowGoodTab.Value)      DrawTab(Tab.Good,      "Goods");
         if (Config.ShowVillagersTab.Value) DrawTab(Tab.Villagers, "Villagers");
         if (Config.ShowOrdersTab.Value)    DrawTab(Tab.Orders,    "Orders");
         if (Config.ShowGladesTab.Value)    DrawTab(Tab.Glades,    "Glades");
@@ -1803,7 +1803,7 @@ internal sealed class SidePanel : MonoBehaviour
         var sectionExpanded = BeginHomeSection("trade", "● Trade");
         GUILayout.FlexibleSpace();
         if (Config.ShowGoodTab.Value &&
-            GUILayout.Button(new GUIContent("open ›", "Jump to Good tab"),
+            GUILayout.Button(new GUIContent("open ›", "Jump to Goods tab"),
                              _tabStyle, GUILayout.Width(70)))
         {
             _activeTab = Tab.Good;

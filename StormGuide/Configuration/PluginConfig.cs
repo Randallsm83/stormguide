@@ -109,7 +109,7 @@ public sealed class PluginConfig
 
         ShowHomeTab      = cfg.Bind(SectionUI, "Tab · Home",      true, "Show the Home / dashboard tab.");
         ShowBuildingTab  = cfg.Bind(SectionUI, "Tab · Building",  true, "Show the Building tab.");
-        ShowGoodTab      = cfg.Bind(SectionUI, "Tab · Good",      true, "Show the Good tab.");
+        ShowGoodTab      = cfg.Bind(SectionUI, "Tab · Good",      true, "Show the Goods tab.");
         ShowVillagersTab = cfg.Bind(SectionUI, "Tab · Villagers", true, "Show the Villagers tab.");
         ShowOrdersTab    = cfg.Bind(SectionUI, "Tab · Orders",    true, "Show the Orders tab (active reputation orders).");
         ShowGladesTab    = cfg.Bind(SectionUI, "Tab · Glades",    true, "Show the Glades tab (forest exploration summary).");
@@ -128,7 +128,7 @@ public sealed class PluginConfig
         WhyAllRecipes   = cfg.Bind(SectionUI, "Expand all recipe reasoning",   false,
             "Persistent state for the Building tab “why × all” toggle.");
         WhyAllProducers = cfg.Bind(SectionUI, "Expand all producer reasoning", false,
-            "Persistent state for the Good tab “why × all” toggle.");
+            "Persistent state for the Goods tab “why × all” toggle.");
 
         ActiveTab            = cfg.Bind(SectionUI, "Active Tab",            "Home",
             "Last-active tab. Persisted automatically.");
