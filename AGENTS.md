@@ -12,8 +12,10 @@ StormGuide/                   plugin assembly (netstandard2.0)
                               + CacheBudget (TTL/window constants) + LogCapture
   Domain/                     pure DTOs + math: Catalog, *Info, *ViewModel, Score,
                               FlowRow, VillageSummary, PerfRing, EmbarkScoring,
-                              Localization (catalog-key → display-name adapter)…
-                              (no game refs)
+                              Localization (catalog-key → display-name adapter),
+                              CornerstoneAmplification, CornerstoneOverlap,
+                              DietaryVariety, GladeClearTime, HousingMatch,
+                              PriceTrend (post-1.0 pure helpers)… (no game refs)
   Providers/                  pure functions: Catalog + lookups → ViewModel
                               (Building, Good, Villager, CornerstoneDraft) + EffectWeights
   UI/SidePanel.cs             single IMGUI MonoBehaviour. Renders all tabs, alerts strip, resize/reset
@@ -94,6 +96,7 @@ Version comes from `<Version>` in `StormGuide/StormGuide.csproj`. Bump it via `t
 2. **Transparent recommendations.** Every `Score` carries `Components` (label/value/note rows) that the UI renders below the headline number. If a feature can't show its math, it doesn't ship.
 3. **Defensive live access.** Every `LiveGameState` accessor returns `null` / `0` / empty on missing services and try/catches around the game-side call. The plugin must never crash if a game type is renamed in a patch.
 4. **No prescriptive UI.** Badges/ranks/sorts are fine; auto-clicks, modal nudges, and hidden non-recommended options are not. `Config.ShowRecommendations` toggles all `★`/ranked highlights off cleanly.
+5. **Defensive legacy input.** Current AtS builds ship the new Unity Input System with the legacy `UnityEngine.Input` class disabled, so any direct `Input.GetKey` / `GetKeyDown` call throws `InvalidOperationException`. A throw inside `GUILayout.Window`'s callback aborts the window's content for that frame, which manifested as an empty-tabs panel before the fix. **Never call `UnityEngine.Input.*` directly from `UI/SidePanel.cs`** — route every legacy-input read through `SafeInputGetKey` / `SafeInputGetKeyDown` (which try/catch on first use, log a single warning, and short-circuit subsequent calls). The `Config.ToggleHotkey.Value.IsDown()` path stays safe because BepInEx's `KeyboardShortcut` wraps the underlying call.
 
 ## Where to add a feature
 
@@ -139,18 +142,18 @@ Then `grep` under `research/AssemblyCSharp` for the type/field. The decompiled t
 
 What the panel currently shows, by tab. Update when adding/removing surfaces so future agents don't have to spelunk `SidePanel.cs`.
 
-- **Home** — village summary (pop, homeless, per-race resolve), trade (current/next trader, top-1 desire), idle workshops top-3, goods at risk top-5, race needs unmet, orders summary (`N picked, M tracked`, time-critical line), forest exploration %, owned cornerstones (count + first-3).
-- **Building** — search (matches name + tags), clear-selection, tag chips (click to filter list), best-workers (race-fit by perk weight), recipe cards with `▸ why` + `why × all` toggle, draining-input flag, idle banner.
-- **Good** — search, clear-selection, flow line + breakdown, production paths with `▸ why` + `why × all`, consumers, race needs, current/next trader desires (top-N total + per-row), live currency, trader-rotation jump links.
-- **Villagers** — village summary header, race list, race detail with live resolve bar (current/target tick), top resolve contributors, race characteristics, best-fit workplaces.
-- **Orders** — active orders sorted (tracked → picked → time-pressure → name), tier badge (bronze/silver/gold pill), failable countdown (red/amber/muted), objectives with `✓`/progress-bar, reward score + categories, pick-options ranking on unpicked orders.
-- **Glades** — explored %, dangerous/forbidden counts, reward-chase alerts, danger-level distribution chart.
-- **Draft** — cornerstone draft auto-popup; per-option synergy with breakdown components (tag matches, owned-stack, resolve-shaped, total-buildings).
+- **Home** — collapsible sections (`▾` / `▸` carets, persisted via `HomeCollapsedSections`): village summary, fuel runway, trade (current/next trader **+ horizontal trader timeline mini-bar** with travel/visit zones and a 3 px "now" marker), idle workshops top-3, worker rebalance suggestions, goods at risk top-5 (sparkline + 60s forecast + auto-pin), race needs unmet, orders summary, forest exploration %, owned cornerstones, marked recipes, pinned recipes (with reorder + flow sparkline + worker chip).
+- **Building** — search (matches name + tags, fuzzy fallback), clear-selection, tag chips, best-workers (race-fit by perk weight), recipe cards with `▸ why` + `why × all` toggle, draining-input flag, idle banner. Recipe cards now surface a clickable `→ reputation order "X" [tier]: ~Nm at current burn` line whenever the produced good is the target of an active order objective and the settlement is producing it net-positive.
+- **Good** — search, clear-selection, flow line + breakdown, production paths with `▸ why` + `why × all`, consumers, race needs, current/next trader desires (top-N total + per-row), live currency, trader-rotation jump links. Price-history sparkline carries a one-line trend extrapolation under the chart (slope in `currency/min`, ~3 min projection; flat lines render as `→ trend: flat`).
+- **Villagers** — village summary header, race list, race detail with live resolve bar (current/target tick), top resolve contributors, race characteristics, best-fit workplaces. Per-race detail now also renders a `🍴 dietary variety: A/B needs in stock (S%)` summary plus a one-line **housing match indicator** (preferred / shelter-only / none) joined against `LiveGameState.BuiltBuildingCounts`.
+- **Orders** — active orders sorted (tracked → picked → time-pressure → name), tier badge (bronze/silver/gold pill), failable countdown (red/amber/muted), objectives with `✓`/progress-bar, reward score + categories, pick-options ranking on unpicked orders. The live pick whose `RewardCategories` overlap most with what the player's owned cornerstones amplify gets a green `♥ best for me` badge (driven by `Domain/CornerstoneAmplification.cs`); the Orders header echoes the matching set.
+- **Glades** — explored %, dangerous/forbidden counts, reward-chase alerts, danger-level distribution chart, plus a `⏱ ~Xm to clear N glade(s) at S scout(s)` clear-time estimator (or a warn-styled prompt to assign Resource Gathering workers when no scouts are present). Powered by `Domain/GladeClearTime.cs` + `LiveGameState.AssignedWorkersInCategory`.
+- **Draft** — cornerstone draft auto-popup; per-option synergy with breakdown components (tag matches, owned-stack, resolve-shaped, total-buildings) plus a green `↻ stacks with: A [tag], B [tag1, tag2]` overlap line for every currently-owned cornerstone whose `usabilityTags` overlap with the option's tags. Powered by `Domain/CornerstoneOverlap.cs` + `LiveGameState.OwnedCornerstonesWithTags`.
 - **Settings** (⚙) — reflection-driven tab toggles, persisted why-all flags, hide-empty-recipe filter, hotkey rebinder, catalog reload, **diagnostics bundle** copy action, embedded README/AGENTS/USER_GUIDE doc viewer.
 - **Diagnostics** (⚙?, off by default) — 200-line ring buffer of plugin log lines (BepInEx ILogListener filtered by source). The Settings tab carries a **Copy diagnostics bundle** button (plugin version, catalog, hotkey, per-section p50/p95, active config, crash-dump dir, recent log) so users don't need to enable this tab to share state for bug reports.
 - **Embark** (on by default) — pre-settlement guidance from the static catalog: race list ranked by min resolve, top starting goods (need overlap × trade value via `EmbarkScoring.TopStartingGoods`), top cornerstone tags by total catalog-building hits (`EmbarkScoring.TopCornerstoneTags`).
 - **Footer** — catalog source + plugin version + active hotkey.
-- **Hotkeys** — toggle hotkey (default rebindable; `F8` / `G` are common), `Ctrl+1`…`9` jump-to-tab while panel is visible, `F5` reload catalog.
+- **Hotkeys** — toggle hotkey defaults to `F8` (older builds defaulted to `G`; player configs may still carry it). `Ctrl+1`…`9` quick-jump, `F5` catalog reload, and the Shift-held debug overlay all read legacy `UnityEngine.Input`, which AtS's new Input System disables — the plugin swallows the throw silently and they no-op. Reachable via mouse instead (tab strip click, `Settings → Catalog → reload`, `Diagnostics → per-section p50/p95`).
 
 ## Don'ts
 
@@ -159,6 +162,7 @@ What the panel currently shows, by tab. Update when adding/removing surfaces so 
 - Don't iterate `BuildingsService.Buildings` directly — it's a `Dictionary<int, Building>`; use `.Values`.
 - Don't auto-launch the game from PowerShell scripts. r2modman owns the launch and we don't replicate its preloader injection reliably.
 - Don't reach into `GameController` from `Providers/` or `UI/` — go through `LiveGameState`. Keeps the read-only invariant auditable in one file.
+- Don't call `UnityEngine.Input.GetKey` / `GetKeyDown` (or any other legacy `Input` member) directly. The new Input System throws and the throw aborts `GUILayout.Window` for that frame. Use `SafeInputGetKey` / `SafeInputGetKeyDown` from `UI/SidePanel.cs`, or read through `BepInEx.Configuration.KeyboardShortcut`. See invariant 5.
 - Don't reorder dependency direction (Resources → Domain → Providers → UI). Domain stays game-free so `tests/StormGuide.Tests/` can stay game-free too.
 - Don't commit `tools/dist/`, `tools/screenshots/`, or `research/AssemblyCSharp/` — all gitignored.
 - Don't bump `<Version>` in `StormGuide/StormGuide.csproj` directly once `tools/Bump.ps1` lands — it has to keep csproj and `CHANGELOG.md` in sync.
