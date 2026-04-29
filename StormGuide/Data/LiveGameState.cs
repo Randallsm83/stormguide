@@ -1475,6 +1475,45 @@ internal static class LiveGameState
         return tags;
     }
 
+    /// <summary>
+    /// Sum of assigned workers across every built building whose catalog
+    /// <c>Category</c> matches <paramref name="category"/> (case-insensitive).
+    /// Used by the Glades tab clear-time estimator as a "scouts" proxy when
+    /// the player passes the <c>"Resource Gathering"</c> bucket; reusable
+    /// for any future feature that needs a per-category worker tally. 0 when
+    /// the catalog has no matching buildings or services aren't loaded.
+    /// </summary>
+    public static int AssignedWorkersInCategory(
+        StormGuide.Domain.Catalog catalog, string category)
+    {
+        if (catalog is null || string.IsNullOrEmpty(category)) return 0;
+        var matching = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var b in catalog.Buildings.Values)
+        {
+            if (string.Equals(b.Category, category, StringComparison.OrdinalIgnoreCase))
+                matching.Add(b.Name);
+        }
+        if (matching.Count == 0) return 0;
+        var total = 0;
+        try
+        {
+            var bs = Services?.BuildingsService;
+            if (bs?.Buildings == null) return 0;
+            foreach (var kv in bs.Buildings)
+            {
+                var b = kv.Value;
+                if (b == null || !matching.Contains(b.ModelName)) continue;
+                if (b is not Eremite.Buildings.ProductionBuilding pb) continue;
+                var workers = pb.Workers;
+                if (workers == null) continue;
+                foreach (var w in workers)
+                    if (w > 0) total++;
+            }
+        }
+        catch { }
+        return total;
+    }
+
     public sealed record OwnedCornerstoneWithTags(
         string Id,
         string DisplayName,

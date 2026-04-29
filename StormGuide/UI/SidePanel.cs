@@ -4990,8 +4990,37 @@ internal sealed class SidePanel : MonoBehaviour
             $"● {summary.Discovered} / {summary.Total} glades discovered ({explored:0}%)",
             _bodyStyle);
         GUILayout.Label(
-            $"   {summary.Dangerous} dangerous · {summary.Forbidden} forbidden",
+            $"   {summary.Dangerous} dangerous \u00b7 {summary.Forbidden} forbidden",
             _mutedStyle);
+
+        // Scout-driven clear-time estimator: project minutes to discover
+        // every remaining undiscovered glade at the current Resource
+        // Gathering worker count. Pure math lives in
+        // <see cref="GladeClearTime.Estimate"/>; this site sources scouts
+        // via <see cref="LiveGameState.AssignedWorkersInCategory"/>. The
+        // 90s/scout/glade rate is a heuristic (game doesn't expose the
+        // scouting service surface cleanly); the line spells the inputs
+        // out so the player can sanity-check what the estimate is built on.
+        var remainingGlades = Math.Max(0, summary.Total - summary.Discovered);
+        if (remainingGlades > 0)
+        {
+            var scouts = LiveGameState.AssignedWorkersInCategory(
+                Catalog, "Resource Gathering");
+            var est = GladeClearTime.Estimate(remainingGlades, scouts);
+            if (est is not null)
+            {
+                GUILayout.Label(
+                    $"   \u23f1 ~{est.MinutesToClear:0.#}m to clear {est.RemainingGlades} glade(s) at {est.ScoutCount} scout(s) ({est.SecondsPerScoutPerGlade:0}s/scout/glade heuristic)",
+                    _mutedStyle);
+            }
+            else
+            {
+                GUILayout.Label(
+                    $"   \u23f1 {remainingGlades} glade(s) left to discover \u2014 assign Resource Gathering workers to scout",
+                    _warnStyle ?? _mutedStyle);
+            }
+        }
+
         if (summary.RewardChasesActive > 0)
         {
             GUILayout.Label(
