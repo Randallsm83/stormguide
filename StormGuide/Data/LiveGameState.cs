@@ -1474,4 +1474,44 @@ internal static class LiveGameState
         catch { }
         return tags;
     }
+
+    public sealed record OwnedCornerstoneWithTags(
+        string Id,
+        string DisplayName,
+        IReadOnlyList<string> Tags);
+
+    /// <summary>
+    /// Per-cornerstone owned-tag join: each currently-active cornerstone's id,
+    /// display name, and the list of <c>usabilityTags</c> it carries. Used by
+    /// the Draft tab's "stacks with" overlap renderer so the player sees
+    /// exactly which existing cornerstone each tag overlap is coming from.
+    /// Empty when no cornerstones are owned or the model service isn't ready.
+    /// </summary>
+    public static IReadOnlyList<OwnedCornerstoneWithTags> OwnedCornerstonesWithTags()
+    {
+        var list = new List<OwnedCornerstoneWithTags>();
+        try
+        {
+            var ms = Services?.GameModelService;
+            if (ms == null) return list;
+            foreach (var oc in OwnedCornerstones())
+            {
+                var tags = new List<string>();
+                Eremite.Model.EffectModel? eff = null;
+                try { eff = ms.GetEffect(oc.Id); } catch { }
+                var ut = eff?.usabilityTags;
+                if (ut != null)
+                {
+                    foreach (var t in ut)
+                    {
+                        if (t == null || string.IsNullOrEmpty(t.Name)) continue;
+                        tags.Add(t.Name);
+                    }
+                }
+                list.Add(new OwnedCornerstoneWithTags(oc.Id, oc.DisplayName, tags));
+            }
+        }
+        catch { }
+        return list;
+    }
 }

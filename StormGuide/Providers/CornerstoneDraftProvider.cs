@@ -55,15 +55,23 @@ public static class CornerstoneDraftProvider
 
         var modelService = services.GameModelService;
         var ownedTagCounts = StormGuide.Data.LiveGameState.OwnedCornerstoneUsabilityTags();
+        // Per-owned-cornerstone tag list \u2014 used for the inline
+        // "stacks with X [tag]" overlap renderer. Pulled once and reused
+        // for every option so we don't re-walk the model service per pick.
+        var ownedWithTags = StormGuide.Data.LiveGameState.OwnedCornerstonesWithTags()
+            .Select(o => ((string)o.DisplayName, (IReadOnlyList<string>)o.Tags))
+            .ToList();
         // Cross-run pick history: read once and turn into a HashSet for O(1)
         // membership checks during scoring.
         var pickHistory = ReadPickHistory();
-        var options = new List<(EffectModel? effect, string id, Score score, List<string> newTags, int hits)>(pick.options.Count);
+        var options = new List<(EffectModel? effect, string id, Score score, List<string> newTags, int hits, IReadOnlyList<OwnedTagOverlap> overlap)>(pick.options.Count);
         foreach (var id in pick.options)
         {
             EffectModel? eff = null;
             try { eff = modelService?.GetEffect(id); } catch { }
             var (newTags, hits) = ComputeDiff(eff, tagCounts, ownedTagCounts);
+            var optionTags = OptionTagNames(eff);
+            var overlap = CornerstoneOverlap.Compute(optionTags, ownedWithTags);
             var score = ScoreOption(eff, id, tagCounts, totalBuildings, ownedTagCounts);
             // Tiebreaker bonus: small score nudge for cornerstones the player
             // has historically picked. Doesn't override real synergy, but
@@ -78,7 +86,7 @@ public static class CornerstoneDraftProvider
                         .ToList(),
                     score.Unit);
             }
-            options.Add((eff, id, score, newTags, hits));
+            options.Add((eff, id, score, newTags, hits, overlap));
         }
 
         var sorted = options
@@ -89,7 +97,7 @@ public static class CornerstoneDraftProvider
         var rank = 0; var lastValue = double.NaN;
         for (var i = 0; i < sorted.Count; i++)
         {
-            var (eff, id, score, newTags, hits) = sorted[i];
+            var (eff, id, score, newTags, hits, overlap) = sorted[i];
             if (i == 0 || Math.Abs(score.Value - lastValue) > 1e-9) rank = i + 1;
             lastValue = score.Value;
             var name = eff?.DisplayName ?? id;
@@ -98,7 +106,8 @@ public static class CornerstoneDraftProvider
                 id, name, desc, score, rank,
                 IsTopRanked: rank == 1,
                 NewlyTargetedTags: newTags,
-                AffectedBuildings: hits));
+                AffectedBuildings: hits,
+                OwnedOverlap: overlap));
         }
 
         return new DraftViewModel(built, IsActive: true, Owned: owned);
@@ -203,6 +212,25 @@ public static class CornerstoneDraftProvider
         }
         catch { }
         return set;
+    }
+
+    /// <summary>
+    /// Returns the list of <c>usabilityTag</c> names declared by an effect
+    /// (filtered for null/empty), or an empty array when the effect carries
+    /// no usability tags. Used as the input for <see cref="CornerstoneOverlap.Compute"/>.
+    /// </summary>
+    private static List<string> OptionTagNames(EffectModel? eff)
+    {
+        var names = new List<string>();
+        ModelTag[]? usability = null;
+        try { usability = eff?.usabilityTags; } catch { }
+        if (usability == null) return names;
+        foreach (var t in usability)
+        {
+            if (t == null || string.IsNullOrEmpty(t.Name)) continue;
+            names.Add(t.Name);
+        }
+        return names;
     }
 
     /// <summary>

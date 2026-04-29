@@ -11,7 +11,12 @@ public sealed record CornerstoneOption(
     // already touches. Drives the "what changes if you pick this" hint.
     IReadOnlyList<string>? NewlyTargetedTags = null,
     // Total buildings currently affected by tags this option targets.
-    int    AffectedBuildings = 0);
+    int    AffectedBuildings = 0,
+    // Per-owned-cornerstone overlap with this option's usability tags.
+    // Each entry names an owned cornerstone plus the tags it shares with
+    // this option, so the renderer can spell out "stacks with X [tag],
+    // Y [tag2]" instead of just a count. Null/empty when nothing overlaps.
+    IReadOnlyList<OwnedTagOverlap>? OwnedOverlap = null);
 
 public sealed record OwnedCornerstoneInfo(
     string Id,

@@ -5605,6 +5605,29 @@ internal sealed class SidePanel : MonoBehaviour
         catch { /* swallow — advisory only. */ }
     }
 
+    /// <summary>
+    /// Inline "stacks with" list \u2014 one line per owned cornerstone whose
+    /// usability tags overlap with this option's tags, named explicitly so the
+    /// player sees which existing pick is doing the stacking. Empty/null
+    /// overlap (\u00a7 default) silently skips the line. Capped at 4 owned
+    /// entries; tail collapses to "\u2026 and N more" when needed.
+    /// </summary>
+    private void DrawCornerstoneOverlap(CornerstoneOption o)
+    {
+        var overlap = o.OwnedOverlap;
+        if (overlap is null || overlap.Count == 0) return;
+        const int max = 4;
+        var entries = overlap.Take(max).Select(e =>
+            e.SharedTags.Count == 1
+                ? $"{e.OwnedDisplayName} [{e.SharedTags[0]}]"
+                : $"{e.OwnedDisplayName} [{string.Join(", ", e.SharedTags)}]");
+        var line = string.Join(", ", entries);
+        if (overlap.Count > max) line += $", \u2026 and {overlap.Count - max} more";
+        GUILayout.Label(
+            $"   \u21bb stacks with: {line}",
+            _okStyle ?? _mutedStyle);
+    }
+
     /// <summary>Renders the cornerstone diff line under each option.</summary>
     private void DrawCornerstoneDiff(CornerstoneOption o)
     {
@@ -5681,6 +5704,7 @@ internal sealed class SidePanel : MonoBehaviour
         if (!string.IsNullOrEmpty(o.Description))
             GUILayout.Label(o.Description, _mutedStyle);
         DrawCornerstoneDiff(o);
+        DrawCornerstoneOverlap(o);
         DrawCornerstoneBlocksOwned(o);
         DrawCornerstoneAffected(o);
         DrawCornerstoneSkipCost(o, all);
