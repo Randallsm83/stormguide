@@ -11,13 +11,19 @@
 .PARAMETER Seconds
     How long to tail the log (default: 30).
 
+.PARAMETER NoBuild
+    Skip the dotnet build step. Useful when the deployed DLL is already current
+    (e.g. after a successful build in another session).
+
 .EXAMPLE
     pwsh tools/SmokeRun.ps1
     pwsh tools/SmokeRun.ps1 -Seconds 60
+    pwsh tools/SmokeRun.ps1 -NoBuild
 #>
 [CmdletBinding()]
 param(
-    [int]$Seconds = 30
+    [int]$Seconds = 30,
+    [switch]$NoBuild
 )
 
 $ErrorActionPreference = 'Stop'
@@ -25,15 +31,62 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $proj     = Join-Path $repoRoot 'StormGuide\StormGuide.csproj'
 
-# Hint dotnet via scoop's shim if it isn't already on PATH.
-$dotnetShim = Join-Path $env:USERPROFILE 'scoop\apps\dotnet-sdk\current'
-if (Test-Path $dotnetShim) { $env:Path = "$dotnetShim;$env:Path" }
+# Resolve a dotnet *with an SDK*. The runtime-only install at
+# C:\Program Files\dotnet\dotnet.exe will satisfy Get-Command but fails any
+# `dotnet build` with "No .NET SDKs were found.", so we explicitly require an
+# adjacent sdk\ folder before accepting a candidate.
+function Test-DotnetHasSdk {
+    param([string]$Exe)
+    if (-not (Test-Path $Exe)) { return $false }
+    return (Test-Path (Join-Path (Split-Path $Exe -Parent) 'sdk'))
+}
 
-Write-Host "==> Building $proj" -ForegroundColor Cyan
-dotnet build $proj -c Release -nologo
-if ($LASTEXITCODE -ne 0) {
-    Write-Host '== build failed; aborting smoke-run.' -ForegroundColor Red
-    exit $LASTEXITCODE
+$dotnet = $null
+$existing = Get-Command dotnet -ErrorAction SilentlyContinue
+if ($existing -and (Test-DotnetHasSdk -Exe $existing.Source)) {
+    $dotnet = $existing.Source
+}
+if (-not $dotnet) {
+    # Search candidates in order; the first SDK-bearing dotnet wins.
+    $candidateExes = @()
+    $candidateExes += (Join-Path $env:USERPROFILE 'scoop\shims\dotnet.exe')
+    $candidateExes += (Join-Path $env:USERPROFILE 'scoop\apps\dotnet-sdk\current\dotnet.exe')
+    # Glob versioned scoop installs (e.g. dotnet-sdk\10.0.203\dotnet.exe).
+    $versioned = Get-ChildItem `
+        -Path (Join-Path $env:USERPROFILE 'scoop\apps\dotnet-sdk') `
+        -Filter 'dotnet.exe' -Recurse -ErrorAction SilentlyContinue |
+        Sort-Object FullName -Descending | Select-Object -ExpandProperty FullName
+    $candidateExes += $versioned
+    $candidateExes += 'C:\Program Files\dotnet\dotnet.exe'
+    $candidateExes += (Join-Path $env:LOCALAPPDATA 'Microsoft\dotnet\dotnet.exe')
+    foreach ($exe in $candidateExes) {
+        if (Test-DotnetHasSdk -Exe $exe) { $dotnet = $exe; break }
+    }
+}
+if ($dotnet) {
+    $dotnetDir = Split-Path $dotnet -Parent
+    $env:Path = "$dotnetDir;$env:Path"
+    # DOTNET_ROOT pins the SDK lookup so the runtime-only Program Files
+    # install never wins inside child processes.
+    $env:DOTNET_ROOT = $dotnetDir
+}
+
+if (-not $NoBuild) {
+    Write-Host "==> Building $proj" -ForegroundColor Cyan
+    if (-not $dotnet) {
+        Write-Host '== dotnet SDK not found (probed scoop shims, scoop versioned, Program Files, LocalAppData).' -ForegroundColor Red
+        Write-Host '   Re-run with -NoBuild if the deployed DLL is already current.' -ForegroundColor Yellow
+        exit 1
+    }
+    Write-Host "    using $dotnet" -ForegroundColor DarkGray
+    & $dotnet build $proj -c Release -nologo
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host '== build failed; aborting smoke-run.' -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+}
+else {
+    Write-Host '==> -NoBuild set; using whatever DLL is already deployed.' -ForegroundColor Cyan
 }
 
 $logPath = Join-Path $env:APPDATA `

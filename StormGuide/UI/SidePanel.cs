@@ -289,6 +289,13 @@ internal sealed class SidePanel : MonoBehaviour
 
     private void Start()
     {
+        try
+        {
+            StormGuidePlugin.Log.LogInfo(
+                $"StormGuide Start() entered. host={(gameObject != null ? gameObject.name : "null")} " +
+                $"enabled={enabled} active={(gameObject != null && gameObject.activeInHierarchy)}");
+        }
+        catch { }
         _visible = Config.VisibleByDefault.Value;
         _rect = new Rect(
             Config.PanelPosition.Value.x,
@@ -384,8 +391,80 @@ internal sealed class SidePanel : MonoBehaviour
         catch { }
     }
 
+    private bool _updateLogged;
+
+    // Against the Storm runs the new Unity Input System with the legacy
+    // UnityEngine.Input class disabled, so any direct Input.GetKey/GetKeyDown
+    // call throws InvalidOperationException every frame. We can't switch to
+    // the new InputSystem package from BepInEx without taking a hard
+    // dependency, so the panel just no-ops the legacy reads and swallows the
+    // throw on the very first call (a single warning is logged so the
+    // failure isn't silent). The throw inside DrawWindow was the actual
+    // "empty panel" cause: GUILayout.Window aborts the window content when
+    // its callback throws, leaving only the chrome visible.
+    private static bool _legacyInputUnavailable;
+    private static bool _legacyInputWarned;
+    private static bool SafeInputGetKey(KeyCode key)
+    {
+        if (_legacyInputUnavailable) return false;
+        try { return Input.GetKey(key); }
+        catch (Exception ex)
+        {
+            _legacyInputUnavailable = true;
+            if (!_legacyInputWarned)
+            {
+                _legacyInputWarned = true;
+                try
+                {
+                    StormGuidePlugin.Log.LogWarning(
+                        "StormGuide: legacy UnityEngine.Input is disabled (new Input " +
+                        "System active). Tab Ctrl+1..9, F5 reload, and Shift debug " +
+                        "overlay won't work; the panel will otherwise render normally. " +
+                        $"({ex.GetType().Name}: {ex.Message})");
+                }
+                catch { }
+            }
+            return false;
+        }
+    }
+    private static bool SafeInputGetKeyDown(KeyCode key)
+    {
+        if (_legacyInputUnavailable) return false;
+        try { return Input.GetKeyDown(key); }
+        catch (Exception ex)
+        {
+            _legacyInputUnavailable = true;
+            if (!_legacyInputWarned)
+            {
+                _legacyInputWarned = true;
+                try
+                {
+                    StormGuidePlugin.Log.LogWarning(
+                        "StormGuide: legacy UnityEngine.Input is disabled (new Input " +
+                        "System active). Tab Ctrl+1..9, F5 reload, and Shift debug " +
+                        "overlay won't work; the panel will otherwise render normally. " +
+                        $"({ex.GetType().Name}: {ex.Message})");
+                }
+                catch { }
+            }
+            return false;
+        }
+    }
+
     private void Update()
     {
+        if (!_updateLogged)
+        {
+            _updateLogged = true;
+            try
+            {
+                StormGuidePlugin.Log.LogInfo(
+                    $"StormGuide Update() first call. visible={_visible} " +
+                    $"enabled={enabled} active={gameObject.activeInHierarchy} " +
+                    $"hotkey={Config.ToggleHotkey.Value}");
+            }
+            catch { }
+        }
         if (!_rebindingHotkey && Config.ToggleHotkey.Value.IsDown())
         {
             _visible = !_visible;
@@ -393,11 +472,11 @@ internal sealed class SidePanel : MonoBehaviour
         }
 
         // Ctrl+1..9 jumps to the corresponding visible tab.
-        if (_visible && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+        if (_visible && (SafeInputGetKey(KeyCode.LeftControl) || SafeInputGetKey(KeyCode.RightControl)))
         {
             for (var i = 0; i < TabOrder.Length; i++)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1 + i) && IsTabVisible(TabOrder[i]))
+                if (SafeInputGetKeyDown(KeyCode.Alpha1 + i) && IsTabVisible(TabOrder[i]))
                 {
                     _activeTab = TabOrder[i];
                     break;
@@ -407,7 +486,7 @@ internal sealed class SidePanel : MonoBehaviour
 
         // F5 reloads the static catalog (mirrors the Settings button so power
         // users don't have to navigate there after a JSONLoader regen).
-        if (_visible && Input.GetKeyDown(KeyCode.F5))
+        if (_visible && SafeInputGetKeyDown(KeyCode.F5))
         {
             try { StormGuidePlugin.ReloadCatalog(); _catalogReloadStatus = "reloaded."; }
             catch (Exception ex) { _catalogReloadStatus = "error: " + ex.Message; }
@@ -795,8 +874,26 @@ internal sealed class SidePanel : MonoBehaviour
         _draftSub?.Dispose();
     }
 
+    // Set on the first OnGUI call this session; emits a one-shot log line so we
+    // can confirm in the BepInEx log that the IMGUI host is actually running.
+    // Strictly diagnostic; no behavioural impact. TODO: remove once panel
+    // visibility is no longer a player-reported issue.
+    private bool _onGuiLogged;
+
     private void OnGUI()
     {
+        if (!_onGuiLogged)
+        {
+            _onGuiLogged = true;
+            try
+            {
+                StormGuidePlugin.Log.LogInfo(
+                    $"StormGuide OnGUI first call. visible={_visible} " +
+                    $"rect=({_rect.x:0},{_rect.y:0},{_rect.width:0},{_rect.height:0}) " +
+                    $"screen=({Screen.width}x{Screen.height})");
+            }
+            catch { }
+        }
         if (!_visible) return;
         EnsureStyles();
 
@@ -838,7 +935,7 @@ internal sealed class SidePanel : MonoBehaviour
         }
         // Live-debug overlay: hold either Shift while the panel is up to see
         // per-section ms breakdown rendered in the corner.
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        if (SafeInputGetKey(KeyCode.LeftShift) || SafeInputGetKey(KeyCode.RightShift))
             DrawDebugOverlay();
     }
 

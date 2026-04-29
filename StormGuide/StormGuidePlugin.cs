@@ -27,7 +27,6 @@ public sealed class StormGuidePlugin : BaseUnityPlugin
     internal static LogCapture?   LogTail { get; private set; }
 
     private Harmony?    _harmony;
-    private GameObject? _panelHost;
     private SidePanel?  _panel;
 
     /// <summary>
@@ -80,17 +79,59 @@ public sealed class StormGuidePlugin : BaseUnityPlugin
 
     private void SpawnPanel()
     {
-        _panelHost = new GameObject("StormGuide.PanelHost");
-        DontDestroyOnLoad(_panelHost);
-        _panel = _panelHost.AddComponent<SidePanel>();
+        // Host the panel directly on the plugin's own GameObject. Hosting it
+        // on a separately-created child GameObject was observed to leave its
+        // Unity lifecycle methods (Start/Update/OnGUI) un-invoked under the
+        // BepInEx + r2modman profile we ship into; co-locating with the
+        // plugin MonoBehaviour (whose lifecycle is confirmed live) ensures
+        // the panel renders.
+        DontDestroyOnLoad(gameObject);
+        _panel = gameObject.AddComponent<SidePanel>();
         _panel.Config  = Cfg!;
         _panel.Catalog = Catalog;
+    }
+
+    // Diagnostic: prove StormGuidePlugin's own MonoBehaviour lifecycle is running.
+    // If these fire but SidePanel.Update/OnGUI don't, the bug is the child
+    // GameObject's lifecycle (and we should host the panel on this MonoBehaviour
+    // instead). If even THESE don't fire, BepInEx isn't driving the plugin past
+    // Awake on this profile.
+    private bool _pluginUpdateLogged;
+    private bool _pluginOnGuiLogged;
+
+    private void Update()
+    {
+        if (!_pluginUpdateLogged)
+        {
+            _pluginUpdateLogged = true;
+            try { Log.LogInfo($"StormGuidePlugin Update() first call."); } catch { }
+        }
+    }
+
+    private void OnGUI()
+    {
+        if (!_pluginOnGuiLogged)
+        {
+            _pluginOnGuiLogged = true;
+            try { Log.LogInfo($"StormGuidePlugin OnGUI first call. screen=({Screen.width}x{Screen.height})"); } catch { }
+        }
+        // Tiny corner overlay so we can visually confirm IMGUI is rendering.
+        // Hard-coded position to a place no game UI normally occupies.
+        try
+        {
+            GUI.Label(new Rect(10, 10, 320, 22),
+                "<b>StormGuide alive</b> \u2014 hold F8 to toggle full panel");
+        }
+        catch { }
     }
 
     private void OnDestroy()
     {
         _harmony?.UnpatchSelf();
-        if (_panelHost != null) Destroy(_panelHost);
+        // Panel lives on this same GameObject now; destroy only the component
+        // so we don't tear down the plugin's own host before BepInEx is done
+        // with it.
+        if (_panel != null) Destroy(_panel);
         if (LogTail != null) BepInEx.Logging.Logger.Listeners.Remove(LogTail);
         Log.LogInfo($"{PluginName} unloaded.");
     }

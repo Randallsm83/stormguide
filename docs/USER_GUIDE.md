@@ -8,13 +8,15 @@ never clicks anything for you. Recommendations can be turned off entirely under
 `Settings → General → Show recommendations`.
 
 ## Quick start
-1. Press `G` (default) to open the panel; press `G` again to hide it.
-2. The tabs are stacked left-to-right. Use `Ctrl+1` … `Ctrl+9` to jump to a tab while the
-   panel is visible. Tab order matches the strip: Home, Building, Good, Villagers, Orders,
-   Glades, Draft, Settings (`⚙`), Diagnostics (`⚙?`), Embark.
+1. Press `F8` (default) to open the panel; press it again to hide. The hotkey is
+   rebindable under `Settings → Hotkey` (or directly in the BepInEx config).
+2. The tabs are stacked left-to-right. Tab order matches the strip: Home, Building, Good,
+   Villagers, Orders, Glades, Draft, Settings (`⚙`), Diagnostics (`⚙?`), Embark.
 3. Drag the title bar to move; drag the bottom-right grip (`◢`) to resize. The reset button
    (`↺`) at the top-right snaps the panel back to its default position and size.
 4. Hover almost any chip/button for a tooltip explaining what it does.
+5. A small `StormGuide alive` label sits in the screen's top-left corner whenever the
+   plugin is loaded. It's a one-line liveness indicator and otherwise harmless.
 
 ## Reading conventions
 - `★` marks the top-ranked option in a list (when recommendations are on).
@@ -25,18 +27,25 @@ never clicks anything for you. Recommendations can be turned off entirely under
   into the right tab + selection.
 
 ## Hotkeys
-- `G` — toggle the panel (rebindable in Settings → Hotkey).
-- `Ctrl+1` … `Ctrl+9` — switch to the visible tab at that index.
-- `F5` — reload the embedded catalog (mirrors the Settings button).
-- `Esc` — cancel an in-progress hotkey rebind.
-- Hold `Shift` while the panel is up — show a per-section frame-cost overlay
-  (diagnostic only).
+- `F8` — toggle the panel (rebindable in `Settings → Hotkey`). This is the *only* keyboard
+  shortcut guaranteed to work on the current Against the Storm build (it's routed through
+  BepInEx's `KeyboardShortcut.IsDown()`, which the game's input system can't disable).
+- `Esc` — cancel an in-progress hotkey rebind (Settings → Hotkey).
+- The shortcuts below were available on older AtS builds. Recent versions ship the new
+  Unity Input System with the legacy `UnityEngine.Input` class disabled, so StormGuide
+  swallows them (a single warning is emitted in the BepInEx log on first invocation).
+  When this happens, the same actions are still reachable via mouse:
+  - `Ctrl+1`…`Ctrl+9` — tab quick-jump → click the tab buttons in the strip.
+  - `F5` — reload catalog → `Settings → Catalog → reload catalog`.
+  - Hold `Shift` — per-section frame-cost overlay → use `Diagnostics → per-section p50/p95`.
 
 ## Tabs
 
 ### Home — settlement at a glance
 A scrolling dashboard with one section per concern. Sections render only when relevant data
 is available, so an empty Home tab usually means everything's fine.
+Every section header has a `▾` / `▸` caret next to it; click to collapse the body. The
+collapsed-set persists across sessions (stored in `HomeCollapsedSections`).
 - **Pinned recipes** — recipes you've stuck from the Building tab. Each row shows
   `building → recipe: X/min · stock N · → 50 in ~Ym`. The 60-second flow sparkline next to
   the row visualises whether the produced good is climbing or sliding. The `assigned/capacity`
@@ -50,8 +59,11 @@ is available, so an empty Home tab usually means everything's fine.
   in one click.
 - **Village** — alive count + per-race resolve summary. Drift warnings fire when a race's
   ratio differs from the targets you set in Settings → Risk thresholds.
-- **Trade** — current/next trader, top desire, combined revenue across both rotations,
-  buy-list builder, and a rolling archive of recent visits.
+- **Trade** — current/next trader plus a horizontal **trader timeline** mini-bar (sky-blue
+  travel zone for the current trader, green visit zone, dim slot for the next trader, white
+  3 px "now" marker positioned by exact travel-progress when en route or centered in the
+  visit window once arrived). Below the bar: top desire, combined revenue across both
+  rotations, buy-list builder, and a rolling archive of recent visits.
 - **Idle workshops** — top-3 idle building models with a one-click open-in-Building.
 - **Worker rebalance** — suggestions like "move from Woodcutters → Brickyard" when a draining
   good has an underfilled producer.
@@ -82,13 +94,23 @@ Two-column layout: scrollable list on the left, detail on the right.
     pair to Home; `⛔ stop` and `★ pri` markers are UI-only flags surfaced on the Home pin
     row. A `→ buy from current trader` button appears when a draining input is sold by the
     trader currently in your village.
+  - **Reputation order ETA** — when the recipe's produced good is the target of an active
+    order objective and the settlement is producing it net-positive, the card surfaces a
+    clickable `→ reputation order "X" [tier]: ~Nm at current burn` line that jumps to the
+    Orders tab. Settlement-wide net is the denominator (already accounts for every running
+    producer); the soonest ETA wins when multiple orders target the same good.
 
 ### Good — production paths, runway, prices, traders
 Two-column layout again. The detail pane shows:
 - **Trade value** + **flow line** with arrow (`↑ ↓ ≡`) and runway in minutes.
 - **What-if burn slider** (0.5×–2×) — drag to project runway under a hypothetical change in
   consumption.
-- **Price history** sparkline for the current trader's visit.
+- **Price history** sparkline for the current trader's visit. With at least three samples,
+  the line below the sparkline reports the regression slope in `currency/min` and projects
+  the price ~3 minutes out (`↗ trend: +X.XXX/min · if it holds, price in ~3m ≈ Y/u`). A
+  flat line (|slope| < 0.005/min) reads as `→ trend: flat at N.NN/u this visit` so the UI
+  doesn't fabricate a non-trend; projections are clamped to non-negative prices on strong
+  downtrends.
 - **Production paths** ranked by cost-per-output. Non-cheapest rows show their throughput
   delta vs the cheapest path. Filter chips: `fuel`, `eatable`, `draining`.
 - **Consumers** annotated with each recipe's live share of consumption.
@@ -100,6 +122,15 @@ Two-column layout again. The detail pane shows:
 Pick a race from the list to surface:
 - Resolve range, starting value, hunger tolerance.
 - **Needs supplied** — per-need stockpile, colour-coded.
+- **🍴 Dietary variety** — single-line summary of how many of the race's catalog needs
+  currently have a positive stockpile (`A/B needs in stock (S%)`). Lit green at ≥80%, amber
+  at ≥50%, red below. When at least one need is missing, an indented `missing: x, y, z`
+  line names up to three empty needs with a `… (+N more)` tail.
+- **Housing match** — one-line indicator showing whether the race has its preferred housing
+  (`✓ housing: N {race} House built`), generic shelter only (`⚠ housing: shelter only …`),
+  or nothing (`✖ housing: none built …`). Includes a `+M shelter` and `⚠ K homeless` tag
+  when relevant. Skipped silently when the catalog has no race-specific housing entry and
+  no homeless are present.
 - **Resolve forecast** — coarse "minutes to target" estimate.
 - **Live resolve bar** + 60-second sparkline.
 - **Top resolve contributors** — filterable by free-text. Each line shows total impact and
@@ -124,10 +155,19 @@ low time-left), then by name.
 - For unpicked orders the panel renders the pick options with reward score, category badges,
   diff lines (`only here:`), and a `▸ what-if` expander that shows Δscore vs the best pick
   plus per-reward weight breakdown.
+- **♥ best for me** — the live pick whose `RewardCategories` overlap most with what your
+  owned cornerstones amplify gets a green `♥ best for me` badge. The Orders header echoes
+  the matching set (`♥ your cornerstones amplify: reputation, trade goods …`) so it's clear
+  why a pick was flagged.
 
 ### Glades — forest exploration, reward chases
 Dashboard for forest pacing.
 - Discovered count + danger distribution chart.
+- **Clear-time estimator** — when there are remaining undiscovered glades and at least one
+  Resource Gathering worker is assigned, the panel renders
+  `⏱ ~Xm to clear N glade(s) at S scout(s) (90s/scout/glade heuristic)`. With no scouts
+  assigned, it degrades to a warn-styled prompt to assign Resource Gathering workers.
+  Skipped silently when every glade is already discovered.
 - Per-chase rows with `mins:secs left`, elapsed %, reward preview, and a `☠ doomed` chip
   when remaining < 30s and elapsed > 80%.
 - **Resolved chases** session log.
@@ -139,6 +179,10 @@ Auto-switches when the in-game pick popup opens. Each option shows:
 - Description + synergy components (with `▸ why` math).
 - `delta:` line summarising new tags + affected buildings.
 - `would affect (tag): names` for the first two newly-targeted tags.
+- `↻ stacks with: A [tag], B [tag1, tag2]` — every currently-owned cornerstone whose
+  `usabilityTags` overlap with this option's tags. Capped at four entries with a
+  `… and N more` tail; rendered in green so it reads as a synergy hint distinct from the
+  red anti-synergy lines.
 - `skip cost:` line — what you lose by passing on this option (synergy delta vs avg + lost
   unique tags).
 - `▸ vs` opens a side-by-side comparison with every other option; the button's tooltip
@@ -228,16 +272,25 @@ Off by default. Surfaces catalog-only context that's useful before clicking thro
 
 ## Troubleshooting
 - **Panel won't open.** Check `Settings → Hotkey` — the toggle key may have been rebound.
-  As a fallback, set `Visible By Default = true` and reload the save.
-- **Tabs are missing.** Settings → Tabs lists every toggle; some (Diagnostics, Embark) are
-  off by default.
-- **Wrong/no values after a game patch.** Click `Settings → Catalog → reload catalog` (or
-  press `F5`). If a banner says the catalog drifted, regenerate using the JSONLoader steps
-  in README.md.
+  As a fallback, set `Visible By Default = true` and reload the save. The default toggle is
+  `F8`; older builds defaulted to `G` and may still be persisted in your config file.
+- **Panel renders but tabs are empty.** Pre-1.0.x bug. Update to the latest StormGuide
+  build — newer versions wrap every legacy `Input.GetKey` call in a try/catch so the new
+  Unity Input System (which AtS now uses with the legacy class disabled) can no longer
+  cause an exception inside `GUILayout.Window`.
+- **Tabs are missing.** Settings → Tabs lists every toggle; some (Diagnostics) are off by
+  default.
+- **Keyboard shortcuts other than F8 don't work.** Expected on current AtS builds — the
+  game disables the legacy `UnityEngine.Input` class. The first time the plugin tries to
+  read it, a single warning is logged and every subsequent attempt no-ops. The same
+  actions are reachable via the panel's mouse UI; see Hotkeys above.
+- **Wrong/no values after a game patch.** Click `Settings → Catalog → reload catalog`. If a
+  banner says the catalog drifted, regenerate using the JSONLoader steps in README.md.
 - **Recommendations feel wrong.** Disable them entirely under `Settings → General → Show
   recommendations` for a neutral data view; the underlying numbers don't change.
 - **Bug report.** Open Diagnostics, click `save snapshot`, then `copy paths`. Attach the
-  resulting `stormguide-snapshot-*.txt` to the report.
+  resulting `stormguide-snapshot-*.txt` to the report. (`Settings → Diagnostics bundle →
+  copy diagnostics bundle` is a faster alternative that skips enabling the tab.)
 
 ## See also
 - `README.md` — feature list, build & install, packaging, dependencies.
