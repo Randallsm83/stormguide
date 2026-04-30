@@ -1105,13 +1105,17 @@ internal sealed class SidePanel : MonoBehaviour
         if (Config.ShowSettingsTab.Value)  DrawTab(Tab.Settings,  "⚙");
         if (Config.ShowDiagnosticsTab.Value) DrawTab(Tab.Diagnostics, "⚙?");
         if (Config.ShowEmbarkTab.Value)    DrawTab(Tab.Embark,    "Embark");
+        // Always anchor the unused horizontal space to the right of the tabs
+        // so each button hugs its label width instead of stretching across
+        // the full panel — stops the strip looking like a row of giant chips
+        // when the panel is wider than the combined label widths.
+        GUILayout.FlexibleSpace();
         // Warn/err alert chip: surfaces a single jump-to-Diagnostics chip
         // when the plugin has emitted warnings or errors in the last 60s.
         // Lives at the right edge so the tab strip itself stays uncluttered.
         var (warn60, err60) = RecentLogCounts(60);
         if ((warn60 > 0 || err60 > 0) && Config.ShowDiagnosticsTab.Value)
         {
-            GUILayout.FlexibleSpace();
             var label = err60 > 0
                 ? $"\u26a0 {err60} err" + (warn60 > 0 ? $" / {warn60} warn" : "")
                 : $"\u26a0 {warn60} warn";
@@ -1162,10 +1166,14 @@ internal sealed class SidePanel : MonoBehaviour
         // Append a Ctrl+N shortcut hint so power users discover the bindings.
         var idx = Array.IndexOf(TabOrder, tab);
         var hint = idx >= 0 && idx < 9 ? $" \u00b7{idx + 1}" : "";
+        // ExpandWidth(false) keeps each tab button at its preferred (label)
+        // width instead of stretching to fill the horizontal strip; the
+        // unused space is parked on the right by the FlexibleSpace in
+        // DrawTabs.
         if (GUILayout.Button(
                 new GUIContent(label + hint,
                     idx >= 0 && idx < 9 ? $"Ctrl+{idx + 1}" : null),
-                style))
+                style, GUILayout.ExpandWidth(false)))
             _activeTab = tab;
     }
 
@@ -2626,8 +2634,11 @@ internal sealed class SidePanel : MonoBehaviour
 
     private void DrawBuildingList()
     {
+        // Bumped from 160 — a number of catalog display names
+        // (e.g. "Pack of Building Materials", "Brickyard · small") were
+        // truncating into the column with the previous width.
         _buildingListScroll = GUILayout.BeginScrollView(_buildingListScroll,
-            GUILayout.Width(160), GUILayout.ExpandHeight(true));
+            GUILayout.Width(210), GUILayout.ExpandHeight(true));
 
         // Cached match list — only recompute when the query (or hide-empty
         // filter) changes. Cuts per-frame LINQ allocations on long lists.
@@ -2681,13 +2692,35 @@ internal sealed class SidePanel : MonoBehaviour
                 GUILayout.Label($"{kind} · {count}", _mutedStyle);
                 lastKind = kind;
             }
-            var label = HighlightMatch(b.DisplayName, query);
+            // Drop any leading "[Category] " prefix that some catalog
+            // entries carry — the kind is already shown as the section
+            // header above each block, so the prefix just creates a wall
+            // of brackets and steals horizontal real estate.
+            var label = HighlightMatch(StripBracketPrefix(b.DisplayName), query);
             var style = (_selectedBuilding == b.Name)
                 ? _tabActiveStyle
                 : (_listButtonStyle ?? _tabStyle);
             if (GUILayout.Button(label, style)) _selectedBuilding = b.Name;
         }
         GUILayout.EndScrollView();
+    }
+
+    /// <summary>
+    /// Strips a leading <c>[Category] </c> prefix from <paramref name="text"/>
+    /// when present. Used by the Building/Goods list rows so the per-row
+    /// label doesn't repeat the category that already lives in the section
+    /// header right above it.
+    /// </summary>
+    private static string StripBracketPrefix(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text ?? "";
+        if (text[0] != '[') return text;
+        var close = text.IndexOf(']');
+        if (close <= 0 || close >= text.Length - 1) return text;
+        // Skip ']' + an optional space so we land on the first real word.
+        var i = close + 1;
+        if (i < text.Length && text[i] == ' ') i++;
+        return text.Substring(i);
     }
 
     /// <summary>
@@ -2809,7 +2842,7 @@ internal sealed class SidePanel : MonoBehaviour
 
         DrawRaceFits(vm.RaceFits);
 
-        GUILayout.Space(4);
+        GUILayout.Space(10);
         GUILayout.BeginHorizontal();
         GUILayout.Label($"{vm.Recipes.Count} recipes \u2014 sorted by throughput", _bodyStyle);
         GUILayout.FlexibleSpace();
@@ -3221,8 +3254,12 @@ internal sealed class SidePanel : MonoBehaviour
 
     private void DrawGoodList()
     {
+        // Bumped from 180. The previous width was clipping common catalog
+        // names like "Pack of Building Materials" / "Crystallized Dew" once
+        // the bracketed category prefix was stripped. 230 fits the longest
+        // names we ship without forcing the detail pane any narrower.
         _goodListScroll = GUILayout.BeginScrollView(_goodListScroll,
-            GUILayout.Width(180), GUILayout.ExpandHeight(true));
+            GUILayout.Width(230), GUILayout.ExpandHeight(true));
         var query = _goodSearch?.Trim() ?? "";
         if (_cachedGoodQuery != query || _cachedGoodMatches is null)
         {
@@ -3251,8 +3288,12 @@ internal sealed class SidePanel : MonoBehaviour
                 : (_listButtonStyle ?? _tabStyle);
             // Right-click on a row copies its model name to the clipboard
             // (mod-authoring aid). Layout is handled by the button; we sniff
-            // mouse events against its rect after the fact.
-            if (GUILayout.Button(HighlightMatch(g.DisplayName, query), style))
+            // mouse events against its rect after the fact. The leading
+            // "[Category] " prefix is stripped so the row label doesn't
+            // duplicate the category already shown as a section header.
+            if (GUILayout.Button(
+                    HighlightMatch(StripBracketPrefix(g.DisplayName), query),
+                    style))
                 _selectedGood = g.Name;
             var btnRect = GUILayoutUtility.GetLastRect();
             var ev = Event.current;
@@ -3323,6 +3364,10 @@ internal sealed class SidePanel : MonoBehaviour
 
         if (vm.Flow is { } f)
         {
+            // Visually separate the flow block from the trade-value/meta
+            // header; previous layout ran them together with no breathing
+            // room.
+            GUILayout.Space(8);
             var net = f.Net;
             var arrow = net > 1e-6 ? "↑" : (net < -1e-6 ? "↓" : "≡");
             var line = $"● flow: +{f.ProducedPerMin:0.##}/min · -{f.ConsumedPerMin:0.##}/min · net {arrow} {net:+0.##;-0.##;0}/min · {f.Stockpile} in stock";
@@ -3377,7 +3422,7 @@ internal sealed class SidePanel : MonoBehaviour
         _goodDetailScroll = GUILayout.BeginScrollView(_goodDetailScroll, GUILayout.ExpandHeight(true));
 
         // Producers (cheapest first)
-        GUILayout.Space(6);
+        GUILayout.Space(10);
         GUILayout.BeginHorizontal();
         GUILayout.Label($"{vm.Producers.Count} production paths — sorted by cost", _bodyStyle);
         GUILayout.FlexibleSpace();
@@ -3411,7 +3456,7 @@ internal sealed class SidePanel : MonoBehaviour
 
         // Consumers — annotate each catalog row with the live consumption
         // share if we can compute it from the live flow's contributions.
-        GUILayout.Space(6);
+        GUILayout.Space(10);
         GUILayout.Label($"Consumed by {vm.Consumers.Count} recipes", _bodyStyle);
         var liveConsumers = (vm.Flow?.Contributions ?? Array.Empty<FlowRow>())
             .Where(c => !c.IsProducer).ToList();
@@ -3432,16 +3477,18 @@ internal sealed class SidePanel : MonoBehaviour
         // Race needs
         if (vm.NeededBy.Count > 0)
         {
-            GUILayout.Space(6);
+            GUILayout.Space(10);
             GUILayout.Label("A racial need for: " + string.Join(", ", vm.NeededBy.Select(r => r.DisplayName)), _bodyStyle);
         }
 
         // Live trader rotation
+        if (vm.CurrentTrader is not null || vm.NextTrader is not null)
+            GUILayout.Space(10);
         if (vm.CurrentTrader is not null) DrawTraderLine("Current", vm.CurrentTrader);
         if (vm.NextTrader    is not null) DrawTraderLine("Next",    vm.NextTrader);
 
         // Traders (catalog)
-        GUILayout.Space(6);
+        GUILayout.Space(10);
         if (vm.Good.TradersBuying.Count > 0)
             GUILayout.Label("Buyers (catalog): "  + string.Join(", ", vm.Good.TradersBuying), _mutedStyle);
         if (vm.Good.TradersSelling.Count > 0)
@@ -3891,8 +3938,11 @@ internal sealed class SidePanel : MonoBehaviour
 
     private void DrawRaceList()
     {
+        // Bumped from 140 — the longer race names (e.g. "Foxes", "Lizards",
+        // "Harpies") plus the active-tab bold weight were squeezing the
+        // letters in the previous column.
         _raceListScroll = GUILayout.BeginScrollView(_raceListScroll,
-            GUILayout.Width(140), GUILayout.ExpandHeight(true));
+            GUILayout.Width(180), GUILayout.ExpandHeight(true));
         foreach (var r in Catalog.Races.Values.OrderBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase))
         {
             var style = (_selectedRace == r.Name) ? _tabActiveStyle : _tabStyle;
