@@ -78,21 +78,6 @@ dashboard (Home / Orders / Glades / Diagnostics / Embark)
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-### Data-flow architecture (renders on GitHub; reads as text in the doc viewer)
-```mermaid
-flowchart LR
-  Game[Against the Storm runtime] -->|live reads| LGS[LiveGameState]
-  Catalog[(Resources/catalog/*.json)] --> Domain[Domain DTOs + math]
-  LGS --> Providers
-  Domain --> Providers[Providers · pure ViewModel builders]
-  Providers --> SidePanel[UI/SidePanel.cs]
-  Config[(BepInEx config)] --> SidePanel
-  SidePanel --> User((You))
-```
-
-The single arrow that touches the running game is `LiveGameState`; everything downstream is
-pure (and unit-tested in `tests/StormGuide.Tests`).
-
 ### Capturing real screenshots
 `tools/Capture.ps1` takes full-screen PNGs into `tools/screenshots/` (gitignored). Run it
 with the game already loaded and the panel visible:
