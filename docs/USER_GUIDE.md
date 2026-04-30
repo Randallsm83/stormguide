@@ -19,62 +19,17 @@ never clicks anything for you. Recommendations can be turned off entirely under
 4. Hover almost any chip/button for a tooltip explaining what it does.
 
 ## Panel layout at a glance
-The overlay is a single resizable IMGUI window stacked into four logical bands. The ASCII
-sketch below renders identically inside the in-panel doc viewer (`Settings → Docs → USER
-GUIDE`) and on GitHub, so it's the canonical visual reference:
+The overlay is a single resizable window. From top to bottom you see four bands:
+1. **Title bar** — drag to move; the `↺` button on the right resets position and size to defaults.
+2. **Storm/season header** — one line such as `⛅ drizzle: 3:24 until next phase`. Hidden when no weather phase is active.
+3. **Tab strip** — the active tab is bold, every other tab carries a `·N` index hint matching the legacy `Ctrl+N` bindings (see Hotkeys).
+4. **Alerts strip** — a row of clickable chips for settlement-level concerns (`⚠ N idle`, `M below resolve`, top-3 goods at risk). Clicking any chip jumps to the relevant tab + selection.
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│ StormGuide                                                  ↺   │  ← title bar (drag to move; ↺ resets)
-├──────────────────────────────────────────────────────────────────┤
-│ ⛅ drizzle: 3:24 until next phase                                │  ← storm/season header
-│ [Home·1][Building·2][Goods·3][Villagers·4][Orders·5][Glades·6]…  │  ← tab strip + ·N index hints
-│ ⚠ 2 idle  3 below resolve  Planks 4.2m  Pipes 1.1m               │  ← alerts strip (clickable chips)
-│ ────────────────────────────────────────────────────────────────  │
-│                                                                  │
-│   (active tab body — see per-tab sections below)                 │
-│                                                                  │
-│ ────────────────────────────────────────────────────────────────  │
-│ catalog game 1.7  ·  StormGuide v1.0.x  ·  toggle: F8       ◢   │  ← footer + resize grip
-└──────────────────────────────────────────────────────────────────┘
-```
+Under those four bands the active tab body fills the remaining space. The window ends with a one-line footer (`catalog game X · plugin vY · toggle hotkey`) and the `◢` resize grip on the bottom-right corner.
 
-Clicking any chip in the alerts strip deep-links into the right tab + selection. The
-footer is read-only.
-
-The tab body itself usually splits into a list-on-left / detail-on-right layout (Building,
-Goods, Villagers, Draft) or a vertically-scrolling dashboard (Home, Orders, Glades,
-Settings, Diagnostics, Embark).
-
-```
-list + detail (Building / Goods / Villagers / Draft)
-┌──────────────┬──────────────────────────────────────────────────┐
-│ Search: ___  │  Selected entry header                           │
-│ Category A   │  meta line · live/static badge                   │
-│   • item 1   │  metric line(s) — flow, throughput, resolve…    │
-│   • item 2 ★ │  ▸ why  ▾ stacks-with  ☆ pin  …                  │
-│ Category B   │  inline charts (sparklines, progress bars)       │
-│   • item 3   │  expandable details + ▸ vs / ▸ what-if           │
-└──────────────┴──────────────────────────────────────────────────┘
-```
-
-```
-dashboard (Home / Orders / Glades / Diagnostics / Embark)
-┌──────────────────────────────────────────────────────────────────┐
-│ ▾ ☆ Pinned recipes — 4                                  open ›  │
-│   Brickyard → Bricks: 3.2/min · stock 41 · → 50 in ~2.3m         │
-│   …                                                              │
-│ ▾ ● Fuel — 38 units · ~9.4 min runway (live 4.1/min)             │
-│ ▾ ● Trade                                                  open › │
-│   ░░░░░░▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░  ← trader timeline mini-bar     │
-│   current: Stone (in village) · wants 8 · sells 6                │
-│   ■■■░░■■■■■░░░░  ← trader desire heatmap (red=0, amber=<20)     │
-│   ★ sell Coats: 5.50/u × 12 = 66.00                              │
-│   potential trade revenue (top-3 each): 124.50                   │
-│ ▸ ⚠ Goods at risk — 3                                            │
-│ ▸ ● Cornerstones — 5 owned                              open ›  │
-└──────────────────────────────────────────────────────────────────┘
-```
+Individual tabs use one of two layouts:
+- **List + detail** (Building, Goods, Villagers, Draft): a search box plus scrollable category-grouped list on the left, and the selected entry's full detail on the right (header + meta + metric lines + expandable `▸ why` / `▸ vs` / `▸ what-if` rows + inline sparklines and progress bars).
+- **Vertical dashboard** (Home, Orders, Glades, Settings, Diagnostics, Embark): a single scroll view with section headers. Home, in particular, has `▾` / `▸` carets on every section so you can collapse what you don't care about today.
 
 ### Capturing real screenshots
 `tools/Capture.ps1` takes full-screen PNGs into `tools/screenshots/` (gitignored). Run it

@@ -6014,6 +6014,49 @@ internal sealed class SidePanel : MonoBehaviour
         GUILayout.EndHorizontal();
     }
 
+    // -----------------------------------------------------------------
+    // Theme palette. Pulled into named fields so the colour scheme can be
+    // rebalanced from one place rather than threaded through EnsureStyles.
+    // High contrast, dark background, light primary text. Independent of
+    // whatever GUI.skin the running game happens to ship.
+    // -----------------------------------------------------------------
+    private static readonly Color ThemeWindowBg   = new(0.10f, 0.10f, 0.16f, 0.96f); // near-black charcoal
+    private static readonly Color ThemeTabBg      = new(0.18f, 0.18f, 0.26f, 1.00f);
+    private static readonly Color ThemeTabHoverBg = new(0.26f, 0.26f, 0.36f, 1.00f);
+    private static readonly Color ThemeTabActiveBg= new(0.42f, 0.32f, 0.62f, 1.00f); // accent purple
+    private static readonly Color ThemeBorder     = new(0.30f, 0.30f, 0.42f, 1.00f);
+    private static readonly Color ThemeBodyText   = new(0.92f, 0.92f, 0.96f, 1.00f); // off-white
+    private static readonly Color ThemeMutedText  = new(0.72f, 0.72f, 0.80f, 1.00f);
+    private static readonly Color ThemeAccentText = new(0.78f, 0.66f, 1.00f, 1.00f); // soft purple/lavender for h1
+    private static readonly Color ThemeWarnText   = new(0.98f, 0.82f, 0.30f, 1.00f); // amber
+    private static readonly Color ThemeCritText   = new(0.98f, 0.45f, 0.45f, 1.00f); // red
+    private static readonly Color ThemeOkText     = new(0.50f, 0.88f, 0.60f, 1.00f); // green
+
+    // Cached 1×1 textures we generated for the dark theme (window + tab
+    // backgrounds). They live for the lifetime of the panel — Unity owns
+    // their memory and they re-bind cleanly across compact-toggle rebuilds.
+    private Texture2D? _texWindowBg;
+    private Texture2D? _texTabBg;
+    private Texture2D? _texTabHoverBg;
+    private Texture2D? _texTabActiveBg;
+    private Texture2D? _texBorder;
+
+    private static Texture2D MakeSolid(Color c)
+    {
+        // 1×1 RGBA32 texture. hideFlags=DontSave so it doesn't persist across
+        // editor reloads, and filterMode=Point so the IMGUI box renderer
+        // doesn't try to bilinearly blur a single pixel.
+        var t = new Texture2D(1, 1, TextureFormat.RGBA32, mipChain: false)
+        {
+            hideFlags  = HideFlags.HideAndDontSave,
+            filterMode = FilterMode.Point,
+            wrapMode   = TextureWrapMode.Clamp,
+        };
+        t.SetPixel(0, 0, c);
+        t.Apply(updateMipmaps: false, makeNoLongerReadable: true);
+        return t;
+    }
+
     private void EnsureStyles()
     {
         var compact      = Config.CompactMode.Value;
@@ -6026,58 +6069,179 @@ internal sealed class SidePanel : MonoBehaviour
         _lastCompactApplied = compact;
         _lastCompactListsApplied = compactLists;
 
-        var body  = compact ? 11 : 12;
-        var muted = compact ? 10 : 11;
-        var h1    = compact ? 13 : 14;
-        var pad   = compact ? new RectOffset(8, 8, 20, 8) : new RectOffset(10, 10, 22, 10);
+        // Lazy-build the solid theme textures once. EnsureStyles() can run
+        // multiple times when the compact toggle flips; we don't want to
+        // leak a fresh Texture2D on every flip.
+        _texWindowBg    ??= MakeSolid(ThemeWindowBg);
+        _texTabBg       ??= MakeSolid(ThemeTabBg);
+        _texTabHoverBg  ??= MakeSolid(ThemeTabHoverBg);
+        _texTabActiveBg ??= MakeSolid(ThemeTabActiveBg);
+        _texBorder      ??= MakeSolid(ThemeBorder);
 
-        _windowStyle = new GUIStyle(GUI.skin.window) { padding = pad };
+        // Bumped one notch from the previous (11/10/13 compact, 12/11/14 full)
+        // because user feedback was that the panel reads small at 1080p+.
+        // Keeps the compact mode option for users on smaller displays.
+        var body  = compact ? 12 : 14;
+        var muted = compact ? 11 : 13;
+        var h1    = compact ? 14 : 17;
+        var pad   = compact ? new RectOffset(10, 10, 22, 10) : new RectOffset(12, 12, 26, 12);
+
+        // Window: explicit dark background, soft border, bold light title.
+        _windowStyle = new GUIStyle(GUI.skin.window)
+        {
+            padding   = pad,
+            border    = new RectOffset(2, 2, 2, 2),
+            fontSize  = h1,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.UpperLeft,
+        };
+        _windowStyle.normal.background  = _texWindowBg;
+        _windowStyle.onNormal.background= _texWindowBg;
+        _windowStyle.focused.background = _texWindowBg;
+        _windowStyle.onFocused.background = _texWindowBg;
+        _windowStyle.normal.textColor   = ThemeBodyText;
+        _windowStyle.onNormal.textColor = ThemeBodyText;
+        _windowStyle.focused.textColor  = ThemeBodyText;
+        _windowStyle.onFocused.textColor= ThemeBodyText;
+
         _bodyStyle = new GUIStyle(GUI.skin.label)
         {
-            wordWrap = true,
+            wordWrap  = true,
             alignment = TextAnchor.UpperLeft,
-            fontSize = body,
+            fontSize  = body,
             // Rich text on the body label lets HighlightMatch's <b>...</b>
             // wrap render bold inside Building/Good list rows and recipe
             // cards. Tab/button styles get richText set independently.
-            richText = true,
+            richText  = true,
         };
+        _bodyStyle.normal.textColor    = ThemeBodyText;
+        _bodyStyle.hover.textColor     = ThemeBodyText;
+        _bodyStyle.active.textColor    = ThemeBodyText;
+        _bodyStyle.focused.textColor   = ThemeBodyText;
+        _bodyStyle.onNormal.textColor  = ThemeBodyText;
+        _bodyStyle.onHover.textColor   = ThemeBodyText;
+
         _h1Style = new GUIStyle(_bodyStyle) { fontSize = h1, fontStyle = FontStyle.Bold };
+        _h1Style.normal.textColor   = ThemeAccentText;
+        _h1Style.hover.textColor    = ThemeAccentText;
+        _h1Style.onNormal.textColor = ThemeAccentText;
+
         _mutedStyle = new GUIStyle(_bodyStyle) { fontSize = muted };
-        _mutedStyle.normal.textColor = new Color(0.75f, 0.75f, 0.78f, 1f);
-        _badgeStyle = new GUIStyle(_bodyStyle) { fontSize = h1, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
-        _tabStyle = new GUIStyle(GUI.skin.button) { fixedHeight = compact ? 20 : 24, fontSize = body };
-        _tabActiveStyle = new GUIStyle(_tabStyle);
-        _tabActiveStyle.normal.background = _tabStyle.active.background;
-        _tabActiveStyle.normal.textColor  = Color.white;
-        _tabActiveStyle.fontStyle         = FontStyle.Bold;
+        _mutedStyle.normal.textColor   = ThemeMutedText;
+        _mutedStyle.hover.textColor    = ThemeMutedText;
+        _mutedStyle.onNormal.textColor = ThemeMutedText;
+
+        _badgeStyle = new GUIStyle(_bodyStyle)
+        {
+            fontSize  = h1,
+            alignment = TextAnchor.MiddleCenter,
+            fontStyle = FontStyle.Bold,
+        };
+        _badgeStyle.normal.textColor   = ThemeAccentText;
+        _badgeStyle.onNormal.textColor = ThemeAccentText;
+
+        // Tab buttons: explicit dark background + light text on every state
+        // so the tab strip is legible regardless of the host skin.
+        _tabStyle = new GUIStyle(GUI.skin.button)
+        {
+            fixedHeight = compact ? 22 : 26,
+            fontSize    = body,
+            fontStyle   = FontStyle.Normal,
+            alignment   = TextAnchor.MiddleCenter,
+            padding     = new RectOffset(8, 8, 4, 4),
+            margin      = new RectOffset(2, 2, 2, 2),
+            border      = new RectOffset(2, 2, 2, 2),
+            richText    = true,
+        };
+        _tabStyle.normal.background    = _texTabBg;
+        _tabStyle.normal.textColor     = ThemeBodyText;
+        _tabStyle.hover.background     = _texTabHoverBg;
+        _tabStyle.hover.textColor      = ThemeBodyText;
+        _tabStyle.active.background    = _texTabActiveBg;
+        _tabStyle.active.textColor     = Color.white;
+        _tabStyle.focused.background   = _texTabHoverBg;
+        _tabStyle.focused.textColor    = ThemeBodyText;
+        _tabStyle.onNormal.background  = _texTabActiveBg;
+        _tabStyle.onNormal.textColor   = Color.white;
+        _tabStyle.onHover.background   = _texTabHoverBg;
+        _tabStyle.onHover.textColor    = ThemeBodyText;
+        _tabStyle.onActive.background  = _texTabActiveBg;
+        _tabStyle.onActive.textColor   = Color.white;
+
+        _tabActiveStyle = new GUIStyle(_tabStyle) { fontStyle = FontStyle.Bold };
+        _tabActiveStyle.normal.background  = _texTabActiveBg;
+        _tabActiveStyle.normal.textColor   = Color.white;
+        _tabActiveStyle.hover.background   = _texTabActiveBg;
+        _tabActiveStyle.hover.textColor    = Color.white;
+        _tabActiveStyle.active.background  = _texTabActiveBg;
+        _tabActiveStyle.active.textColor   = Color.white;
+        _tabActiveStyle.focused.background = _texTabActiveBg;
+        _tabActiveStyle.focused.textColor  = Color.white;
+        _tabActiveStyle.onNormal.background= _texTabActiveBg;
+        _tabActiveStyle.onNormal.textColor = Color.white;
+
         _warnStyle = new GUIStyle(_mutedStyle) { fontStyle = FontStyle.Bold };
-        _warnStyle.normal.textColor = new Color(0.95f, 0.80f, 0.30f, 1f);   // amber
+        _warnStyle.normal.textColor    = ThemeWarnText;
+        _warnStyle.hover.textColor     = ThemeWarnText;
+        _warnStyle.onNormal.textColor  = ThemeWarnText;
+
         _critStyle = new GUIStyle(_mutedStyle) { fontStyle = FontStyle.Bold };
-        _critStyle.normal.textColor = new Color(0.95f, 0.40f, 0.40f, 1f);   // red
+        _critStyle.normal.textColor    = ThemeCritText;
+        _critStyle.hover.textColor     = ThemeCritText;
+        _critStyle.onNormal.textColor  = ThemeCritText;
+
         _okStyle = new GUIStyle(_mutedStyle) { fontStyle = FontStyle.Bold };
-        _okStyle.normal.textColor = new Color(0.45f, 0.85f, 0.55f, 1f);   // green
+        _okStyle.normal.textColor      = ThemeOkText;
+        _okStyle.hover.textColor       = ThemeOkText;
+        _okStyle.onNormal.textColor    = ThemeOkText;
+
         // Pill-style for tag chips: tighter padding + no wrap so chips read as
         // labels rather than full-height buttons.
         _chipStyle = new GUIStyle(_tabStyle)
         {
             fixedHeight = 0,
-            padding     = new RectOffset(6, 6, 2, 2),
+            padding     = new RectOffset(8, 8, 3, 3),
             margin      = new RectOffset(2, 2, 1, 1),
-            fontSize    = compact ? 10 : 11,
+            fontSize    = compact ? 11 : 12,
         };
+
         // Compact list-button: shorter rows for the Building/Good list scrollers.
         // Falls back to the regular tab style when the toggle is off so callers
         // can pick a style without branching every frame.
         _listButtonStyle = compactLists
             ? new GUIStyle(_tabStyle)
               {
-                  fixedHeight = compact ? 16 : 18,
-                  padding     = new RectOffset(6, 6, 1, 1),
+                  fixedHeight = compact ? 18 : 20,
+                  padding     = new RectOffset(6, 6, 2, 2),
                   margin      = new RectOffset(2, 2, 0, 0),
-                  fontSize    = compact ? 10 : 11,
+                  fontSize    = compact ? 11 : 12,
+                  alignment   = TextAnchor.MiddleLeft,
                   richText    = true,
               }
-            : new GUIStyle(_tabStyle) { richText = true };
+            : new GUIStyle(_tabStyle)
+              {
+                  alignment = TextAnchor.MiddleLeft,
+                  richText  = true,
+              };
+    }
+
+    private void OnDisable()
+    {
+        // Release the theme textures we generated. Unity warns about leaked
+        // textures on scene reload otherwise, and SidePanel's lifetime is
+        // tied to the plugin GameObject so OnDisable is the right hook.
+        SafeDestroy(ref _texWindowBg);
+        SafeDestroy(ref _texTabBg);
+        SafeDestroy(ref _texTabHoverBg);
+        SafeDestroy(ref _texTabActiveBg);
+        SafeDestroy(ref _texBorder);
+    }
+
+    private static void SafeDestroy(ref Texture2D? tex)
+    {
+        if (tex == null) return;
+        try { UnityEngine.Object.Destroy(tex); }
+        catch { /* swallow — cleanup is best-effort */ }
+        tex = null;
     }
 }
