@@ -115,14 +115,6 @@ public sealed class StormGuidePlugin : BaseUnityPlugin
             _pluginOnGuiLogged = true;
             try { Log.LogInfo($"StormGuidePlugin OnGUI first call. screen=({Screen.width}x{Screen.height})"); } catch { }
         }
-        // Tiny corner overlay so we can visually confirm IMGUI is rendering.
-        // Hard-coded position to a place no game UI normally occupies.
-        try
-        {
-            GUI.Label(new Rect(10, 10, 320, 22),
-                "<b>StormGuide alive</b> \u2014 hold F8 to toggle full panel");
-        }
-        catch { }
     }
 
     private void OnDestroy()

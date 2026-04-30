@@ -11,6 +11,10 @@ entries between releases go under `## [Unreleased]`.
 
 ## [Unreleased]
 
+### Removed
+
+- `StormGuide alive — hold F8 to toggle full panel` corner overlay. The label was added when the panel's empty-tabs regression was being debugged so the plugin's `OnGUI` lifecycle could be visually confirmed in-game; with the regression long fixed (legacy-input safe wrappers + plugin-hosted SidePanel) it's no longer pulling its weight and just clutters the top-left of the screen for every player. The one-shot `StormGuidePlugin OnGUI first call.` log line stays — it's free, only fires once, and is still useful for future smoke runs.
+
 ### Changed
 
 - Tab label "Good" renamed to "Goods" everywhere it surfaces in the UI: the tab strip button, the alerts-strip `Jump to ...` tooltip on at-risk goods chips, the Home Trade `open ›` tooltip, and the BepInEx config descriptions for `Tab · Good` + `Expand all producer reasoning`. The internal `SidePanel.Tab.Good` enum value, the `PluginConfig.ShowGoodTab` field, and the `"Tab · Good"` BepInEx config key are deliberately unchanged so existing player configs keep their on/off setting after upgrade.

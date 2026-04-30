@@ -17,8 +17,6 @@ never clicks anything for you. Recommendations can be turned off entirely under
 3. Drag the title bar to move; drag the bottom-right grip (`◢`) to resize. The reset button
    (`↺`) at the top-right snaps the panel back to its default position and size.
 4. Hover almost any chip/button for a tooltip explaining what it does.
-5. A small `StormGuide alive` label sits in the screen's top-left corner whenever the
-   plugin is loaded. It's a one-line liveness indicator and otherwise harmless.
 
 ## Panel layout at a glance
 The overlay is a single resizable IMGUI window stacked into four logical bands. The ASCII
