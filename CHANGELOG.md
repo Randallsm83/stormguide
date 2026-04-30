@@ -11,6 +11,10 @@ entries between releases go under `## [Unreleased]`.
 
 ## [Unreleased]
 
+### Added
+
+- `tools/RegenCatalog.ps1` — wrapper around `dotnet run --project tools/CatalogTrim` that mirrors the SDK-resolution logic from `tools/SmokeRun.ps1`. Probes the scoop versioned + shim install, `C:\Program Files\dotnet`, and `%LOCALAPPDATA%\Microsoft\dotnet`, requires an adjacent `sdk\` folder before accepting a candidate, and pins `DOTNET_ROOT` so a runtime-only install on `PATH` can't hijack the build. Forwards extra arguments through `--` to the CatalogTrim project. Avoids the previous foot-gun where `dotnet run --project tools/CatalogTrim` failed with `No .NET SDKs were found` on systems whose `PATH` resolves to the runtime-only `C:\Program Files\dotnet\dotnet.exe`.
+
 ### Removed
 
 - `StormGuide alive — hold F8 to toggle full panel` corner overlay. The label was added when the panel's empty-tabs regression was being debugged so the plugin's `OnGUI` lifecycle could be visually confirmed in-game; with the regression long fixed (legacy-input safe wrappers + plugin-hosted SidePanel) it's no longer pulling its weight and just clutters the top-left of the screen for every player. The one-shot `StormGuidePlugin OnGUI first call.` log line stays — it's free, only fires once, and is still useful for future smoke runs.
@@ -30,6 +34,7 @@ entries between releases go under `## [Unreleased]`.
 - `docs/USER_GUIDE.md`: the original "Panel layout at a glance" ASCII art (window chrome diagram + dashboard mockup) was removed because the in-panel doc viewer renders text via `GUILayout.TextArea`, which uses Unity's default proportional Arial font — box-drawing characters and trailing right-side annotations don't align in either the panel or GitHub's preview consistently. The replacement prose covers the same content without depending on monospaced rendering.
 - `docs/screenshots/` placeholder folder created with a `README.md` describing the capture workflow, layout convention, and image-reference syntax for future committed PNGs (`tools/screenshots/` remains the gitignored staging area).
 - `AGENTS.md` cheat-sheet entry for the Goods tab updated to match (label rename + note that the internal `Tab.Good` enum and `ShowGoodTab` config key are deliberately preserved for backwards compatibility).
+- `README.md` refreshed: `F8` toggle hotkey (was documented as `G`); `Good` tab renamed to `Goods` in the feature bullets; the duplicate Home description (one short, one long) collapsed into a single accurate bullet describing the collapsible-section dashboard; per-tab descriptions updated for post-1.0 features (recipe → reputation order ETA, price-trend extrapolation, dietary variety + housing match, Glades clear-time estimator, Orders ♥ best-for-me badge + ▸ what-if, Draft ↻ stacks-with line, Settings diagnostics bundle); Hotkeys section now spells out which legacy shortcuts no-op on current AtS builds and lists the mouse equivalents; Build & install gained an SDK-required note pointing at the new `tools/RegenCatalog.ps1` + existing `tools/SmokeRun.ps1` wrappers; First-time data step 3 swapped `dotnet run --project tools/CatalogTrim` for `pwsh tools/RegenCatalog.ps1`; Embark default flipped from "off by default" to "on by default" to match the actual config default. New `## Documentation` section near the top links out to `docs/USER_GUIDE.md`, `AGENTS.md`, `CHANGELOG.md`, and `docs/screenshots/README.md` so first-time readers can find the player-facing walkthrough and contributor guide without spelunking the repo.
 
 ### Fixed
 
